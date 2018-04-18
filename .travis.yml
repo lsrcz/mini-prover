@@ -1,5 +1,7 @@
 sudo: false
 
+language: generic
+
 cache:
     directories:
     - $HOME/.stack
@@ -9,6 +11,16 @@ before_install:
 - export PATH=$HOME/.local/bin:$PATH
 - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
+install:
+- stack --no-terminal --install-ghc test --only-dependencies
+
 script:
-- stack --no-terminal --skip-ghc-check test
+- stack --no-terminal --skip-ghc-check test --coverage
+
+after_script:
+- travis_retry curl -L https://github.com/rubik/stack-hpc-coveralls/releases/download/v0.0.4.0/shc-linux-x64-8.0.1.tar.bz2 | tar -xj
+- ./shc mini-prover mini-prover-test
+
+notifications:
+    email: false
 

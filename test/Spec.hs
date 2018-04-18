@@ -1,2 +1,4 @@
+import Lib
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = if dummy == 1 then print "test passed" else error "dummy should be 1"
