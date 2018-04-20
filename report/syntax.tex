@@ -1,0 +1,97 @@
+\section{Syntax}
+    The minimal syntax, may extend someday.
+
+\begin{table}[!htb]
+    \centering\sl
+    \begin{tabular}{lcl}
+        letter
+            &$\Coloneqq$&\keyword{a..z} $\mid$ \keyword{A..Z}\\
+        ident
+            &$\Coloneqq$&letter \{letter\}\\
+        term 
+            &$\Coloneqq$&\fforall{} binder \{binder\}, term\\
+            &$\mid$&\ffun{} \{binder\} \darrow{} term\\
+            &$\mid$&\ffix{} name fix\_body\\
+            &$\mid$&\flet{} ident \{binder\} \scolon{}term \scoloneq{} term \fin{} term\\
+            &$\mid$&term \sarrow{} term\\
+            &$\mid$&term arg \{arg\}\\
+            &$\mid$&\fmatch{} term \fwith{}\\
+            &      &~~~~\{~$\mid$ equation\}\\
+            &      &\fend{}\\
+            &$\mid$&sort\\
+            &$\mid$&(term)\\
+        arg
+            &$\Coloneqq$&term\\
+        binder
+            &$\Coloneqq$&name \scolon{} term\\
+        name
+            &$\Coloneqq$&\_\\
+            &$\mid$&ident\\
+        sort
+            &$\Coloneqq$&\fProp{} $\mid$ \fSet{} $\mid$ \fType{}\\
+        fix\_body
+            &$\Coloneqq$&ident \{binder\} \scolon{}term \scoloneq{} term\\
+        equation
+            &$\Coloneqq$&pattern \darrow{} term\\
+        pattern
+            &$\Coloneqq$&ident \{name\}\\\\\\
+        sentence
+            &$\Coloneqq$&axiom\\
+            &$\mid$&definition\\
+            &$\mid$&inductive\\
+            &$\mid$&fixpoint\\
+            &$\mid$&assertion proof\\
+        assumption
+            &$\Coloneqq$&\fAxiom{} ident \scolon{} term .\\
+        definition
+            &$\Coloneqq$&\fDefinition{} ident \{binder\} \scolon{} term \scoloneq{} term .\\
+        inductive
+            &$\Coloneqq$&\fInductive{} ident \{binder\} \scolon{} term \scoloneq{}\\
+            &&~~~~\{~$\mid$ ident \{binder\} \scolon{} term\} .\\
+        assertion
+            &$\Coloneqq$&\fTheorem{} ident \{binder\} \scolon{} term .\\
+        proof
+            &$\Coloneqq$&\fProof{} . \{tactic .\} \fQed{} .\\
+    \end{tabular}
+\end{table}
+\newpage
+\begin{table}[!htb]
+    \centering\sl
+    \begin{tabular}{lcl}
+        tactic
+            &$\Coloneqq$&applying\\
+            &$\mid$&context\_managing\\
+            &$\mid$&case\_analyzing\\
+            &$\mid$&rewriting\\
+            &$\mid$&computing\\
+            &$\mid$&equality\\
+        applying
+            &$\Coloneqq$&\fexact{} term\\
+            &$\mid$&\fapply{} term [\fin{} ident]\\
+        context\_managing
+            &$\Coloneqq$&\fintro{} [ident]\\
+            &$\mid$&\fintros{}\\
+        case\_analyzing
+            &$\Coloneqq$&\fdestruct{} term\\
+            &$\mid$&\finduction{} term\\
+        rewriting
+            &$\Coloneqq$&\frewrite{} [~\larrow{} $\mid$ \sarrow{}] term [~\fin{} term]\\
+        computing
+            &$\Coloneqq$&\fsimpl{}\\
+        equality
+            &$\Coloneqq$&\freflexivity{}\\
+            &$\mid$&\fsymmetry{}\\\\\\
+
+        helper
+            &$\Coloneqq$&printing\\
+            &$\mid$&proof\_handling\\
+        printing
+            &$\Coloneqq$&\fPrint{} ident .\\
+            &$\mid$&\fCheck{} term .\\
+        proof\_handling
+            &$\Coloneqq$&\fUndo{} .\\
+            &$\mid$&\fRestart{} .\\
+            &$\mid$&\fAdmitted{} .\\
+            &$\mid$&\fAbort{} .\\
+    \end{tabular}
+\end{table}
