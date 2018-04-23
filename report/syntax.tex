@@ -11,7 +11,7 @@
         term 
             &$\Coloneqq$&\fforall{} binder \{binder\}, term\\
             &$\mid$&\ffun{} \{binder\} \darrow{} term\\
-            &$\mid$&\ffix{} name fix\_body\\
+            &$\mid$&\ffix{} fix\_body\\
             &$\mid$&\flet{} ident \{binder\} \scolon{}term \scoloneq{} term \fin{} term\\
             &$\mid$&term \sarrow{} term\\
             &$\mid$&term arg \{arg\}\\
@@ -41,7 +41,7 @@
             &$\mid$&inductive\\
             &$\mid$&fixpoint\\
             &$\mid$&assertion proof\\
-        assumption
+        axiom
             &$\Coloneqq$&\fAxiom{} ident \scolon{} term .\\
         definition
             &$\Coloneqq$&\fDefinition{} ident \{binder\} \scolon{} term \scoloneq{} term .\\
