@@ -1,0 +1,137 @@
+\section{Calculus}
+
+\subsection{Term}
+
+\begin{enumerate}
+    \item $\tt Set,Prop$ are terms.
+    \item Variables $\tt x,y$, etc., are terms.
+    \item Constants $\tt c,d$, etc., are terms.
+    \item If $\tt x$ is a variable and $\tt T,U$ are terms, then $\forall\tt x:T,U$ is a term.
+    \item If $\tt x$ is a variable and $\tt T,u$ are terms, then $\lambda\tt x:T.\ u$ is a term.
+    \item If $\tt x$ and $\tt u$ are terms, then $\tt (t\ u)$ is a term.
+    \item If $\tt x$ is a variable and $\tt t,T,u$ are terms, then $\tt let\ \ x:=t:T\ \ in\ \ u$ is a term.
+\end{enumerate}
+
+\subsection{Typing Rule}
+
+\subsubsection{Notation}
+\begin{itemize}
+\item $\mathcal S$ : $\{\tt Prop,Set\}$.
+\item $E$ : global environment.
+\item $\Gamma$ : local context.
+\item $\tt u\{x/t\}$ : substitute free occurrence of variable $\tt x$ to term $\tt t$ in term $\tt u$.
+\item $\mathcal{WF}(E)[\Gamma]$ : $E$ is well-formed and $\Gamma$ is valid in $E$.
+\end{itemize}
+
+\subsubsection{Typing Rules}
+\begin{equation*}
+\mathcal{WF}([])[] 
+    \tag{\sc T-Empty}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash {\tt T:s\qquad s\in\mathcal{S}\qquad x}\notin\Gamma}
+    {\mathcal{WF}(E)[\Gamma ::(\tt x:T)]} 
+    \tag{\sc T-Local-Ax}
+\end{equation*}
+\begin{equation*}
+\frac{E[]\vdash {\tt t:T\qquad c}\notin E}
+    {\mathcal{WF}(E:\tt c:=t:T)} 
+    \tag{\sc T-Local-Def}
+\end{equation*}
+\begin{equation*}
+\frac{\mathcal{WF}(E)[\Gamma]\qquad ({\tt x:T})\in\Gamma}
+    {E[\Gamma]\vdash\tt x:T} 
+    \tag{\sc T-Var1}
+\end{equation*}
+\begin{equation*}
+\frac{\mathcal{WF}(E)[\Gamma]\qquad ({\tt x:=t:T})\in\Gamma}
+    {E[\Gamma]\vdash\tt x:T} 
+    \tag{\sc T-Var2}
+\end{equation*}
+\begin{equation*}
+\frac{\mathcal{WF}(E)[\Gamma]\qquad ({\tt c:T})\in E}
+    {E[\Gamma]\vdash\tt c:T} 
+    \tag{\sc T-Const1}
+\end{equation*}
+\begin{equation*}
+\frac{\mathcal{WF}(E)[\Gamma]\qquad ({\tt c:=t:T})\in E}
+    {E[\Gamma]\vdash\tt c:T} 
+    \tag{\sc T-Const2}
+\end{equation*}
+
+\begin{equation*}
+\frac{E[\Gamma]\vdash{\tt T:s\qquad s\in\mathcal{S}}\qquad E[\Gamma::({\tt x:T})]\vdash\tt U:Prop}
+    {E[\Gamma]\vdash\tt\forall x:T,U:Prop} 
+    \tag{\sc T-Prod-Prop}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash{\tt T:s\qquad s\in\mathcal{S}}\qquad E[\Gamma::({\tt x:T})]\vdash\tt U:Set}
+    {E[\Gamma]\vdash\tt\forall x:T,U:Set} 
+    \tag{\sc T-Prod-Set}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash\forall{\tt x:T,U:s}\qquad E[\Gamma::({\tt x:T})]\vdash{\tt t:U}}
+    {E[\Gamma]\vdash\lambda{\tt x:T.\ t:\forall x:T,U}} 
+    \tag{\sc T-Abs}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash\forall{\tt x:U,T}\qquad E[\Gamma]\vdash{\tt u:U}}
+    {E[\Gamma]\vdash{\tt (t\ u):T\{x/u\}}} 
+    \tag{\sc T-App}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash{\tt t:T}\qquad E[\Gamma::({\tt x:=t:T})]\vdash{\tt u:U}}
+    {E[\Gamma]\vdash{\tt let\ \ x:=t:T\ \ in\ \ u:U\{x/t\}}} 
+    \tag{\sc T-Let}
+\end{equation*}
+
+\subsection{Conversion Rule}
+
+\subsubsection{Notation}
+\begin{itemize}
+    \item $E[\Gamma]\vdash \tt t\rhd u$ : $\tt t$ reduces to $\tt u$ in $E,\Gamma$ with 
+    one of the $\beta,\iota,\delta,\zeta$ reductions.
+    \item $E[\Gamma]\vdash \tt t\mathop{\rhd}\limits^* u$ : $E[\Gamma]\vdash\tt t\rhd\cdots\rhd u$.
+    \item $\tt u\equiv v$ : $\tt u$ and $\tt v$ are identical.
+\end{itemize}
+
+\subsubsection{Conversion Rules}
+\begin{equation*}
+\frac{E[\Gamma]\vdash(\lambda{\tt x:T.\ t})\ u}
+    {\tt t\{x/u\}}
+    \tag{\sc $\beta$-Conv}
+\end{equation*}
+\begin{equation*}
+\frac{\tt case((c_p\ q_1\ \cdots\ q_r\ a_1\ \cdots\ a_m),P,f_1|\cdots|f_n)}
+    {f_i\ a_1\ \cdots\ a_m}
+    \tag{\sc $\iota$-Conv}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash{\tt x}\qquad ({\tt x:=t:T})\in\Gamma}
+    {\tt t}
+    \tag{\sc $\delta$-Conv1}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash{\tt c}\qquad ({\tt x:=t:T})\in E}
+    {\tt t}
+    \tag{\sc $\delta$-Conv2}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash \tt let\ \ x:=u\ \ in\ \ t}
+    {\tt t\{x/u\}}
+    \tag{\sc $\zeta$-Conv}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash \tt t:\forall x:T,U\qquad x\text{ fresh in }t}
+    {\tt \lambda\tt x:T.\ (t\ x)}
+    \tag{\sc $\eta$-Exp}
+\end{equation*}
+
+\begin{Def}[Convertibility]
+$\tt t_1$ and $\tt t_2$ are convertible iff there exists $\tt u_1$ and $\tt u_2$ such that 
+$E[\Gamma]\vdash \tt t_1\mathop{\rhd}\limits^* u_1$ and $E[\Gamma]\vdash \tt t_2\mathop{\rhd}\limits^* u_2$ 
+and either $u_1\equiv u_2$ or they are convertible up to $\eta$-expansion.
+\end{Def}
+
+\subsection{Inductive Definition}
+

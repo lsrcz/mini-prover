@@ -9,9 +9,17 @@
 \usepackage{courier}
 \usepackage{longtable}
 
+\bibliographystyle{plain}
+
+\newtheorem{Def}{Definition}
+\newtheorem{Thm}{Theorem}
+
 \input{macros}
 
 \begin{document}
     \include{syntax}
-    \include{type}
+    \include{calculus}
+
+    \nocite{coqmanual}
+    \bibliography{reference}
 \end{document}
