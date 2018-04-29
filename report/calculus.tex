@@ -135,3 +135,78 @@ and either $u_1\equiv u_2$ or they are convertible up to $\eta$-expansion.
 
 \subsection{Inductive Definition}
 
+\subsubsection{Notation}
+\begin{itemize}
+    \item ${\tt Ind}[p](\Gamma_I:=\Gamma_C)$ : inductive definition.
+    \item $\Gamma_I$ : names and types of inductive type.
+    \item $\Gamma_C$ : names and types of constructors of inductive type.
+    \item $p$ : the number of parameters of inductive type.
+    \item $\Gamma_P$ : the context of parameters.
+\end{itemize}
+
+\subsubsection{Typing Rule}
+\begin{equation*}
+\frac{\mathcal{WF}(E)[\Gamma]\qquad {\tt Ind}[p](\Gamma_I:=\Gamma_C)\in E\qquad {\tt(a:A)}\in\Gamma_i}
+    {E[\Gamma]\vdash\tt a:A}
+    \tag{\sc T-Ind}
+\end{equation*}
+\begin{equation*}
+\frac{\mathcal{WF}(E)[\Gamma]\qquad {\tt Ind}[p](\Gamma_I:=\Gamma_C)\in E\qquad {\tt (c:C)}\in\Gamma_C}
+    {E[\Gamma]\vdash\tt c:C}
+    \tag{\sc T-Constr}
+\end{equation*}
+\begin{equation*}
+\frac{(E[\Gamma_P]\vdash{\tt A_j:s_j'})_{j=1..k}\qquad (E[\Gamma_i;\Gamma_P]\vdash{\tt C_i:s_{q_i}})_{i=1..n}}
+    {\mathcal{WF}(E;{\tt Ind}[p](\Gamma_I:=\Gamma_C))[\Gamma]}
+    \tag{\sc T-Wf-Ind}
+\end{equation*}
+
+\subsubsection{Well-formed Requirement}
+
+To maintain the consistency of the system, we must restrict the inductive definitions to a syntactic criterion of 
+\textbf{positivity}, which guarantees the \textit{soundness and safety} of the system.
+
+\begin{Def}[Constructor] 
+$\tt T$ is a \textit{type of constructor of }$\tt I$ if
+    \begin{itemize}\normalfont
+        \item $\tt T\equiv(\tt I\ t_1\ \cdots\ t_n)$
+        \item $\tt T\equiv\forall x:U,T'$, where $T'$ is a type of constructor of $\tt I$ 
+    \end{itemize}
+\end{Def}
+
+\begin{Def}[Positivity]
+The type of constructor $\tt T$ satisfies \textit{the positivity condition} for a constant $\tt X$ if
+    \begin{itemize}\normalfont
+        \item $\tt T\equiv (X\ t_1\ \cdots\ t_n)$ and $\tt X$ does not occur free in $\tt t_i$
+        \item $\tt T\equiv \forall x:U,V$ and $\tt X$ occurs only \textit{strictly positively} in $\tt U$ and 
+            $\tt V$ satisfies \textit{the positivity condition} for $\tt X$
+    \end{itemize}
+\end{Def}
+
+\begin{Def}[Strictly Positivity]
+The constant $\tt X$ occurs \textit{strictly positively} in $\tt T$ if 
+    \begin{itemize}\normalfont
+        \item $\tt X$ does not occur in $\tt T$
+        \item $\tt T\mathop{\rhd}^*\tt (X\ t_1\ \cdots\ t_n)$ and $\tt X$ does not occur in $\tt t_i$
+        \item $\tt T\mathop{\rhd}^*\tt \forall x:U,V$ and $\tt X$ does not occur in $\tt U$ but occurs
+            \textit{strictly positively} in $\tt V$
+        \item $\tt T\mathop{\rhd}^*\tt (I\ a_1\ \cdots\ a_m\ t_1\ \cdots\ t_p)$, where 
+            ${\tt Ind}[m](\tt I:A:=c_1:\forall p_1:P_1,\dots\forall p_m:P_m,C_1;\cdots;c_n:\forall p_1:P_1,\dots,
+            \forall p_m:P_m,C_n)$, and $\tt X$ does not occur in $t_i$, and the types of constructor 
+            $\tt C_i\{p_j/a_j\}_{j=1..m}$ satisfies \textit{the nested positivity condition} for $\tt X$ 
+    \end{itemize}
+\end{Def}
+
+\begin{Def}[Nested Positivity]
+The type of constructor $\tt T$ satisfies \textit{the nested positivity condition} for a constant $\tt X$ if
+    \begin{itemize}\normalfont
+        \item $\tt T\equiv(I\ b_1\ \cdots\ b_m\ u_1\ \cdots\ u_p)$, where $\tt I$ is an inductive definition with $m$
+            parameters and $\tt X$ does not occur in $u_i$
+        \item $\tt T\equiv\forall x:U,V$ and $\tt X$ occurs \textit{strictly positively} in $\tt U$ and $\tt V$
+            satisfies \textit{the nested positivity condition} for $\tt X$
+    \end{itemize}
+\end{Def}
+
+\section{Destructor}
+
+\section{Fixpoint}
