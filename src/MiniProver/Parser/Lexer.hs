@@ -1,5 +1,6 @@
 module MiniProver.Parser.Lexer (
-    symbol
+    Parser
+  , symbol
   , parens
   , colon
   , coloneq
