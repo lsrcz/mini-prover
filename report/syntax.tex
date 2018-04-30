@@ -11,7 +11,6 @@
         term 
             &$\Coloneqq$&\fforall{} binder \{binder\}, term\\
             &$\mid$&\ffun{} \{binder\} \darrow{} term\\
-            &$\mid$&\ffix{} fix\_body\\
             &$\mid$&\flet{} ident \{binder\} \scolon{}term \scoloneq{} term \fin{} term\\
             &$\mid$&term \sarrow{} term\\
             &$\mid$&term arg \{arg\}\\
@@ -26,8 +25,6 @@
             &$\Coloneqq$&(ident \scolon{} term)\\
         sort
             &$\Coloneqq$&\fProp{} $\mid$ \fSet{} $\mid$ \fType{}\\
-        fix\_body
-            &$\Coloneqq$&ident \{binder\} \scolon{}term \scoloneq{} term\\
         equation
             &$\Coloneqq$&pattern \darrow{} term\\
         pattern
@@ -45,6 +42,8 @@
         inductive
             &$\Coloneqq$&\fInductive{} ident \{binder\} \scolon{} term \scoloneq{}\\
             &&~~~~\{~$\mid$ ident \{binder\} \scolon{} term\} .\\
+        fixpoint
+            &$\Coloneqq$&\fFixpoint{} ident \{binder\} \scolon{} term \scoloneq{} term .\\
         assertion
             &$\Coloneqq$&\fTheorem{} ident \{binder\} \scolon{} term .\\
         proof
