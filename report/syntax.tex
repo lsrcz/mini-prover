@@ -23,10 +23,7 @@
         arg
             &$\Coloneqq$&term\\
         binder
-            &$\Coloneqq$&name \scolon{} term\\
-        name
-            &$\Coloneqq$&\_\\
-            &$\mid$&ident\\
+            &$\Coloneqq$&ident \scolon{} term\\
         sort
             &$\Coloneqq$&\fProp{} $\mid$ \fSet{} $\mid$ \fType{}\\
         fix\_body
@@ -34,7 +31,7 @@
         equation
             &$\Coloneqq$&pattern \darrow{} term\\
         pattern
-            &$\Coloneqq$&ident \{name\}\\\\\\
+            &$\Coloneqq$&ident \{ident\}\\\\\\
         sentence
             &$\Coloneqq$&axiom\\
             &$\mid$&definition\\
