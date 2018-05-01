@@ -8,7 +8,9 @@ module MiniProver.Parser.Lexer (
   , larrow
   , darrow
   , dot
+  , comma
   , underscore
+  , mid
   , rword
   , ident
   ) where
@@ -53,8 +55,14 @@ darrow = symbol "=>"
 dot :: Parser String
 dot = symbol "."
 
+comma :: Parser String
+comma = symbol ","
+
 underscore :: Parser String
 underscore = symbol "_"
+
+mid :: Parser String
+mid = symbol "|"
 
 rword :: String -> Parser ()
 rword w = (lexeme . try) (string w *> notFollowedBy alphaNumChar)
