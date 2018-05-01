@@ -11,6 +11,7 @@
         term 
             &$\Coloneqq$&\fforall{} binder \{binder\}, term\\
             &$\mid$&\ffun{} \{binder\} \darrow{} term\\
+            &$\mid$&\ffix{} ident binder \{binder\} \scolon{} term \scoloneq{} term\\
             &$\mid$&\flet{} ident \{binder\} \scolon{}term \scoloneq{} term \fin{} term\\
             &$\mid$&term \sarrow{} term\\
             &$\mid$&term arg \{arg\}\\
