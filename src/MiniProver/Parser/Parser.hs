@@ -4,6 +4,9 @@ import Text.Megaparsec
 import MiniProver.Core.Syntax
 import MiniProver.Parser.Lexer
 
+addBinderAbbr :: (Name -> Term -> Term -> Term) -> Term -> [(Name, Term)] -> Term
+addBinderAbbr abbrty = foldr (\(name, ty) acc -> abbrty name ty acc)
+
 psort :: Parser Sort
 psort = (Prop <$ rword "Prop")
     <|> (Set <$ rword "Set")
@@ -31,7 +34,7 @@ pforall = do
   binders <- some pbinder
   _ <- comma
   tm <- pterm
-  return $ foldr (\(name, ty) acc -> TmProd name ty acc) tm binders
+  return $ addBinderAbbr TmProd tm binders
 
 pfun :: Parser Term
 pfun = do
@@ -39,7 +42,21 @@ pfun = do
   binders <- many pbinder
   _ <- darrow
   tm <- pterm
-  return $ foldr (\(name,ty) acc -> TmLambda name ty acc) tm binders
+  return $ addBinderAbbr TmLambda tm binders
+
+pfix :: Parser Term
+pfix = do
+  _ <- rword "fix"
+  name <- ident
+  binders <- some pbinder
+  _ <- colon
+  ty <- pterm
+  _ <- coloneq
+  tm <- pterm
+  return $ TmFix
+    (TmLambda name
+      (addBinderAbbr TmProd ty binders)
+      (addBinderAbbr TmLambda tm binders))
 
 pletin :: Parser Term
 pletin = do
@@ -57,8 +74,8 @@ pletin = do
       return $ TmLetIn name ty tm bdy
     else
       return $ TmLetIn name
-        (foldr (\(namei,tyi) acc -> TmProd namei tyi acc) ty binders)
-        (foldr (\(namei,tyi) acc -> TmLambda namei tyi acc) tm binders)
+        (addBinderAbbr TmProd ty binders)
+        (addBinderAbbr TmLambda tm binders)
         bdy
 
 ptermnarrow :: Parser Term
@@ -108,3 +125,71 @@ pequation = do
   _ <- darrow
   tm <- pterm
   return $ Equation namelst tm
+
+paxiom :: Parser Command
+paxiom = do
+  _ <- rword "Axiom"
+  name <- ident
+  _ <- colon
+  ty <- pterm
+  _ <- dot
+  return $ Ax name ty
+
+pdefinition :: Parser Command
+pdefinition = do
+  _ <- rword "Definition"
+  name <- ident
+  binders <- many pbinder
+  _ <- colon
+  ty <- pterm
+  _ <- coloneq
+  tm <- pterm
+  _ <- dot
+  if null binders
+    then
+      return $ Def name ty tm
+    else
+      return $ Def name
+        (addBinderAbbr TmProd ty binders)
+        (addBinderAbbr TmLambda tm binders)
+
+pinductive :: Parser Command
+pinductive = do
+  _ <- rword "Inductive"
+  name <- ident
+  binders <- many pbinder
+  _ <- colon
+  arity <- pterm
+  _ <- coloneq
+  constrlst <- many pconstr
+  _ <- dot
+  return $ Ind name (length binders)
+    (addBinderAbbr TmProd arity binders)
+    (map 
+      (\(namec,tyc) ->
+        (namec,
+          addBinderAbbr TmProd tyc binders))
+      constrlst)
+
+pconstr :: Parser (Name, Term)
+pconstr = do
+  _ <- mid
+  name <- ident
+  _ <- colon
+  ty <- pterm
+  return (name, ty)
+
+pfixdefinition :: Parser Command
+pfixdefinition = do
+  _ <- rword "Fixpoint"
+  name <- ident
+  binders <- some pbinder
+  _ <- colon
+  ty <- pterm
+  _ <- coloneq
+  tm <- pterm
+  _ <- dot
+  return $ Fix name
+    (TmLambda name
+      (addBinderAbbr TmProd ty binders)
+      (addBinderAbbr TmLambda tm binders))

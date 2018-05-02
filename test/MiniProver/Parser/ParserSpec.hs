@@ -50,6 +50,31 @@ spec = do
           TmLambda "x" (TmSort Prop) 
           (TmLambda "y" (TmSort Set)
           (TmLambda "z" (TmSort Type) (TmSort Set)))
+    describe "tmfix" $
+      it "single" $
+        parse pfix "" "fix plus (x:nat) (y:nat):nat:=match x with |O => y|S xx => plus xx (S y) end" `shouldParse`
+          TmFix
+            (TmLambda "plus"
+              (TmProd "x"
+                (TmVar "nat")
+                (TmProd "y"
+                  (TmVar "nat")
+                  (TmVar "nat")))
+              (TmLambda "x"
+                (TmVar "nat")
+                (TmLambda "y"
+                  (TmVar "nat")
+                  (TmMatch
+                    (TmVar "x")
+                    [ Equation ["O"]
+                        (TmVar "y")
+                    , Equation ["S", "xx"]
+                        (TmAppl
+                          [ TmVar "plus"
+                          , TmVar "xx"
+                          , TmAppl
+                              [ TmVar "S"
+                              , TmVar "y"]])]))))
     describe "tmletin" $ do
       it "zero" $
         parse pletin "" "let f:Type:=Type in Set" `shouldParse`
@@ -261,7 +286,7 @@ spec = do
                     (TmProd "_"
                       (TmVar "d")
                       (TmVar "f")))))))
-    it "2" $
+    it "3" $
       parse pterm "" ("fun (a:forall (b:Set) (c:d->e->forall (p:q),p->q), c b) (b:forall (c:d),e) =>"
         ++ "let a (b:c) : d := e in "
         ++ "match a Set with |b c => forall (c:d), e end")
@@ -299,3 +324,106 @@ spec = do
                     (TmProd "c"
                       (TmVar "d")
                       (TmVar "e"))])))
+  describe "command" $ do
+    it "axiom" $
+      parse paxiom "" "Axiom a:b->c." `shouldParse`
+        Ax "a" (TmProd "_" (TmVar "b") (TmVar "c"))
+    it "definition" $
+      parse pdefinition "" "Definition a (b:c) (d:e) : f -> g := a b c." `shouldParse`
+        Def "a"
+          (TmProd "b"
+            (TmVar "c")
+            (TmProd "d"
+              (TmVar "e")
+              (TmProd "_"
+                (TmVar "f")
+                (TmVar "g"))))
+          (TmLambda "b"
+            (TmVar "c")
+            (TmLambda "d"
+              (TmVar "e")
+              (TmAppl
+                [ TmVar "a"
+                , TmVar "b"
+                , TmVar "c"])))
+    it "inductive" $
+      parse pinductive "" ("Inductive r1 (A:Set) (B:Type) : A -> A -> B -> B -> Prop :="
+        ++ "| p : forall (x:A),forall (y:B),forall (z:B), r1 A B x x y z | q : forall (x:A),forall (y:A),forall (z:B),r1 A B x y z z.") `shouldParse`
+        Ind "r1" 2
+          (TmProd "A"
+            (TmSort Set)
+            (TmProd "B"
+              (TmSort Type)
+              (TmProd "_"
+                (TmVar "A")
+                (TmProd "_"
+                  (TmVar "A")
+                  (TmProd "_"
+                    (TmVar "B")
+                    (TmProd "_"
+                      (TmVar "B")
+                      (TmSort Prop)))))))
+          [ ( "p",
+              TmProd "A"
+                (TmSort Set)
+                (TmProd "B"
+                  (TmSort Type)
+                  (TmProd "x"
+                    (TmVar "A")
+                    (TmProd "y"
+                      (TmVar "B")
+                      (TmProd "z"
+                        (TmVar "B")
+                        (TmAppl
+                          [ TmVar "r1"
+                          , TmVar "A"
+                          , TmVar "B"
+                          , TmVar "x"
+                          , TmVar "x"
+                          , TmVar "y"
+                          , TmVar "z" ]))))))
+              
+          , ( "q",
+              TmProd "A"
+                (TmSort Set)
+                (TmProd "B"
+                  (TmSort Type)
+                  (TmProd "x"
+                    (TmVar "A")
+                    (TmProd "y"
+                      (TmVar "A")
+                      (TmProd "z"
+                        (TmVar "B")
+                        (TmAppl
+                          [ TmVar "r1"
+                          , TmVar "A"
+                          , TmVar "B"
+                          , TmVar "x"
+                          , TmVar "y"
+                          , TmVar "z"
+                          , TmVar "z" ]))))))]
+    describe "fixpoint" $
+      it "single" $
+        parse pfixdefinition "" "Fixpoint plus (x:nat) (y:nat):nat:=match x with |O => y|S xx => plus xx (S y) end." `shouldParse`
+          Fix "plus"
+            (TmLambda "plus"
+              (TmProd "x"
+                (TmVar "nat")
+                (TmProd "y"
+                  (TmVar "nat")
+                  (TmVar "nat")))
+              (TmLambda "x"
+                (TmVar "nat")
+                (TmLambda "y"
+                  (TmVar "nat")
+                  (TmMatch
+                    (TmVar "x")
+                    [ Equation ["O"]
+                        (TmVar "y")
+                    , Equation ["S", "xx"]
+                        (TmAppl
+                          [ TmVar "plus"
+                          , TmVar "xx"
+                          , TmAppl
+                              [ TmVar "S"
+                              , TmVar "y"]])]))))
