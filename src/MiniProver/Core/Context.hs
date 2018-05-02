@@ -61,12 +61,12 @@ indexToBinding ctx idx =
     else Left IndexOutOfBound
 
 -- shifting
-tmMap :: (Index -> Index -> Term) -> Int -> Term -> Term
+tmMap :: (Name -> Index -> Index -> Term) -> Int -> Term -> Term
 tmMap onRel c t =
   let
     walk :: Int -> Term -> Term
     walk c' t' = case t' of
-      TmRel i -> onRel c' i
+      TmRel n i -> onRel n c' i
       TmAppl lst -> TmAppl $ map (walk c') lst
       TmProd name ty tm -> TmProd name (walk c' ty) (walk (c' + 1) tm)
       TmLambda name ty tm -> TmLambda name (walk c' ty) (walk (c' + 1) tm)
@@ -84,7 +84,7 @@ tmMap onRel c t =
 tmShiftAbove :: Int -> Int -> Term -> Term
 tmShiftAbove d =
   tmMap
-  (\c x -> if x >= c then TmRel (x + d) else TmRel x)
+  (\n c x -> if x >= c then TmRel n (x + d) else TmRel n x)
 
 tmShift :: Int -> Term -> Term
 tmShift d = tmShiftAbove d 0
@@ -92,7 +92,7 @@ tmShift d = tmShiftAbove d 0
 tmSubst :: Index -> Term -> Term -> Term
 tmSubst j s =
   tmMap
-  (\j' x -> if x == j' then tmShift j' s else TmRel x)
+  (\n j' x -> if x == j' then tmShift j' s else TmRel n x)
   j
 
 tmSubstTop :: Term -> Term -> Term

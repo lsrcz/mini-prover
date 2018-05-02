@@ -16,7 +16,7 @@ type Name = String
 type Index = Int
 
 data Term =
-    TmRel Index                     -- DeBruijn index, 1 based
+    TmRel Name Index                     -- DeBruijn index, 1 based
   | TmVar Name
   | TmAppl [Term]                   -- arguments
   | TmProd Name Term Term           -- binder source target
