@@ -5,7 +5,6 @@ module MiniProver.Core.Syntax (
   , Term(..)
   , Command(..)
   , Binding(..)
-  , Obj(..)
   , Constructor(..)
   , Equation(..)
   ) where
@@ -24,7 +23,7 @@ data Term =
   | TmFix Term
   | TmLetIn Name Term Term Term     -- binder type term body
   | TmIndType Name [Term]
-  -- | TmConstr Name [Term]
+  | TmConstr Name [Term]
   | TmSort Sort                     -- sort
   | TmMatch Term [Equation]         -- ind. Term [Equation]
   | DummyTm                         -- Just for testing
@@ -45,14 +44,10 @@ data Command =
 
 data Binding =
     NameBind
-  | IndTypeBind Int Term [Constructor]    -- num type constructors
+  | IndTypeBind Int
+  | ConstrBind
   | VarBind Term                          -- only for typing
-  | TmAbbBind Term (Maybe Term)           -- term type
-
-data Obj =
-    Constant Name (Maybe Term) Term -- name definition type
-  | Fixpoint Name Term              -- name function body
-  | Inductive Name Term [Constructor] -- Typename Arity (Constructor list)
+  | TmAbbBind Term (Maybe Term)           -- type term
   deriving (Eq, Show)
 
 data Constructor = Constructor Name Term deriving (Eq, Show)

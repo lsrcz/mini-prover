@@ -1,27 +1,27 @@
 module MiniProver.Core.Context (
     Context
-  , ContextError
+  , ContextError(..)
   , emptyContext
   , ctxLength
   , addBinding
+  , addName
   , isNameBound
   , pickFreshName
   , indexToName
   , nameToIndex
   , indexToBinding
-  , tmShiftAbove
-  , tmShift
-  , tmSubstTop
+  , checkAllNameBounded
   ) where
 
 import MiniProver.Core.Syntax
-import Data.List (findIndex)
+import Data.List (findIndex, group, sort, concatMap)
 
 type Context = [(Name, Binding)]
 
 data ContextError =
     IndexOutOfBound
   | UnboundName
+  deriving (Eq, Show)
 
 emptyContext :: Context
 emptyContext = []
@@ -31,6 +31,9 @@ ctxLength = length
 
 addBinding :: Context -> Name -> Binding -> Context
 addBinding ctx name bind = (name,bind) : ctx
+
+addName :: Context -> Name -> Context
+addName ctx name = addBinding ctx name NameBind
 
 isNameBound :: Context -> Name -> Bool
 isNameBound ctx name =
@@ -60,41 +63,36 @@ indexToBinding ctx idx =
     then Right $ snd $ ctx !! idx
     else Left IndexOutOfBound
 
--- shifting
-tmMap :: (Name -> Index -> Index -> Term) -> Int -> Term -> Term
-tmMap onRel c t =
-  let
-    walk :: Int -> Term -> Term
-    walk c' t' = case t' of
-      TmRel n i -> onRel n c' i
-      TmAppl lst -> TmAppl $ map (walk c') lst
-      TmProd name ty tm -> TmProd name (walk c' ty) (walk (c' + 1) tm)
-      TmLambda name ty tm -> TmLambda name (walk c' ty) (walk (c' + 1) tm)
-      TmFix tm -> TmFix (walk c' tm)
-      TmLetIn name ty tm bdy -> TmLetIn name (walk c' ty) (walk c' tm) (walk (c' + 1) bdy)
-      TmIndType name lst -> TmIndType name $ map (walk c') lst
-      TmMatch tm equlst -> TmMatch (walk c' tm) (map (walkequ c') equlst)
-      _ -> t'
-    walkequ :: Int -> Equation -> Equation
-    walkequ c' e' = case e' of
-      Equation namelst tm -> Equation namelst (walk (c' + length namelst - 1) tm)
-  in
-    walk c t
+unique :: (Eq a) => [a] -> [a]
+unique = map head . group
 
-tmShiftAbove :: Int -> Int -> Term -> Term
-tmShiftAbove d =
-  tmMap
-  (\n c x -> if x >= c then TmRel n (x + d) else TmRel n x)
+checkAllNameBounded :: Context -> Term -> [String]
+checkAllNameBounded _ (TmRel _ _) = error "This should not happen"
+checkAllNameBounded ctx (TmVar name) = if isNameBound ctx name then [] else [name]
+checkAllNameBounded ctx (TmAppl lst) = 
+  unique $ sort $ concatMap (checkAllNameBounded ctx) lst
+checkAllNameBounded ctx (TmProd name ty tm) = 
+  unique $ sort $ 
+    checkAllNameBounded ctx ty ++ 
+    checkAllNameBounded (addName ctx name) tm
+checkAllNameBounded ctx (TmLambda name ty tm) =
+  unique $ sort $ 
+    checkAllNameBounded ctx ty ++ 
+    checkAllNameBounded (addName ctx name) tm
+checkAllNameBounded ctx (TmFix tm) = checkAllNameBounded ctx tm
+checkAllNameBounded ctx (TmLetIn name ty tm bdy) =
+  unique $ sort $ 
+    checkAllNameBounded ctx ty ++ 
+    checkAllNameBounded ctx tm ++
+    checkAllNameBounded (addName ctx name) bdy
+checkAllNameBounded _ (TmIndType _ _) = error "This should not happen"
+checkAllNameBounded _ (TmSort _) = []
+checkAllNameBounded ctx (TmMatch tm equlst) = 
+  unique $ sort $
+    checkAllNameBounded ctx tm ++
+    concatMap (checkAllNameBoundedEqu ctx) equlst
 
-tmShift :: Int -> Term -> Term
-tmShift d = tmShiftAbove d 0
+checkAllNameBoundedEqu :: Context -> Equation -> [String]
+checkAllNameBoundedEqu ctx (Equation namelst tm) =
+  checkAllNameBounded (foldl addName ctx (tail namelst)) tm
 
-tmSubst :: Index -> Term -> Term -> Term
-tmSubst j s =
-  tmMap
-  (\n j' x -> if x == j' then tmShift j' s else TmRel n x)
-  j
-
-tmSubstTop :: Term -> Term -> Term
-tmSubstTop s t =
-  tmShift (-1) (tmSubst 0 (tmShift 1 s) t)

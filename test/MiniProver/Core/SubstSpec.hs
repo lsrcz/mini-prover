@@ -1,8 +1,8 @@
-module MiniProver.Parser.ContextSpec (main, spec) where
+module MiniProver.Core.SubstSpec (main, spec) where
 
 import Test.Hspec
 import MiniProver.Core.Syntax
-import MiniProver.Core.Context
+import MiniProver.Core.Subst
 
 main :: IO ()
 main = hspec spec
