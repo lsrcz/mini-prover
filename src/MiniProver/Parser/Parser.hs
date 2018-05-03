@@ -113,10 +113,14 @@ pmatch :: Parser Term
 pmatch = do
   _ <- rword "match"
   tm <- pterm
+  _ <- rword "in"
+  namelst <- some ident
+  _ <- rword "return"
+  rty <- pterm
   _ <- rword "with"
   eqs <- many pequation
   _ <- rword "end"
-  return $ TmMatch tm eqs
+  return $ TmMatch tm namelst rty eqs
 
 pequation :: Parser Equation
 pequation = do

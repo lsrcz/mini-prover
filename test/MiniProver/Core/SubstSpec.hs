@@ -108,11 +108,15 @@ spec = do
         it "all in one" $ 
           tmShiftAbove 2 2 
             (TmMatch (TmAppl [TmRel "A" 1, TmRel "B" 2, TmRel "C" 3])
+              ["a", "b", "c"]
+              (TmAppl [TmRel "A" 3, TmRel "B" 4, TmRel "C" 5])
               [ Equation ["a"] (TmAppl [TmRel "A" 1, TmRel "B" 2, TmRel "C" 3])
               , Equation ["a", "b"] (TmAppl [TmRel "A" 2, TmRel "B" 3, TmRel "C" 4])
               , Equation ["a", "b", "c"] (TmAppl [TmRel "A" 3, TmRel "B" 4, TmRel "C" 5])])
             `shouldBe`
             TmMatch (TmAppl [TmRel "A" 1, TmRel "B" 4, TmRel "C" 5])
+              ["a", "b", "c"]
+              (TmAppl [TmRel "A" 3, TmRel "B" 6, TmRel "C" 7])
               [ Equation ["a"] (TmAppl [TmRel "A" 1, TmRel "B" 4, TmRel "C" 5])
               , Equation ["a", "b"] (TmAppl [TmRel "A" 2, TmRel "B" 5, TmRel "C" 6])
               , Equation ["a", "b", "c"] (TmAppl [TmRel "A" 3, TmRel "B" 6, TmRel "C" 7])]
@@ -193,14 +197,18 @@ spec = do
           tmShift 2 (TmSort Type) `shouldBe` TmSort Type
       describe "TmMatch" $
         it "all in one" $ 
-          -- [A B] match A B with |a => A B |a b => b A B |a b c => b A B end
+          -- [A B] match A B in a b c return A B b c with |a => A B |a b => b A B |a b c => b A B end
           tmShift 2
             (TmMatch (TmAppl [TmRel "A" 0, TmRel "B" 1])
+              ["a", "b", "c"]
+              (TmAppl [TmRel "A" 2, TmRel "B" 3, TmRel "b" 1, TmRel "c" 0])
               [ Equation ["a"] (TmAppl [TmRel "A" 0, TmRel "B" 1])
               , Equation ["a", "b"] (TmAppl [TmRel "b" 0, TmRel "A" 1, TmRel "B" 2])
               , Equation ["a", "b", "c"] (TmAppl [TmRel "b" 1, TmRel "A" 2, TmRel "B" 3])])
             `shouldBe`
             TmMatch (TmAppl [TmRel "A" 2, TmRel "B" 3])
+              ["a", "b", "c"]
+              (TmAppl [TmRel "A" 4, TmRel "B" 5, TmRel "b" 1, TmRel "c" 0])
               [ Equation ["a"] (TmAppl [TmRel "A" 2, TmRel "B" 3])
               , Equation ["a", "b"] (TmAppl [TmRel "b" 0, TmRel "A" 3, TmRel "B" 4])
               , Equation ["a", "b", "c"] (TmAppl [TmRel "b" 1, TmRel "A" 4, TmRel "B" 5])]
@@ -289,15 +297,19 @@ spec = do
           tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1]) (TmSort Type) `shouldBe` TmSort Type
       describe "TmMatch" $
         it "all in one" $
-          -- (lambda. match 0 1 with |a => 0 1|a b => 0 1 2|a b c => 1 2 3 end)(0 1) => 
+          -- (lambda. match 0 1 in r s t return 0 1 2 3 4 with |a => 0 1|a b => 0 1 2|a b c => 1 2 3 end)(0 1) => 
           -- match (0 1) 0 with |a => (0 1) 0|a b => 0 (1 2) 1|a b c => 1 (2 3) 2
           tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1])
             (TmMatch (TmAppl [TmRel "x" 0, TmRel "a" 1])
+              ["r", "s", "t"]
+              (TmAppl [TmRel "t" 0, TmRel "s" 1, TmRel "x" 2, TmRel "a" 3, TmRel "b" 4])
               [ Equation ["A"] (TmAppl [TmRel "x" 0, TmRel "a" 1])
               , Equation ["A", "B"] (TmAppl [TmRel "B" 0, TmRel "x" 1, TmRel "a" 2])
               , Equation ["A", "B", "c"] (TmAppl [TmRel "B" 1, TmRel "x" 2, TmRel "a" 3])])
             `shouldBe`
             TmMatch (TmAppl [TmAppl [TmRel "a" 0, TmRel "b" 1], TmRel "a" 0])
+              ["r", "s", "t"]
+              (TmAppl [TmRel "t" 0, TmRel "s" 1, TmAppl [TmRel "a" 2, TmRel "b" 3], TmRel "a" 2, TmRel "b" 3])
               [ Equation ["A"] 
                 (TmAppl [TmAppl [TmRel "a" 0, TmRel "b" 1], TmRel "a" 0])
               , Equation ["A", "B"] 

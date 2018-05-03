@@ -22,16 +22,16 @@ data Term =
   | TmLambda Name Term Term         -- binder source target
   | TmFix Term
   | TmLetIn Name Term Term Term     -- binder type term body
-  | TmIndType Name [Term]
-  | TmConstr Name [Term]
+  | TmIndType Name [Term]           -- should only be empty or full, empty refers to the type constructor, full refers to the type
+  | TmConstr Name [Term]            -- should only be empty or full, empty refers to the constructor, full refers to the term
   | TmSort Sort                     -- sort
-  | TmMatch Term [Equation]         -- ind. Term [Equation]
+  | TmMatch Term [Name] Term [Equation]  -- ind. Term [Names] RetType [Equation]
   | DummyTm                         -- Just for testing
   deriving (Eq, Show)
 
 data Command =
-    Ax Name Term
-  | Def Name Term Term
+    Ax Name Term                     -- name type
+  | Def Name Term Term               -- name type term
   | Ind Name Int Term [(Name, Term)]
   | Fix Name Term
   | Theorem Name Term
@@ -44,13 +44,12 @@ data Command =
 
 data Binding =
     NameBind
-  | IndTypeBind Int
-  | ConstrBind
-  | VarBind Term                          -- only for typing
-  | TmAbbBind Term (Maybe Term)           -- type term
+  | IndTypeBind Int Term Term [Constructor]    -- numOfArguments type term
+  | VarBind Term                               -- only for typing
+  | TmAbbBind Term (Maybe Term)                -- type term
   deriving (Eq, Show)
 
-data Constructor = Constructor Name Term deriving (Eq, Show)
+data Constructor = Constructor Name Term Term deriving (Eq, Show)  -- type term
 
 data Equation = Equation [Name] Term deriving (Eq, Show)
 

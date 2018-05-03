@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 module MiniProver.Core.Context (
     Context
   , ContextError(..)
@@ -21,6 +22,8 @@ type Context = [(Name, Binding)]
 data ContextError =
     IndexOutOfBound
   | UnboundName
+  | IsTypeConstructor
+  | IsConstructor
   deriving (Eq, Show)
 
 emptyContext :: Context
@@ -37,7 +40,16 @@ addName ctx name = addBinding ctx name NameBind
 
 isNameBound :: Context -> Name -> Bool
 isNameBound ctx name =
-  any (\(n,_) -> name == n) ctx
+  let
+    nameBoundInBinding :: (Name, Binding) -> Bool
+    nameBoundInBinding (n,b) =
+      name == n ||
+        case b of
+          IndTypeBind _ _ _ lst ->
+            any (\case Constructor namei _ _ -> namei == n) lst
+          _ -> False
+  in
+    any nameBoundInBinding ctx
   
 pickFreshName :: Context -> Name -> (Context, Name)
 pickFreshName ctx name =
@@ -52,10 +64,17 @@ indexToName ctx idx =
     else Left IndexOutOfBound
 
 nameToIndex :: Context -> Name -> Either ContextError Index
-nameToIndex ctx name =
-  case findIndex ((==name) . fst) ctx of
-    Nothing -> Left UnboundName
-    Just idx -> Right idx
+nameToIndex [] _ = Left UnboundName
+nameToIndex ((nameb,binder):xs) name =
+  case binder of
+    IndTypeBind _ _ _ constrlst
+      | nameb == name -> Left IsTypeConstructor
+      | any (\case Constructor namec _ _ -> name == namec) constrlst ->
+          Left IsConstructor
+      | otherwise -> (+1) <$> nameToIndex xs name
+    _
+      | nameb == name -> Right 0
+      | otherwise -> (+1) <$> nameToIndex xs name
 
 indexToBinding :: Context -> Index -> Either ContextError Binding
 indexToBinding ctx idx =
@@ -87,9 +106,10 @@ checkAllNameBounded ctx (TmLetIn name ty tm bdy) =
     checkAllNameBounded (addName ctx name) bdy
 checkAllNameBounded _ (TmIndType _ _) = error "This should not happen"
 checkAllNameBounded _ (TmSort _) = []
-checkAllNameBounded ctx (TmMatch tm equlst) = 
+checkAllNameBounded ctx (TmMatch tm namelst rty equlst) = 
   unique $ sort $
     checkAllNameBounded ctx tm ++
+    checkAllNameBounded (foldl addName ctx (tail namelst)) rty ++
     concatMap (checkAllNameBoundedEqu ctx) equlst
 
 checkAllNameBoundedEqu :: Context -> Equation -> [String]

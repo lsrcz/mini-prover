@@ -19,7 +19,8 @@ tmMap onRel c t =
       TmFix tm -> TmFix (walk c' tm)
       TmLetIn name ty tm bdy -> TmLetIn name (walk c' ty) (walk c' tm) (walk (c' + 1) bdy)
       TmIndType name lst -> TmIndType name $ map (walk c') lst
-      TmMatch tm equlst -> TmMatch (walk c' tm) (map (walkequ c') equlst)
+      TmMatch tm namelst rty equlst -> 
+        TmMatch (walk c' tm) namelst (walk (c' + length namelst - 1) rty) (map (walkequ c') equlst)
       _ -> t'
     walkequ :: Int -> Equation -> Equation
     walkequ c' e' = case e' of

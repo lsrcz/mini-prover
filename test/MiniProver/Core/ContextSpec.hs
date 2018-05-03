@@ -59,6 +59,18 @@ spec =
         nameToIndex [("a", VarBind (TmRel "a" 1)), ("a", NameBind)] "a" `shouldBe` Right 0
       it "bounded tail" $
         nameToIndex [("a", VarBind (TmRel "a" 1)), ("a", NameBind), ("b", NameBind)] "b" `shouldBe` Right 2
+      it "type constructor" $
+        nameToIndex [("A", IndTypeBind 1 (TmRel "a" 1) (TmRel "b" 1) 
+                           [ Constructor "B" (TmRel "a" 1) (TmRel "b" 1)
+                           , Constructor "C" (TmRel "a" 1) (TmRel "b" 1)])] "A"
+          `shouldBe`
+          Left IsTypeConstructor
+      it "constructor" $
+        nameToIndex [("A", IndTypeBind 1 (TmRel "a" 1) (TmRel "b" 1) 
+                           [ Constructor "B" (TmRel "a" 1) (TmRel "b" 1)
+                           , Constructor "C" (TmRel "a" 1) (TmRel "b" 1)])] "C"
+          `shouldBe`
+          Left IsConstructor
     describe "indexToBinding" $ do
       it "bounded" $
         indexToBinding [("a", NameBind)] 0 `shouldBe` Right NameBind
@@ -165,22 +177,29 @@ spec =
       describe "TmMatch" $ do
         it "bounded" $
           checkAllNameBounded ctx
-            (TmMatch (TmVar "A")
+            (TmMatch (TmVar "A") ["t","r"] (TmAppl [TmVar "A", TmVar "r"])
               [ Equation ["a"] (TmVar "A")
               , Equation ["a", "b"] (TmAppl [TmVar "A", TmVar "b"])])
           `shouldBe`
           []
         it "unbounded tm" $
           checkAllNameBounded ctx
-            (TmMatch (TmVar "x")
+            (TmMatch (TmVar "x") ["t","r"] (TmAppl [TmVar "A", TmVar "r"])
               [ Equation ["a"] (TmVar "A")
               , Equation ["a", "b"] (TmAppl [TmVar "A", TmVar "b"])])
           `shouldBe`
           ["x"]
         it "unbounded branch constr" $
           checkAllNameBounded ctx
-            (TmMatch (TmVar "A")
+            (TmMatch (TmVar "A") ["t","r"] (TmAppl [TmVar "A", TmVar "r"])
               [ Equation ["a"] (TmAppl [TmVar "A", TmVar "a"])
               , Equation ["a", "b"] (TmAppl [TmVar "A", TmVar "b"])])
           `shouldBe`
           ["a"]
+        it "unbounded rty" $
+          checkAllNameBounded ctx
+            (TmMatch (TmVar "A") ["t","r"] (TmAppl [TmVar "A", TmVar "t"])
+              [ Equation ["a"] (TmVar "A")
+              , Equation ["a", "b"] (TmAppl [TmVar "A", TmVar "b"])])
+          `shouldBe`
+          ["t"]

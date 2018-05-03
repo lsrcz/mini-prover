@@ -69,7 +69,7 @@ rword w = (lexeme . try) (string w *> notFollowedBy alphaNumChar)
 
 rws :: [String]
 rws = [
-    "forall", "fun", "fix", "let", "in", "match", "with", "end", "Prop"
+    "forall", "fun", "fix", "let", "in", "match", "return", "with", "end", "Prop"
   , "Set", "Type", "Axiom", "Definition", "Inductive", "Fixpoint", "Theorem"
   , "Proof", "Qed", "exact", "apply", "intro", "intros", "destruct", "induction"
   , "rewrite", "simpl", "reflexivity", "symmetry", "Print", "Check", "Undo"

@@ -52,7 +52,7 @@ spec = do
           (TmLambda "z" (TmSort Type) (TmSort Set)))
     describe "tmfix" $
       it "single" $
-        parse pfix "" "fix plus (x:nat) (y:nat):nat:=match x with |O => y|S xx => plus xx (S y) end" `shouldParse`
+        parse pfix "" "fix plus (x:nat) (y:nat):nat:=match x in nat return nat with |O => y|S xx => plus xx (S y) end" `shouldParse`
           TmFix
             (TmLambda "plus"
               (TmProd "x"
@@ -66,6 +66,8 @@ spec = do
                   (TmVar "nat")
                   (TmMatch
                     (TmVar "x")
+                    [ "nat" ]
+                    (TmVar "nat")
                     [ Equation ["O"]
                         (TmVar "y")
                     , Equation ["S", "xx"]
@@ -142,18 +144,21 @@ spec = do
             Equation ["a","b","c"] (TmSort Set)
       describe "match" $ do
         it "empty" $
-          parse pmatch "" "match Set with end" `shouldParse` 
-            TmMatch (TmSort Set) []
+          parse pmatch "" "match Set in x return x with end" `shouldParse` 
+            TmMatch (TmSort Set) ["x"] (TmVar "x") []
         it "single" $
-          parse pmatch "" "match Set with |a => Set end" `shouldParse` 
-            TmMatch (TmSort Set) [Equation ["a"] (TmSort Set)]
+          parse pmatch "" "match Set in x return x with |a => Set end" `shouldParse` 
+            TmMatch (TmSort Set) ["x"] (TmVar "x") [Equation ["a"] (TmSort Set)]
         it "multiple" $
-          parse pmatch "" "match Set with |a => Set |b c=>Prop|c=>Type end" `shouldParse` 
-            TmMatch (TmSort Set) [
+          parse pmatch "" "match Set in x return x with |a => Set |b c=>Prop|c=>Type end" `shouldParse` 
+            TmMatch (TmSort Set) ["x"] (TmVar "x") [
                 Equation ["a"] (TmSort Set)
               , Equation ["b", "c"] (TmSort Prop)
               , Equation ["c"] (TmSort Type)
               ]
+        it "long type" $
+          parse pmatch "" "match Set in x y z return x y z with |a => Set end" `shouldParse` 
+            TmMatch (TmSort Set) ["x", "y", "z"] (TmAppl [TmVar "x", TmVar "y", TmVar "z"]) [Equation ["a"] (TmSort Set)]
   describe "simple term" $ do
     describe "tmsort" $ do
       it "Prop" $
@@ -245,18 +250,21 @@ spec = do
             TmAppl [TmSort Type, TmSort Set, TmSort Prop]
       describe "match" $ do
         it "empty" $
-          parse pterm "" "match Set with end" `shouldParse` 
-            TmMatch (TmSort Set) []
+          parse pterm "" "match Set in x return x with end" `shouldParse` 
+            TmMatch (TmSort Set) ["x"] (TmVar "x") []
         it "single" $
-          parse pterm "" "match Set with |a => Set end" `shouldParse` 
-            TmMatch (TmSort Set) [Equation ["a"] (TmSort Set)]
+          parse pterm "" "match Set in x return x with |a => Set end" `shouldParse` 
+            TmMatch (TmSort Set) ["x"] (TmVar "x") [Equation ["a"] (TmSort Set)]
         it "multiple" $
-          parse pterm "" "match Set with |a => Set |b c=>Prop|c=>Type end" `shouldParse` 
-            TmMatch (TmSort Set) [
+          parse pterm "" "match Set in x return x with |a => Set |b c=>Prop|c=>Type end" `shouldParse` 
+            TmMatch (TmSort Set) ["x"] (TmVar "x") [
                 Equation ["a"] (TmSort Set)
               , Equation ["b", "c"] (TmSort Prop)
               , Equation ["c"] (TmSort Type)
               ]
+        it "long type" $
+          parse pterm "" "match Set in x y z return x y z with |a => Set end" `shouldParse` 
+            TmMatch (TmSort Set) ["x", "y", "z"] (TmAppl [TmVar "x", TmVar "y", TmVar "z"]) [Equation ["a"] (TmSort Set)]
   describe "complex term" $ do
     it "var" $
       parse pterm "" "a" `shouldParse` TmVar "a"
@@ -289,7 +297,7 @@ spec = do
     it "3" $
       parse pterm "" ("fun (a:forall (b:Set) (c:d->e->forall (p:q),p->q), c b) (b:forall (c:d),e) =>"
         ++ "let a (b:c) : d := e in "
-        ++ "match a Set with |b c => forall (c:d), e end")
+        ++ "match a Set in x return x with |b c => forall (c:d), e end")
         `shouldParse`
         TmLambda "a"
           (TmProd "b"
@@ -320,6 +328,8 @@ spec = do
                 (TmAppl
                   [ TmVar "a"
                   , TmSort Set ])
+                [ "x" ]
+                (TmVar "x")
                 [ Equation ["b", "c"]
                     (TmProd "c"
                       (TmVar "d")
@@ -404,7 +414,7 @@ spec = do
                           , TmVar "z" ]))))))]
     describe "fixpoint" $
       it "single" $
-        parse pfixdefinition "" "Fixpoint plus (x:nat) (y:nat):nat:=match x with |O => y|S xx => plus xx (S y) end." `shouldParse`
+        parse pfixdefinition "" "Fixpoint plus (x:nat) (y:nat):nat:=match x in t return t with |O => y|S xx => plus xx (S y) end." `shouldParse`
           Fix "plus"
             (TmLambda "plus"
               (TmProd "x"
@@ -418,6 +428,8 @@ spec = do
                   (TmVar "nat")
                   (TmMatch
                     (TmVar "x")
+                    [ "t" ]
+                    (TmVar "t")
                     [ Equation ["O"]
                         (TmVar "y")
                     , Equation ["S", "xx"]
