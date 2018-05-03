@@ -11,7 +11,6 @@
         term 
             &$\Coloneqq$&\fforall{} binder \{binder\}, term\\
             &$\mid$&\ffun{} \{binder\} \darrow{} term\\
-            &$\mid$&\ffix{} fix\_body\\
             &$\mid$&\flet{} ident \{binder\} \scolon{}term \scoloneq{} term \fin{} term\\
             &$\mid$&term \sarrow{} term\\
             &$\mid$&term arg \{arg\}\\
@@ -23,18 +22,13 @@
         arg
             &$\Coloneqq$&term\\
         binder
-            &$\Coloneqq$&name \scolon{} term\\
-        name
-            &$\Coloneqq$&\_\\
-            &$\mid$&ident\\
+            &$\Coloneqq$&(ident \scolon{} term)\\
         sort
             &$\Coloneqq$&\fProp{} $\mid$ \fSet{} $\mid$ \fType{}\\
-        fix\_body
-            &$\Coloneqq$&ident \{binder\} \scolon{}term \scoloneq{} term\\
         equation
             &$\Coloneqq$&pattern \darrow{} term\\
         pattern
-            &$\Coloneqq$&ident \{name\}\\\\\\
+            &$\Coloneqq$&ident \{ident\}\\\\\\
         sentence
             &$\Coloneqq$&axiom\\
             &$\mid$&definition\\
@@ -47,7 +41,9 @@
             &$\Coloneqq$&\fDefinition{} ident \{binder\} \scolon{} term \scoloneq{} term .\\
         inductive
             &$\Coloneqq$&\fInductive{} ident \{binder\} \scolon{} term \scoloneq{}\\
-            &&~~~~\{~$\mid$ ident \{binder\} \scolon{} term\} .\\
+            &&~~~~\{~$\mid$ ident \scolon{} term\} .\\
+        fixpoint
+            &$\Coloneqq$&\fFixpoint{} ident \{binder\} \scolon{} term \scoloneq{} term .\\
         assertion
             &$\Coloneqq$&\fTheorem{} ident \{binder\} \scolon{} term .\\
         proof

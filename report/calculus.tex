@@ -102,7 +102,7 @@
     \tag{\sc $\beta$-Conv}
 \end{equation*}
 \begin{equation*}
-\frac{\tt case((c_p\ q_1\ \cdots\ q_r\ a_1\ \cdots\ a_m),P,f_1|\cdots|f_n)}
+\frac{\tt case((c_p\ q_1\ \cdots\ q_r\ a_1\ \cdots\ a_m),f_1|\cdots|f_n)}
     {f_i\ a_1\ \cdots\ a_m}
     \tag{\sc $\iota$-Conv}
 \end{equation*}
@@ -207,6 +207,41 @@ The type of constructor $\tt T$ satisfies \textit{the nested positivity conditio
     \end{itemize}
 \end{Def}
 
-\section{Destructor}
+\section{Sugar and Desugar}
 
-\section{Fixpoint}
+\subsection{Match}
+\begin{Def}[Desugar of \tt match]
+    \begin{equation*}
+    \frac{\tt match\ m\ with\ (c_1\ x_{11}\ \cdots\ x_{1p_1})\Rightarrow f_1\ |\ \cdots\ |\ (c_n\ x_{n1}\ \cdots\ x_{np_n})
+        \Rightarrow f_n\ end}
+        {\tt case(m,\lambda x_{11}\cdots x_{1p_1}.\ f_1\ |\ \cdots\ |\lambda x_{n1}\cdots x_{np_n}.\ f_n)}
+        \tag{\sc D-Match}
+    \end{equation*}
+\end{Def}
+
+TYPING RULE REQUIRES
+
+\begin{equation*}
+\frac{\tt case((c_p\ q_1\ \cdots\ q_r\ a_1\ \cdots\ a_m),f_1|\cdots|f_n)}
+    {f_i\ a_1\ \cdots\ a_m}
+    \tag{\sc $\iota$-Conv}
+\end{equation*}
+
+\subsection{Fixpoint}
+\begin{Def}[Desugar of \tt fix]
+    \begin{equation*}
+    \frac{\tt fix\ f_1(\Gamma_1):A_1:=t_1\ with\cdots with\ f_n(\Gamma_n):A_n:=t_n\ for f_i}
+        {qqq}
+        \tag{\sc D-Fix}
+    \end{equation*}
+\end{Def}
+
+\subsection{Let}
+
+\begin{Def}[Desugar of \tt let]
+\begin{equation*}
+\frac{E[\Gamma]\vdash \tt let\ \ x:=u\ \ in\ \ t}
+    {\tt t\{x/u\}}
+    \tag{\sc $\zeta$-Conv}
+\end{equation*}
+\end{Def}
