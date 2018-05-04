@@ -356,65 +356,184 @@ spec = do
                 [ TmVar "a"
                 , TmVar "b"
                 , TmVar "c"])))
-    it "inductive" $
-      parse pinductive "" ("Inductive r1 (A:Set) (B:Type) : A -> A -> B -> B -> Prop :="
-        ++ "| p : forall (x:A),forall (y:B),forall (z:B), r1 A B x x y z | q : forall (x:A),forall (y:A),forall (z:B),r1 A B x y z z.") `shouldParse`
-        Ind "r1" 2
-          (TmProd "A"
-            (TmSort Set)
-            (TmProd "B"
-              (TmSort Type)
-              (TmProd "_"
-                (TmVar "A")
+    describe "inductive" $ do
+      it "simple" $
+        parse pinductive "" ("Inductive r1 (A:Set) (B:Type) : A -> A -> B -> B -> Prop :="
+          ++ "| p : forall (x:A),forall (y:B),forall (z:B), r1 A B x x y z "
+          ++ "| q : forall (x:A),forall (y:A),forall (z:B),r1 A B x y z z.") `shouldParse`
+          Ind "r1" 2
+            (TmProd "A"
+              (TmSort Set)
+              (TmProd "B"
+                (TmSort Type)
                 (TmProd "_"
                   (TmVar "A")
                   (TmProd "_"
-                    (TmVar "B")
+                    (TmVar "A")
                     (TmProd "_"
                       (TmVar "B")
-                      (TmSort Prop)))))))
-          [ ( "p",
-              TmProd "A"
-                (TmSort Set)
-                (TmProd "B"
-                  (TmSort Type)
-                  (TmProd "x"
+                      (TmProd "_"
+                        (TmVar "B")
+                        (TmSort Prop)))))))
+            (TmLambda "A"
+              (TmSort Set)
+              (TmLambda "B"
+                (TmSort Type)
+                (TmLambda ".0"
+                  (TmVar "A")
+                  (TmLambda ".1"
                     (TmVar "A")
-                    (TmProd "y"
+                    (TmLambda ".2"
                       (TmVar "B")
-                      (TmProd "z"
+                      (TmLambda ".3"
                         (TmVar "B")
-                        (TmAppl
-                          [ TmVar "r1"
-                          , TmVar "A"
-                          , TmVar "B"
-                          , TmVar "x"
-                          , TmVar "x"
-                          , TmVar "y"
-                          , TmVar "z" ]))))))
-              
-          , ( "q",
-              TmProd "A"
-                (TmSort Set)
-                (TmProd "B"
-                  (TmSort Type)
-                  (TmProd "x"
-                    (TmVar "A")
-                    (TmProd "y"
+                        (TmIndType "r1" 
+                          [ TmVar "A", TmVar "B", TmVar ".0"
+                          , TmVar ".1", TmVar ".2", TmVar ".3"])))))))
+            [ ( "p"
+              , TmProd "A"
+                  (TmSort Set)
+                  (TmProd "B"
+                    (TmSort Type)
+                    (TmProd "x"
                       (TmVar "A")
-                      (TmProd "z"
+                      (TmProd "y"
                         (TmVar "B")
-                        (TmAppl
-                          [ TmVar "r1"
-                          , TmVar "A"
-                          , TmVar "B"
-                          , TmVar "x"
-                          , TmVar "y"
-                          , TmVar "z"
-                          , TmVar "z" ]))))))]
+                        (TmProd "z"
+                          (TmVar "B")
+                          (TmIndType "r1"
+                            [ TmVar "A"
+                            , TmVar "B"
+                            , TmVar "x"
+                            , TmVar "x"
+                            , TmVar "y"
+                            , TmVar "z" ])))))
+              , TmLambda "A"
+                  (TmSort Set)
+                  (TmLambda "B"
+                    (TmSort Type)
+                    (TmLambda "x"
+                      (TmVar "A")
+                      (TmLambda "y"
+                        (TmVar "B")
+                        (TmLambda "z"
+                          (TmVar "B")
+                          (TmConstr "p" 
+                            [TmVar "A", TmVar "B", TmVar "x", TmVar "y", TmVar "z"]))))))
+            , ( "q",
+                TmProd "A"
+                  (TmSort Set)
+                  (TmProd "B"
+                    (TmSort Type)
+                    (TmProd "x"
+                      (TmVar "A")
+                      (TmProd "y"
+                        (TmVar "A")
+                        (TmProd "z"
+                          (TmVar "B")
+                          (TmIndType "r1"
+                            [ TmVar "A"
+                            , TmVar "B"
+                            , TmVar "x"
+                            , TmVar "y"
+                            , TmVar "z"
+                            , TmVar "z" ])))))
+                , TmLambda "A"
+                  (TmSort Set)
+                  (TmLambda "B"
+                    (TmSort Type)
+                    (TmLambda "x"
+                      (TmVar "A")
+                      (TmLambda "y"
+                        (TmVar "A")
+                        (TmLambda "z"
+                          (TmVar "B")
+                          (TmConstr "q" 
+                            [TmVar "A", TmVar "B", TmVar "x", TmVar "y", TmVar "z"]))))))]
+      it "le" $
+        parse pinductive "" ("Inductive le (x:nat):nat->Prop:= "
+          ++ "|lerefl:le x x|leS:forall (y:nat), (le x y) -> (le x (S y)).")
+          `shouldParse`
+          Ind "le" 1
+            (TmProd "x"
+              (TmVar "nat")
+              (TmProd "_"
+                (TmVar "nat")
+                (TmSort Prop)))
+            (TmLambda "x"
+              (TmVar "nat")
+              (TmLambda ".0"
+                (TmVar "nat")
+                (TmIndType "le" [TmVar "x", TmVar ".0"])))
+            [ ( "lerefl"
+              , TmProd "x"
+                  (TmVar "nat")
+                  (TmIndType "le" [TmVar "x", TmVar "x"])
+              , TmLambda "x"
+                  (TmVar "nat")
+                  (TmConstr "lerefl" [TmVar "x"]))
+            , ( "leS"
+              , TmProd "x"
+                  (TmVar "nat")
+                  (TmProd "y"
+                    (TmVar "nat")
+                    (TmProd "_"
+                      (TmIndType "le" [TmVar "x", TmVar "y"])
+                      (TmIndType "le" [TmVar "x", TmAppl [TmVar "S", TmVar "y"]])))
+              , TmLambda "x"
+                  (TmVar "nat")
+                  (TmLambda "y"
+                    (TmVar "nat")
+                    (TmLambda ".0"
+                      (TmIndType "le" [TmVar "x", TmVar "y"])
+                      (TmConstr "leS" [TmVar "x", TmVar "y", TmVar ".0"]))))]
+      it "btree" $
+        parse pinductive "" ("Inductive btree (x:Type) : Type :="
+          ++ "| leaf : x -> btree x"
+          ++ "| node : x -> btree x -> btree x -> btree x.") `shouldParse`
+          Ind "btree" 1
+            (TmProd "x"
+              (TmSort Type)
+              (TmSort Type))
+            (TmLambda "x"
+              (TmSort Type)
+              (TmIndType "btree" [TmVar "x"]))
+            [ ( "leaf"
+              , TmProd "x"
+                  (TmSort Type)
+                  (TmProd "_"
+                    (TmVar "x")
+                    (TmIndType "btree" [TmVar "x"]))
+              , TmLambda "x"
+                  (TmSort Type)
+                  (TmLambda ".0"
+                    (TmVar "x")
+                    (TmConstr "leaf" [TmVar "x", TmVar ".0"])))
+            , ( "node"
+              , TmProd "x"
+                ( TmSort Type )
+                ( TmProd "_"
+                  ( TmVar "x" )
+                  ( TmProd "_"
+                    ( TmIndType "btree" [TmVar "x"] )
+                    ( TmProd "_"
+                      ( TmIndType "btree" [TmVar "x"] )
+                      ( TmIndType "btree" [TmVar "x"] ))))
+              , TmLambda "x"
+                ( TmSort Type )
+                ( TmLambda ".0"
+                  ( TmVar "x" )
+                  ( TmLambda ".1"
+                    ( TmIndType "btree" [TmVar "x"] )
+                    ( TmLambda ".2"
+                      ( TmIndType "btree" [TmVar "x"] )
+                      ( TmConstr "node" [TmVar "x", TmVar ".0", TmVar ".1", TmVar ".2"])))))]
     describe "fixpoint" $
       it "single" $
-        parse pfixdefinition "" "Fixpoint plus (x:nat) (y:nat):nat:=match x in t return t with |O => y|S xx => plus xx (S y) end." `shouldParse`
+        parse pfixdefinition "" 
+          ( "Fixpoint plus (x:nat) (y:nat):nat:="
+          ++ "match x in t return t with |O => y|S xx => plus xx (S y) end.")
+          `shouldParse`
           Fix "plus"
             (TmLambda "plus"
               (TmProd "x"

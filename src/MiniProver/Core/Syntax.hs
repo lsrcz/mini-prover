@@ -22,8 +22,10 @@ data Term =
   | TmLambda Name Term Term         -- binder source target
   | TmFix Term
   | TmLetIn Name Term Term Term     -- binder type term body
-  | TmIndType Name [Term]           -- should only be empty or full, empty refers to the type constructor, full refers to the type
-  | TmConstr Name [Term]            -- should only be empty or full, empty refers to the constructor, full refers to the term
+  | TmIndTypeRef Name
+  | TmConstrRef Name
+  | TmIndType Name [Term]           -- should only be full, refering to the type
+  | TmConstr Name [Term]            -- should only be full, refering to the term
   | TmSort Sort                     -- sort
   | TmMatch Term [Name] Term [Equation]  -- ind. Term [Names] RetType [Equation]
   | DummyTm                         -- Just for testing
@@ -32,12 +34,12 @@ data Term =
 data Command =
     Ax Name Term                     -- name type
   | Def Name Term Term               -- name type term
-  | Ind Name Int Term [(Name, Term)]
+  | Ind Name Int Term Term [(Name, Term, Term)] -- name int ty tm [(name, ty, tm)]
   | Fix Name Term
   | Theorem Name Term
   | Proof
   | Qed
-  | Print Term
+  | Print Name
   | Check Term
   | DummyCmd                         -- Just for testing
   deriving (Eq, Show)

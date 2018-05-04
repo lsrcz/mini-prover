@@ -167,13 +167,54 @@ pinductive = do
   _ <- coloneq
   constrlst <- many pconstr
   _ <- dot
+  let ty = addBinderAbbr TmProd arity binders
   return $ Ind name (length binders)
-    (addBinderAbbr TmProd arity binders)
+    ty
+    (modifyLast [] (TmIndType name) $ giveNameToAbs 0 $ prodToLambda ty)
     (map 
       (\(namec,tyc) ->
-        (namec,
-          addBinderAbbr TmProd tyc binders))
+        let 
+          tyc1 = addBinderAbbr TmProd tyc binders
+        in
+          ( namec
+          , typesToIndType name tyc1
+          , typesToIndType name $ modifyLast [] (TmConstr namec) $ 
+              giveNameToAbs 0 $ prodToLambda tyc1))
       constrlst)
+
+giveNameToAbs :: Int -> Term -> Term
+giveNameToAbs i (TmProd name ty tm)
+  | name == "_" = TmProd ('.' : show i) ty $ giveNameToAbs (i + 1) tm
+  | otherwise  = TmProd name ty $ giveNameToAbs i tm
+giveNameToAbs i (TmLambda name ty tm)
+  | name == "_" = TmLambda ('.' : show i) ty $ giveNameToAbs (i + 1) tm
+  | otherwise  = TmLambda name ty $ giveNameToAbs i tm
+giveNameToAbs _ a = a
+
+modifyLast :: [Term] -> ([Term] -> Term) -> Term -> Term
+modifyLast ls f (TmProd name ty tm) = TmProd name ty $ modifyLast (TmVar name : ls) f tm
+modifyLast ls f (TmLambda name ty tm) = TmLambda name ty $ modifyLast (TmVar name : ls) f tm
+modifyLast ls f _ = f $ reverse ls
+
+prodToLambda :: Term -> Term
+prodToLambda (TmProd name ty tm) = TmLambda name ty $ prodToLambda tm
+prodToLambda tm = tm
+
+singleTypeToIndType :: Name -> Term -> Term
+singleTypeToIndType namet tm@(TmVar name)
+  | namet == name = TmIndType name []
+  | otherwise = tm
+singleTypeToIndType namet tm@(TmAppl (TmVar name : ls))
+  | namet == name = TmIndType name ls
+  | otherwise = tm
+singleTypeToIndType _ tm = tm
+
+typesToIndType :: Name -> Term -> Term
+typesToIndType namet (TmProd name ty tm) =
+  TmProd name (singleTypeToIndType namet ty) $ typesToIndType namet tm
+typesToIndType namet (TmLambda name ty tm) =
+  TmLambda name (singleTypeToIndType namet ty) $ typesToIndType namet tm
+typesToIndType namet tm = singleTypeToIndType namet tm
 
 pconstr :: Parser (Name, Term)
 pconstr = do
