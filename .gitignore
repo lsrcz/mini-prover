@@ -2,6 +2,7 @@
 mini-prover.cabal
 *~
 ## Core latex/pdflatex auxiliary files:
+*.pdf
 *.aux
 *.lof
 *.log
