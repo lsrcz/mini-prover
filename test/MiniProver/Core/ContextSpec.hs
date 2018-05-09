@@ -3,6 +3,7 @@ module MiniProver.Core.ContextSpec (main, spec) where
 import Test.Hspec
 import MiniProver.Core.Syntax
 import MiniProver.Core.Context
+import MiniProver.Utils.ContextForTesting
 
 main :: IO ()
 main = hspec spec
@@ -78,8 +79,15 @@ spec =
         indexToBinding [("a''", NameBind), ("a'", NameBind), ("a", NameBind)] 2 `shouldBe` Right NameBind
       it "unbounded" $
         indexToBinding [("a''", NameBind), ("a'", NameBind), ("a", NameBind)] 3 `shouldBe` Left IndexOutOfBound
+    describe "getBinding" $ do
+      it "0" $
+        getBinding dependentContext 0 `shouldBe` Right (VarBind (TmRel "B" 1))
+      it "1" $
+        getBinding dependentContext 1 `shouldBe` Right (VarBind (TmRel "C" 3))
+      it "2" $
+        getBinding dependentContext 3 `shouldBe` Right (TmAbbBind (TmRel "D" 4) (Just $ TmRel "E" 5))
     describe "checkAllNameBounded" $ do
-      let ctx = [("A", NameBind), ("B", NameBind), ("C", NameBind), ("D", NameBind)]
+      let ctx = simpleContext
       describe "TmVar" $ do
         it "bounded" $
           checkAllNameBounded ctx (TmVar "A") `shouldBe` []

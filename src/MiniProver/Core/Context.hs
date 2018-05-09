@@ -11,11 +11,13 @@ module MiniProver.Core.Context (
   , indexToName
   , nameToIndex
   , indexToBinding
+  , getBinding
   , checkAllNameBounded
   ) where
 
 import MiniProver.Core.Syntax
-import Data.List (findIndex, group, sort, concatMap)
+import MiniProver.Core.Subst
+import Data.List (group, sort, concatMap)
 
 type Context = [(Name, Binding)]
 
@@ -80,6 +82,12 @@ indexToBinding :: Context -> Index -> Either ContextError Binding
 indexToBinding ctx idx =
   if ctxLength ctx > idx
     then Right $ snd $ ctx !! idx
+    else Left IndexOutOfBound
+
+getBinding :: Context -> Index -> Either ContextError Binding
+getBinding ctx idx =
+  if ctxLength ctx > idx
+    then Right $ bindingShift (idx + 1) $ snd $ ctx !! idx
     else Left IndexOutOfBound
 
 unique :: (Eq a) => [a] -> [a]

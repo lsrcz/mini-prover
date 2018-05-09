@@ -2,6 +2,7 @@ module MiniProver.Core.Subst (
     tmShiftAbove
   , tmShift
   , tmSubstTop
+  , bindingShift
   ) where
 
 import MiniProver.Core.Syntax
@@ -35,6 +36,15 @@ tmShiftAbove d =
 
 tmShift :: Int -> Term -> Term
 tmShift d = tmShiftAbove d 0
+
+bindingShift :: Int -> Binding -> Binding
+bindingShift d NameBind = NameBind
+bindingShift d (IndTypeBind i ty tm constrlst) = 
+  IndTypeBind i ty tm constrlst
+bindingShift d (VarBind tm) = VarBind (tmShift d tm)
+bindingShift d (TmAbbBind ty tm) = TmAbbBind (tmShift d ty) (tmShift d <$> tm)
+
+
 
 tmSubst :: Index -> Term -> Term -> Term
 tmSubst j s =

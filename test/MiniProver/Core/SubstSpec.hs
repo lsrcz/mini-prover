@@ -3,6 +3,9 @@ module MiniProver.Core.SubstSpec (main, spec) where
 import Test.Hspec
 import MiniProver.Core.Syntax
 import MiniProver.Core.Subst
+import MiniProver.Utils.ContextForTesting
+import Data.List ( lookup )
+import Data.Maybe ( fromJust )
 
 main :: IO ()
 main = hspec spec
@@ -212,6 +215,36 @@ spec = do
               [ Equation ["a"] (TmAppl [TmRel "A" 2, TmRel "B" 3])
               , Equation ["a", "b"] (TmAppl [TmRel "b" 0, TmRel "A" 3, TmRel "B" 4])
               , Equation ["a", "b", "c"] (TmAppl [TmRel "b" 1, TmRel "A" 4, TmRel "B" 5])]
+    describe "bindingShift" $ do
+      describe "NameBind" $ do
+        it "0" $
+          bindingShift 0 NameBind `shouldBe` NameBind
+        it "1" $
+          bindingShift 1 NameBind `shouldBe` NameBind
+      describe "IndTypeBind" $ do
+        it "0" $ do
+          let natBinding = fromJust $ lookup "nat" natContext
+          bindingShift 0 natBinding `shouldBe` natBinding
+        it "1" $ do
+          let natBinding = fromJust $ lookup "nat" natContext
+          bindingShift 1 natBinding `shouldBe` natBinding
+        it "1-eq" $ do
+          let eqBinding = fromJust $ lookup "eq" natContext
+          bindingShift 1 eqBinding `shouldBe` eqBinding
+        it "1-natList" $ do
+          let natListBinding = fromJust $ lookup "natList" natListContext
+          bindingShift 1 natListBinding `shouldBe` natListBinding
+      describe "VarBind" $ do
+        it "0" $
+          bindingShift 0 (fromJust $ lookup "A" dependentContext) `shouldBe` VarBind ( TmRel "B" 0 )
+        it "1" $
+          bindingShift 1 (fromJust $ lookup "A" dependentContext) `shouldBe` VarBind ( TmRel "B" 1 )
+      describe "TmAbbBinding" $ do
+        it "0" $
+          bindingShift 0 (fromJust $ lookup "C" dependentContext) `shouldBe` fromJust (lookup "C" dependentContext)
+        it "1" $
+          bindingShift 1 (fromJust $ lookup "C" dependentContext) `shouldBe`
+            TmAbbBind ( TmRel "D" 1 ) ( Just $ TmRel "E" 2 )
   describe "substitude" $
     describe "tmSubstTop" $ do
       describe "TmRel" $ do
