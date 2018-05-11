@@ -180,8 +180,8 @@ spec =
               (TmAppl [TmVar "A", TmVar "y"]))
           `shouldBe`
           ["y"]
-      describe "TmSort" $
-        it "bounded" $ checkAllNameBounded ctx (TmSort Prop) `shouldBe` []
+      describe "TmType" $
+        it "bounded" $ checkAllNameBounded ctx TmType `shouldBe` []
       describe "TmMatch" $ do
         it "bounded" $
           checkAllNameBounded ctx

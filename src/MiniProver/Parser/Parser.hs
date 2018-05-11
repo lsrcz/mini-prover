@@ -7,15 +7,8 @@ import MiniProver.Parser.Lexer
 addBinderAbbr :: (Name -> Term -> Term -> Term) -> Term -> [(Name, Term)] -> Term
 addBinderAbbr abbrty = foldr (\(name, ty) acc -> abbrty name ty acc)
 
-psort :: Parser Sort
-psort = (Prop <$ rword "Prop")
-    <|> (Set <$ rword "Set")
-    <|> (Type <$ rword "Type")
-
-ptmsort :: Parser Term
-ptmsort = do
-  sort <- psort
-  return $ TmSort sort
+ptmtype :: Parser Term
+ptmtype = TmType <$ rword "Type"
 
 pterm :: Parser Term
 pterm = try parrow
@@ -90,7 +83,7 @@ parrow = do
   return $ TmProd "_" tm1 tm2
 
 ptermnapp :: Parser Term
-ptermnapp = try ptmsort
+ptermnapp = try ptmtype
         <|> try pforall
         <|> try pfun
         <|> try pletin

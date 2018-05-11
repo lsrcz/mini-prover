@@ -1,6 +1,5 @@
 module MiniProver.Core.Syntax (
-    Sort(..)
-  , Name
+    Name
   , Index
   , Term(..)
   , Command(..)
@@ -8,8 +7,6 @@ module MiniProver.Core.Syntax (
   , Constructor(..)
   , Equation(..)
   ) where
-
-data Sort = Prop | Type | Set deriving (Eq, Show)
 
 type Name = String
 type Index = Int
@@ -26,7 +23,7 @@ data Term =
   | TmConstrRef Name
   | TmIndType Name [Term]           -- should only be full, refering to the type
   | TmConstr Name [Term]            -- should only be full, refering to the term
-  | TmSort Sort                     -- sort
+  | TmType                          -- sort
   | TmMatch Term [Name] Term [Equation]  -- ind. Term [Names] RetType [Equation]
   | DummyTm                         -- Just for testing
   deriving (Eq, Show)

@@ -18,7 +18,7 @@ spec = do
         buildTerm (TmVar "A") ctx `shouldBe` TmRel "A" 0
       it "tail" $
         buildTerm (TmVar "D") ctx `shouldBe` TmRel "D" 3
-      let ctxInd = ("nat", IndTypeBind 0 (TmSort Set) (TmIndType "nat" [])
+      let ctxInd = ("nat", IndTypeBind 0 TmType (TmIndType "nat" [])
                            [ Constructor "O" (TmIndType "nat" []) (TmConstr "O" [])
                            , Constructor "S" 
                                (TmProd "_" (TmIndType "nat" []) (TmIndType "nat" []))
@@ -82,9 +82,9 @@ spec = do
           ctx
           `shouldBe`
           TmConstr "name" [TmRel "A" 0, TmRel "D" 3]
-    describe "TmSort" $
-      it "Set" $
-        buildTerm (TmSort Set) ctx `shouldBe` TmSort Set
+    describe "TmType" $
+      it "Type" $
+        buildTerm TmType ctx `shouldBe` TmType
     describe "TmMatch" $
       it "all in one" $
         buildTerm
@@ -215,25 +215,25 @@ spec = do
         buildCommand
           (Ind "btree" 1
             (TmProd "x"
-              (TmSort Type)
-              (TmSort Type))
+              TmType
+              TmType)
             (TmLambda "x"
-              (TmSort Type)
+              TmType
               (TmIndType "btree" [TmVar "x"]))
             [ ( "leaf"
               , TmProd "x"
-                  (TmSort Type)
+                  TmType
                   (TmProd "_"
                     (TmVar "x")
                     (TmIndType "btree" [TmVar "x"]))
               , TmLambda "x"
-                  (TmSort Type)
+                  TmType
                   (TmLambda ".0"
                     (TmVar "x")
                     (TmConstr "leaf" [TmVar "x", TmVar ".0"])))
             , ( "node"
               , TmProd "x"
-                ( TmSort Type )
+                TmType
                 ( TmProd "_"
                   ( TmVar "x" )
                   ( TmProd "_"
@@ -242,7 +242,7 @@ spec = do
                       ( TmIndType "btree" [TmVar "x"] )
                       ( TmIndType "btree" [TmVar "x"] ))))
               , TmLambda "x"
-                ( TmSort Type )
+                TmType
                 ( TmLambda ".0"
                   ( TmVar "x" )
                   ( TmLambda ".1"
@@ -254,25 +254,25 @@ spec = do
           `shouldBe`
           Ind "btree" 1
             (TmProd "x"
-              (TmSort Type)
-              (TmSort Type))
+              TmType
+              TmType)
             (TmLambda "x"
-              (TmSort Type)
+              TmType
               (TmIndType "btree" [TmRel "x" 0]))
             [ ( "leaf"
               , TmProd "x"
-                  (TmSort Type)
+                  TmType
                   (TmProd "_"
                     (TmRel "x" 0)
                     (TmIndType "btree" [TmRel "x" 1]))
               , TmLambda "x"
-                  (TmSort Type)
+                  TmType
                   (TmLambda ".0"
                     (TmRel "x" 0)
                     (TmConstr "leaf" [TmRel "x" 1, TmRel ".0" 0 ])))
             , ( "node"
               , TmProd "x"
-                ( TmSort Type )
+                TmType
                 ( TmProd "_"
                   ( TmRel "x" 0 )
                   ( TmProd "_"
@@ -281,7 +281,7 @@ spec = do
                       ( TmIndType "btree" [TmRel "x" 2] )
                       ( TmIndType "btree" [TmRel "x" 3] ))))
               , TmLambda "x"
-                ( TmSort Type )
+                TmType
                 ( TmLambda ".0"
                   ( TmRel "x" 0 )
                   ( TmLambda ".1"
@@ -296,7 +296,7 @@ spec = do
               (TmVar "nat")
               (TmProd "_"
                 (TmVar "nat")
-                (TmSort Prop)))
+                TmType))
             (TmLambda "x"
               (TmVar "nat")
               (TmLambda ".0"
@@ -331,7 +331,7 @@ spec = do
               (TmIndTypeRef "nat")
               (TmProd "_"
                 (TmIndTypeRef "nat")
-                (TmSort Prop)))
+                TmType))
             (TmLambda "x"
               (TmIndTypeRef "nat")
               (TmLambda ".0"

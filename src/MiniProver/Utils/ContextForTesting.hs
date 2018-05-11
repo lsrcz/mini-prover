@@ -44,7 +44,7 @@ natContext =
                         , TmVar "b"]])])))))))
   , ( "nat"
     , IndTypeBind 0
-      ( TmSort Set )
+      ( TmType )
       ( TmIndType "nat" [] )
       [ Constructor "O"
         ( TmIndType "nat" [] )
@@ -59,14 +59,14 @@ natContext =
   , ( "eq"
     , IndTypeBind 1
       ( TmProd "a"
-        ( TmSort Type )
+        TmType
         ( TmProd "_"
           ( TmRel "a" 0 )
           ( TmProd "_"
             ( TmRel "a" 1 )
-            ( TmSort Prop ))))
+            TmType )))
       ( TmLambda "a"
-        ( TmSort Type )
+        TmType
         ( TmLambda ".0"
           ( TmRel "a" 0 )
           ( TmLambda ".1" 
@@ -75,23 +75,43 @@ natContext =
               [ TmRel "a" 2, TmRel ".0" 1, TmRel ".1" 0 ]))))
       [ Constructor "eqrefl"
         ( TmProd "a"
-          ( TmSort Type )
+          TmType
           ( TmProd "x"
             ( TmVar "a" )
             ( TmIndType "eq"
               [ TmRel "a" 1, TmRel "x" 0, TmRel "x" 0 ])))
         ( TmLambda "a" 
-          ( TmSort Type )
+          TmType
           ( TmLambda "x"
             ( TmVar "a" )
             ( TmConstr "eqrefl"
               [ TmRel "a" 1, TmRel "x" 0 ])))])]
 
+natContextWithPredefinedNumbers :: Context
+natContextWithPredefinedNumbers =
+  [ ( "zero"
+    , TmAbbBind
+      ( TmIndType "nat" [] )
+      ( Just
+        ( TmConstr "O" [] )))
+  , ( "one"
+    , TmAbbBind
+      ( TmIndType "nat" [] )
+      ( Just
+        ( TmConstr "S"
+          [ TmRel "zero" 0 ])))
+  , ( "two"
+    , TmAbbBind
+      ( TmIndType "nat" [] )
+      ( Just
+        ( TmConstr "S"
+          [ TmRel "one" 0 ])))] ++ natContext
+
 natListContext :: Context
 natListContext = 
   ( "natList"
   , IndTypeBind 0
-    ( TmSort Set )
+    TmType
     ( TmIndType "natList" [])
     [ Constructor "natNil"
       ( TmIndType "natList" [] )

@@ -13,43 +13,32 @@ spec :: Spec
 spec = do
   describe "simple" $ do
     describe "binder" $ 
-      describe "sort" $ 
-        it "Prop" $
-          parse pbinder "" "(name:Prop)" `shouldParse` ("name",TmSort Prop)
-    describe "sort" $ do 
-      it "Prop" $ 
-        parse psort "" "Prop" `shouldParse` Prop
-      it "Set" $ 
-        parse psort "" "Set" `shouldParse` Set
-      it "Type" $ 
-        parse psort "" "Type" `shouldParse` Type
-    describe "tmsort" $ do
-      it "Prop" $
-        parse ptmsort "" "Prop" `shouldParse` TmSort Prop
-      it "Set" $
-        parse ptmsort "" "Set" `shouldParse` TmSort Set
+      describe "type" $ 
+        it "Type" $
+          parse pbinder "" "(name:Type)" `shouldParse` ("name",TmType)
+    describe "tmtype" $
       it "Type" $
-        parse ptmsort "" "Type" `shouldParse` TmSort Type
+        parse ptmtype "" "Type" `shouldParse` TmType
     describe "tmprod" $ do
       it "single" $
-        parse pforall "" "forall (x:Prop), Set" `shouldParse` 
-          TmProd "x" (TmSort Prop) (TmSort Set)
+        parse pforall "" "forall (x:Type), Type" `shouldParse` 
+          TmProd "x" TmType TmType
       it "multiple" $
-        parse pforall "" "forall (x:Prop) (y:Set) (z:Type), Set" `shouldParse`
-          TmProd "x" (TmSort Prop) 
-          (TmProd "y" (TmSort Set)
-          (TmProd "z" (TmSort Type) (TmSort Set)))
+        parse pforall "" "forall (x:Type) (y:Type) (z:Type), Type" `shouldParse`
+          TmProd "x" TmType 
+          (TmProd "y" TmType
+          (TmProd "z" TmType TmType))
     describe "tmfun" $ do
       it "zero" $
-        parse pfun "" "fun => Set" `shouldParse` TmSort Set
+        parse pfun "" "fun => Type" `shouldParse` TmType
       it "single" $
-        parse pfun "" "fun (x:Prop) => Set" `shouldParse` 
-          TmLambda "x" (TmSort Prop) (TmSort Set)
+        parse pfun "" "fun (x:Type) => Type" `shouldParse` 
+          TmLambda "x" TmType TmType
       it "multiple" $
-        parse pfun "" "fun (x:Prop) (y:Set) (z:Type) => Set" `shouldParse`
-          TmLambda "x" (TmSort Prop) 
-          (TmLambda "y" (TmSort Set)
-          (TmLambda "z" (TmSort Type) (TmSort Set)))
+        parse pfun "" "fun (x:Type) (y:Type) (z:Type) => Type" `shouldParse`
+          TmLambda "x" TmType 
+          (TmLambda "y" TmType
+          (TmLambda "z" TmType TmType))
     describe "tmfix" $
       it "single" $
         parse pfix "" "fix plus (x:nat) (y:nat):nat:=match x in nat return nat with |O => y|S xx => plus xx (S y) end" `shouldParse`
@@ -79,204 +68,200 @@ spec = do
                               , TmVar "y"]])]))))
     describe "tmletin" $ do
       it "zero" $
-        parse pletin "" "let f:Type:=Type in Set" `shouldParse`
-          TmLetIn "f" (TmSort Type) (TmSort Type) (TmSort Set)
+        parse pletin "" "let f:Type:=Type in Type" `shouldParse`
+          TmLetIn "f" TmType TmType TmType
       it "single" $
-        parse pletin "" "let f (x:Set):Type:=Type in Set" `shouldParse`
+        parse pletin "" "let f (x:Type):Type:=Type in Type" `shouldParse`
           TmLetIn "f" 
-            (TmProd "x" (TmSort Set) (TmSort Type)) 
-            (TmLambda "x" (TmSort Set) (TmSort Type))
-            (TmSort Set)
+            (TmProd "x" TmType TmType) 
+            (TmLambda "x" TmType TmType)
+            TmType
       it "multiple" $
-        parse pletin "" "let f (x:Set) (y:Prop) (z:Type):Type:=Type in Set" `shouldParse`
+        parse pletin "" "let f (x:Type) (y:Type) (z:Type):Type:=Type in Type" `shouldParse`
           TmLetIn "f" 
-            (TmProd "x" (TmSort Set)
-              (TmProd "y" (TmSort Prop)
-                (TmProd "z" (TmSort Type)
-                  (TmSort Type))))
-            (TmLambda "x" (TmSort Set)
-              (TmLambda "y" (TmSort Prop)
-                (TmLambda "z" (TmSort Type)
-                  (TmSort Type))))
-            (TmSort Set)
+            (TmProd "x" TmType
+              (TmProd "y" TmType
+                (TmProd "z" TmType
+                  TmType)))
+            (TmLambda "x" TmType
+              (TmLambda "y" TmType
+                (TmLambda "z" TmType
+                  TmType)))
+            TmType
     describe "arrow(tmprod)" $ do
       it "single" $
-        parse parrow "" "Type -> Set" `shouldParse` TmProd "_" (TmSort Type) (TmSort Set)
+        parse parrow "" "Type -> Type" `shouldParse` TmProd "_" TmType TmType
       it "multiple" $
-        parse parrow "" "Type -> Set -> Prop" `shouldParse` 
-          TmProd "_" (TmSort Type)
-            (TmProd "_" (TmSort Set)
-              (TmSort Prop))
+        parse parrow "" "Type -> Type -> Type" `shouldParse` 
+          TmProd "_" TmType
+            (TmProd "_" TmType
+              TmType)
       describe "parens" $ do
         it "(A->B)->C" $
-          parse parrow "" "(Set -> Prop) -> Type" `shouldParse`
-            TmProd "_" (TmProd "_" (TmSort Set) (TmSort Prop)) (TmSort Type)
+          parse parrow "" "(Type -> Type) -> Type" `shouldParse`
+            TmProd "_" (TmProd "_" TmType TmType) TmType
         it "A->(B->C)" $
-          parse parrow "" "Type -> (Set -> Prop)" `shouldParse` 
-            TmProd "_" (TmSort Type)
-              (TmProd "_" (TmSort Set)
-                (TmSort Prop))
+          parse parrow "" "Type -> (Type -> Type)" `shouldParse` 
+            TmProd "_" TmType
+              (TmProd "_" TmType
+                TmType)
         it "complex" $
-          parse parrow "" "Type -> (((Set -> Prop)) -> ((Type -> (Set -> Prop)))) -> Set" `shouldParse`
+          parse parrow "" "Type -> (((Type -> Type)) -> ((Type -> (Type -> Type)))) -> Type" `shouldParse`
             TmProd "_"
-              (TmSort Type)
+              TmType
               (TmProd "_"
                 (TmProd "_"
                   (TmProd "_"
-                    (TmSort Set)
-                    (TmSort Prop))
+                    TmType
+                    TmType)
                   (TmProd "_"
-                    (TmSort Type)
+                    TmType
                     (TmProd "_"
-                      (TmSort Set)
-                      (TmSort Prop))))
-                (TmSort Set))
+                      TmType
+                      TmType)))
+                TmType)
       describe "app" $ do
         it "single" $
-          parse papp "" "Type Set" `shouldParse` 
-            TmAppl [TmSort Type, TmSort Set]
+          parse papp "" "Type Type" `shouldParse` 
+            TmAppl [TmType, TmType]
         it "multiple" $
-          parse papp "" "Type Set Prop" `shouldParse` 
-            TmAppl [TmSort Type, TmSort Set, TmSort Prop]
+          parse papp "" "Type Type Type" `shouldParse` 
+            TmAppl [TmType, TmType, TmType]
       describe "equation" $
         it "equation" $
-          parse pequation "" "|a b c => Set" `shouldParse` 
-            Equation ["a","b","c"] (TmSort Set)
+          parse pequation "" "|a b c => Type" `shouldParse` 
+            Equation ["a","b","c"] TmType
       describe "match" $ do
         it "empty" $
-          parse pmatch "" "match Set in x return x with end" `shouldParse` 
-            TmMatch (TmSort Set) ["x"] (TmVar "x") []
+          parse pmatch "" "match Type in x return x with end" `shouldParse` 
+            TmMatch TmType ["x"] (TmVar "x") []
         it "single" $
-          parse pmatch "" "match Set in x return x with |a => Set end" `shouldParse` 
-            TmMatch (TmSort Set) ["x"] (TmVar "x") [Equation ["a"] (TmSort Set)]
+          parse pmatch "" "match Type in x return x with |a => Type end" `shouldParse` 
+            TmMatch TmType ["x"] (TmVar "x") [Equation ["a"] TmType]
         it "multiple" $
-          parse pmatch "" "match Set in x return x with |a => Set |b c=>Prop|c=>Type end" `shouldParse` 
-            TmMatch (TmSort Set) ["x"] (TmVar "x") [
-                Equation ["a"] (TmSort Set)
-              , Equation ["b", "c"] (TmSort Prop)
-              , Equation ["c"] (TmSort Type)
+          parse pmatch "" "match Type in x return x with |a => Type |b c=>Type|c=>Type end" `shouldParse` 
+            TmMatch TmType ["x"] (TmVar "x") [
+                Equation ["a"] TmType
+              , Equation ["b", "c"] TmType
+              , Equation ["c"] TmType
               ]
         it "long type" $
-          parse pmatch "" "match Set in x y z return x y z with |a => Set end" `shouldParse` 
-            TmMatch (TmSort Set) ["x", "y", "z"] (TmAppl [TmVar "x", TmVar "y", TmVar "z"]) [Equation ["a"] (TmSort Set)]
+          parse pmatch "" "match Type in x y z return x y z with |a => Type end" `shouldParse` 
+            TmMatch TmType ["x", "y", "z"] (TmAppl [TmVar "x", TmVar "y", TmVar "z"]) [Equation ["a"] TmType]
   describe "simple term" $ do
-    describe "tmsort" $ do
-      it "Prop" $
-        parse pterm "" "Prop" `shouldParse` TmSort Prop
-      it "Set" $
-        parse pterm "" "Set" `shouldParse` TmSort Set
+    describe "tmtype" $
       it "Type" $
-        parse pterm "" "Type" `shouldParse` TmSort Type
+        parse pterm "" "Type" `shouldParse` TmType
     describe "tmprod" $ do
       it "single" $
-        parse pterm "" "forall (x:Prop), Set" `shouldParse` 
-          TmProd "x" (TmSort Prop) (TmSort Set)
+        parse pterm "" "forall (x:Type), Type" `shouldParse` 
+          TmProd "x" TmType TmType
       it "multiple" $
-        parse pterm "" "forall (x:Prop) (y:Set) (z:Type), Set" `shouldParse`
-          TmProd "x" (TmSort Prop) 
-          (TmProd "y" (TmSort Set)
-          (TmProd "z" (TmSort Type) (TmSort Set)))
+        parse pterm "" "forall (x:Type) (y:Type) (z:Type), Type" `shouldParse`
+          TmProd "x" TmType 
+          (TmProd "y" TmType
+          (TmProd "z" TmType TmType))
     describe "tmfun" $ do
       it "zero" $
-        parse pterm "" "fun => Set" `shouldParse` TmSort Set
+        parse pterm "" "fun => Type" `shouldParse` TmType
       it "single" $
-        parse pterm "" "fun (x:Prop) => Set" `shouldParse` 
-          TmLambda "x" (TmSort Prop) (TmSort Set)
+        parse pterm "" "fun (x:Type) => Type" `shouldParse` 
+          TmLambda "x" TmType TmType
       it "multiple" $
-        parse pterm "" "fun (x:Prop) (y:Set) (z:Type) => Set" `shouldParse`
-          TmLambda "x" (TmSort Prop) 
-          (TmLambda "y" (TmSort Set)
-          (TmLambda "z" (TmSort Type) (TmSort Set)))
+        parse pterm "" "fun (x:Type) (y:Type) (z:Type) => Type" `shouldParse`
+          TmLambda "x" TmType 
+          (TmLambda "y" TmType
+          (TmLambda "z" TmType TmType))
     describe "tmletin" $ do
       it "zero" $
-        parse pterm "" "let f:Type:=Type in Set" `shouldParse`
-          TmLetIn "f" (TmSort Type) (TmSort Type) (TmSort Set)
+        parse pterm "" "let f:Type:=Type in Type" `shouldParse`
+          TmLetIn "f" TmType TmType TmType
       it "single" $
-        parse pterm "" "let f (x:Set):Type:=Type in Set" `shouldParse`
+        parse pterm "" "let f (x:Type):Type:=Type in Type" `shouldParse`
           TmLetIn "f" 
-            (TmProd "x" (TmSort Set) (TmSort Type)) 
-            (TmLambda "x" (TmSort Set) (TmSort Type))
-            (TmSort Set)
+            (TmProd "x" TmType TmType) 
+            (TmLambda "x" TmType TmType)
+            TmType
       it "multiple" $
-        parse pterm "" "let f (x:Set) (y:Prop) (z:Type):Type:=Type in Set" `shouldParse`
+        parse pterm "" "let f (x:Type) (y:Type) (z:Type):Type:=Type in Type" `shouldParse`
           TmLetIn "f" 
-            (TmProd "x" (TmSort Set)
-              (TmProd "y" (TmSort Prop)
-                (TmProd "z" (TmSort Type)
-                  (TmSort Type))))
-            (TmLambda "x" (TmSort Set)
-              (TmLambda "y" (TmSort Prop)
-                (TmLambda "z" (TmSort Type)
-                  (TmSort Type))))
-            (TmSort Set)
+            (TmProd "x" TmType
+              (TmProd "y" TmType
+                (TmProd "z" TmType
+                  TmType)))
+            (TmLambda "x" TmType
+              (TmLambda "y" TmType
+                (TmLambda "z" TmType
+                  TmType)))
+            TmType
     describe "arrow(tmprod)" $ do
       it "single" $
-        parse pterm "" "Type -> Set" `shouldParse` TmProd "_" (TmSort Type) (TmSort Set)
+        parse pterm "" "Type -> Type" `shouldParse` TmProd "_" TmType TmType
       it "multiple" $
-        parse pterm "" "Type -> Set -> Prop" `shouldParse` 
-          TmProd "_" (TmSort Type)
-            (TmProd "_" (TmSort Set)
-              (TmSort Prop))
+        parse pterm "" "Type -> Type -> Type" `shouldParse` 
+          TmProd "_" TmType
+            (TmProd "_" TmType
+              TmType)
       describe "parens" $ do
         it "(A->B)->C" $
-          parse pterm "" "(Set -> Prop) -> Type" `shouldParse`
-            TmProd "_" (TmProd "_" (TmSort Set) (TmSort Prop)) (TmSort Type)
+          parse pterm "" "(Type -> Type) -> Type" `shouldParse`
+            TmProd "_" (TmProd "_" TmType TmType) TmType
         it "A->(B->C)" $
-          parse pterm "" "Type -> (Set -> Prop)" `shouldParse` 
-            TmProd "_" (TmSort Type)
-              (TmProd "_" (TmSort Set)
-                (TmSort Prop))
+          parse pterm "" "Type -> (Type -> Type)" `shouldParse` 
+            TmProd "_" TmType
+              (TmProd "_" TmType
+                TmType)
         it "complex" $
-          parse pterm "" "Type -> (((Set -> Prop)) -> ((Type -> (Set -> Prop)))) -> Set" `shouldParse`
+          parse pterm "" "Type -> (((Type -> Type)) -> ((Type -> (Type -> Type)))) -> Type" `shouldParse`
             TmProd "_"
-              (TmSort Type)
+              TmType
               (TmProd "_"
                 (TmProd "_"
                   (TmProd "_"
-                    (TmSort Set)
-                    (TmSort Prop))
+                    TmType
+                    TmType)
                   (TmProd "_"
-                    (TmSort Type)
+                    TmType
                     (TmProd "_"
-                      (TmSort Set)
-                      (TmSort Prop))))
-                (TmSort Set))
+                      TmType
+                      TmType)))
+                TmType)
       describe "app" $ do
         it "single" $
-          parse pterm "" "Type Set" `shouldParse` 
-            TmAppl [TmSort Type, TmSort Set]
+          parse pterm "" "Type Type" `shouldParse` 
+            TmAppl [TmType, TmType]
         it "multiple" $
-          parse pterm "" "Type Set Prop" `shouldParse` 
-            TmAppl [TmSort Type, TmSort Set, TmSort Prop]
+          parse pterm "" "Type Type Type" `shouldParse` 
+            TmAppl [TmType, TmType, TmType]
       describe "match" $ do
         it "empty" $
-          parse pterm "" "match Set in x return x with end" `shouldParse` 
-            TmMatch (TmSort Set) ["x"] (TmVar "x") []
+          parse pterm "" "match Type in x return x with end" `shouldParse` 
+            TmMatch TmType ["x"] (TmVar "x") []
         it "single" $
-          parse pterm "" "match Set in x return x with |a => Set end" `shouldParse` 
-            TmMatch (TmSort Set) ["x"] (TmVar "x") [Equation ["a"] (TmSort Set)]
+          parse pterm "" "match Type in x return x with |a => Type end" `shouldParse` 
+            TmMatch TmType ["x"] (TmVar "x") [Equation ["a"] TmType]
         it "multiple" $
-          parse pterm "" "match Set in x return x with |a => Set |b c=>Prop|c=>Type end" `shouldParse` 
-            TmMatch (TmSort Set) ["x"] (TmVar "x") [
-                Equation ["a"] (TmSort Set)
-              , Equation ["b", "c"] (TmSort Prop)
-              , Equation ["c"] (TmSort Type)
+          parse pterm "" "match Type in x return x with |a => Type |b c=>Type|c=>Type end" `shouldParse` 
+            TmMatch TmType ["x"] (TmVar "x") [
+                Equation ["a"] TmType
+              , Equation ["b", "c"] TmType
+              , Equation ["c"] TmType
               ]
         it "long type" $
-          parse pterm "" "match Set in x y z return x y z with |a => Set end" `shouldParse` 
-            TmMatch (TmSort Set) ["x", "y", "z"] (TmAppl [TmVar "x", TmVar "y", TmVar "z"]) [Equation ["a"] (TmSort Set)]
+          parse pterm "" "match Type in x y z return x y z with |a => Type end" `shouldParse` 
+            TmMatch TmType ["x", "y", "z"] (TmAppl [TmVar "x", TmVar "y", TmVar "z"]) [Equation ["a"] TmType]
   describe "complex term" $ do
     it "var" $
       parse pterm "" "a" `shouldParse` TmVar "a"
     it "1" $
-      parse pterm "" "(forall (a:A), a Set) b Set -> Type d" `shouldParse`
+      parse pterm "" "(forall (a:A), a Type) b Type -> Type d" `shouldParse`
         TmProd "_"
           (TmAppl
             [ TmProd "a" (TmVar "A") 
-                (TmAppl [TmVar "a", TmSort Set])
+                (TmAppl [TmVar "a", TmType])
             , TmVar "b"
-            , TmSort Set])
-          (TmAppl [TmSort Type, TmVar "d"])
+            , TmType])
+          (TmAppl [TmType, TmVar "d"])
     it "2" $
       parse pterm "" "a -> forall (b:c) (e:f),d -> e -> forall (b:c),d -> f" `shouldParse`
         TmProd "_"
@@ -295,13 +280,13 @@ spec = do
                       (TmVar "d")
                       (TmVar "f")))))))
     it "3" $
-      parse pterm "" ("fun (a:forall (b:Set) (c:d->e->forall (p:q),p->q), c b) (b:forall (c:d),e) =>"
+      parse pterm "" ("fun (a:forall (b:Type) (c:d->e->forall (p:q),p->q), c b) (b:forall (c:d),e) =>"
         ++ "let a (b:c) : d := e in "
-        ++ "match a Set in x return x with |b c => forall (c:d), e end")
+        ++ "match a Type in x return x with |b c => forall (c:d), e end")
         `shouldParse`
         TmLambda "a"
           (TmProd "b"
-            (TmSort Set)
+            TmType
             (TmProd "c"
               (TmProd "_"
                 (TmVar "d")
@@ -327,7 +312,7 @@ spec = do
               (TmMatch
                 (TmAppl
                   [ TmVar "a"
-                  , TmSort Set ])
+                  , TmType ])
                 [ "x" ]
                 (TmVar "x")
                 [ Equation ["b", "c"]
@@ -358,14 +343,14 @@ spec = do
                 , TmVar "c"])))
     describe "inductive" $ do
       it "simple" $
-        parse pinductive "" ("Inductive r1 (A:Set) (B:Type) : A -> A -> B -> B -> Prop :="
+        parse pinductive "" ("Inductive r1 (A:Type) (B:Type) : A -> A -> B -> B -> Type :="
           ++ "| p : forall (x:A),forall (y:B),forall (z:B), r1 A B x x y z "
           ++ "| q : forall (x:A),forall (y:A),forall (z:B),r1 A B x y z z.") `shouldParse`
           Ind "r1" 2
             (TmProd "A"
-              (TmSort Set)
+              TmType
               (TmProd "B"
-                (TmSort Type)
+                TmType
                 (TmProd "_"
                   (TmVar "A")
                   (TmProd "_"
@@ -374,11 +359,11 @@ spec = do
                       (TmVar "B")
                       (TmProd "_"
                         (TmVar "B")
-                        (TmSort Prop)))))))
+                        TmType))))))
             (TmLambda "A"
-              (TmSort Set)
+              TmType
               (TmLambda "B"
-                (TmSort Type)
+                TmType
                 (TmLambda ".0"
                   (TmVar "A")
                   (TmLambda ".1"
@@ -392,9 +377,9 @@ spec = do
                           , TmVar ".1", TmVar ".2", TmVar ".3"])))))))
             [ ( "p"
               , TmProd "A"
-                  (TmSort Set)
+                  TmType
                   (TmProd "B"
-                    (TmSort Type)
+                    TmType
                     (TmProd "x"
                       (TmVar "A")
                       (TmProd "y"
@@ -409,9 +394,9 @@ spec = do
                             , TmVar "y"
                             , TmVar "z" ])))))
               , TmLambda "A"
-                  (TmSort Set)
+                  TmType
                   (TmLambda "B"
-                    (TmSort Type)
+                    TmType
                     (TmLambda "x"
                       (TmVar "A")
                       (TmLambda "y"
@@ -422,9 +407,9 @@ spec = do
                             [TmVar "A", TmVar "B", TmVar "x", TmVar "y", TmVar "z"]))))))
             , ( "q",
                 TmProd "A"
-                  (TmSort Set)
+                  TmType
                   (TmProd "B"
-                    (TmSort Type)
+                    TmType
                     (TmProd "x"
                       (TmVar "A")
                       (TmProd "y"
@@ -439,9 +424,9 @@ spec = do
                             , TmVar "z"
                             , TmVar "z" ])))))
                 , TmLambda "A"
-                  (TmSort Set)
+                  TmType
                   (TmLambda "B"
-                    (TmSort Type)
+                    TmType
                     (TmLambda "x"
                       (TmVar "A")
                       (TmLambda "y"
@@ -451,7 +436,7 @@ spec = do
                           (TmConstr "q" 
                             [TmVar "A", TmVar "B", TmVar "x", TmVar "y", TmVar "z"]))))))]
       it "le" $
-        parse pinductive "" ("Inductive le (x:nat):nat->Prop:= "
+        parse pinductive "" ("Inductive le (x:nat):nat->Type:= "
           ++ "|lerefl:le x x|leS:forall (y:nat), (le x y) -> (le x (S y)).")
           `shouldParse`
           Ind "le" 1
@@ -459,7 +444,7 @@ spec = do
               (TmVar "nat")
               (TmProd "_"
                 (TmVar "nat")
-                (TmSort Prop)))
+                TmType))
             (TmLambda "x"
               (TmVar "nat")
               (TmLambda ".0"
@@ -493,25 +478,25 @@ spec = do
           ++ "| node : x -> btree x -> btree x -> btree x.") `shouldParse`
           Ind "btree" 1
             (TmProd "x"
-              (TmSort Type)
-              (TmSort Type))
+              TmType
+              TmType)
             (TmLambda "x"
-              (TmSort Type)
+              TmType
               (TmIndType "btree" [TmVar "x"]))
             [ ( "leaf"
               , TmProd "x"
-                  (TmSort Type)
+                  TmType
                   (TmProd "_"
                     (TmVar "x")
                     (TmIndType "btree" [TmVar "x"]))
               , TmLambda "x"
-                  (TmSort Type)
+                  TmType
                   (TmLambda ".0"
                     (TmVar "x")
                     (TmConstr "leaf" [TmVar "x", TmVar ".0"])))
             , ( "node"
               , TmProd "x"
-                ( TmSort Type )
+                ( TmType )
                 ( TmProd "_"
                   ( TmVar "x" )
                   ( TmProd "_"
@@ -520,7 +505,7 @@ spec = do
                       ( TmIndType "btree" [TmVar "x"] )
                       ( TmIndType "btree" [TmVar "x"] ))))
               , TmLambda "x"
-                ( TmSort Type )
+                ( TmType )
                 ( TmLambda ".0"
                   ( TmVar "x" )
                   ( TmLambda ".1"

@@ -100,13 +100,9 @@ spec = do
         it "simple" $
           tmShiftAbove 2 2 (TmIndType "tuplethree" [TmRel "A" 1, TmRel "B" 2, TmRel "C" 3])
             `shouldBe` TmIndType "tuplethree" [TmRel "A" 1, TmRel "B" 4, TmRel "C" 5]
-      describe "TmSort" $ do
-        it "Prop" $
-          tmShiftAbove 2 2 (TmSort Prop) `shouldBe` TmSort Prop
-        it "Set" $
-          tmShiftAbove 2 2 (TmSort Set) `shouldBe` TmSort Set
+      describe "TmType" $
         it "Type" $
-          tmShiftAbove 2 2 (TmSort Type) `shouldBe` TmSort Type
+          tmShiftAbove 2 2 TmType `shouldBe` TmType
       describe "TmMatch" $
         it "all in one" $ 
           tmShiftAbove 2 2 
@@ -191,13 +187,9 @@ spec = do
           -- [A B] pair A B
           tmShift 2 (TmIndType "pair" [TmRel "A" 0, TmRel "B" 1])
             `shouldBe` TmIndType "pair" [TmRel "A" 2, TmRel "B" 3]
-      describe "TmSort" $ do
-        it "Prop" $
-          tmShift 2 (TmSort Prop) `shouldBe` TmSort Prop
-        it "Set" $
-          tmShift 2 (TmSort Set) `shouldBe` TmSort Set
+      describe "TmType" $
         it "Type" $
-          tmShift 2 (TmSort Type) `shouldBe` TmSort Type
+          tmShift 2 TmType `shouldBe` TmType
       describe "TmMatch" $
         it "all in one" $ 
           -- [A B] match A B in a b c return A B b c with |a => A B |a b => b A B |a b c => b A B end
@@ -321,13 +313,9 @@ spec = do
           tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1])
             (TmIndType "tuplethree" [TmRel "x" 0, TmRel "a" 1])
             `shouldBe` TmIndType "tuplethree" [TmAppl [TmRel "a" 0, TmRel "b" 1], TmRel "a" 0]
-      describe "TmSort" $ do
-        it "Prop" $
-          tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1]) (TmSort Prop) `shouldBe` TmSort Prop
-        it "Set" $
-          tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1]) (TmSort Set) `shouldBe` TmSort Set
+      describe "TmType" $
         it "Type" $
-          tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1]) (TmSort Type) `shouldBe` TmSort Type
+          tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1]) TmType `shouldBe` TmType
       describe "TmMatch" $
         it "all in one" $
           -- (lambda. match 0 1 in r s t return 0 1 2 3 4 with |a => 0 1|a b => 0 1 2|a b c => 1 2 3 end)(0 1) => 

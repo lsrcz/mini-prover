@@ -113,7 +113,7 @@ checkAllNameBounded ctx (TmLetIn name ty tm bdy) =
     checkAllNameBounded ctx tm ++
     checkAllNameBounded (addName ctx name) bdy
 checkAllNameBounded _ (TmIndType _ _) = error "This should not happen"
-checkAllNameBounded _ (TmSort _) = []
+checkAllNameBounded _ TmType = []
 checkAllNameBounded ctx (TmMatch tm namelst rty equlst) = 
   unique $ sort $
     checkAllNameBounded ctx tm ++

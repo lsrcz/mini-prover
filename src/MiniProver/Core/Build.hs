@@ -48,7 +48,7 @@ buildTerm (TmIndType name tmlst) ctx =
 buildTerm (TmConstr name tmlst) ctx =
   TmConstr name $
     map (`buildTerm` ctx) tmlst
-buildTerm (TmSort s) _ = TmSort s
+buildTerm TmType _ = TmType
 buildTerm (TmMatch tm namelst rty equlst) ctx =
   TmMatch (buildTerm tm ctx) namelst (buildTerm rty (foldl addName ctx (tail namelst))) $
     map (`buildEquation` ctx) equlst
