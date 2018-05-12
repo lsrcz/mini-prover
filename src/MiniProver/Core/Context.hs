@@ -12,12 +12,17 @@ module MiniProver.Core.Context (
   , nameToIndex
   , indexToBinding
   , getBinding
+  , getIndTypeTerm
+  , getIndTypeType
+  , getConstrTerm
+  , getConstrType
   , checkAllNameBounded
   ) where
 
 import MiniProver.Core.Syntax
 import MiniProver.Core.Subst
-import Data.List (group, sort, concatMap)
+import Data.List (group, sort, concatMap, find)
+import Data.Maybe (fromMaybe)
 
 type Context = [(Name, Binding)]
 
@@ -26,6 +31,8 @@ data ContextError =
   | UnboundName
   | IsTypeConstructor
   | IsConstructor
+  | NotATypeConstructor
+  | NotAConstructor
   deriving (Eq, Show)
 
 emptyContext :: Context
@@ -89,6 +96,35 @@ getBinding ctx idx =
   if ctxLength ctx > idx
     then Right $ bindingShift (idx + 1) $ snd $ ctx !! idx
     else Left IndexOutOfBound
+
+getIndType :: Context -> Name -> Either ContextError (Int, Term, Term)
+getIndType [] _ = Left NotATypeConstructor
+getIndType ((nameb,binder):xs) name =
+  case binder of
+    IndTypeBind i ty tm _
+      | nameb == name -> Right (i, ty, tm)
+    _ -> getIndType xs name
+
+getIndTypeTerm :: Context -> Name -> Either ContextError Term
+getIndTypeTerm ctx name = (\(_,_,tm) -> tm) <$> getIndType ctx name
+
+getIndTypeType :: Context -> Name -> Either ContextError (Int, Term)
+getIndTypeType ctx name = (\(i,ty,_) -> (i,ty)) <$> getIndType ctx name
+
+getConstr :: Context -> Name -> Either ContextError (Term, Term)
+getConstr [] name = Left NotAConstructor
+getConstr ((_,binder):xs) name =
+  case binder of
+    IndTypeBind _ _ _ constrlst ->
+      maybe (getConstr xs name) (Right . (\case Constructor _ ty tm -> (ty, tm))) $ 
+        find (\case Constructor namec _ _ -> name == namec) constrlst
+    _ -> getConstr xs name
+
+getConstrTerm :: Context -> Name -> Either ContextError Term
+getConstrTerm ctx name = snd <$> getConstr ctx name
+
+getConstrType :: Context -> Name -> Either ContextError Term
+getConstrType ctx name = fst <$> getConstr ctx name
 
 unique :: (Eq a) => [a] -> [a]
 unique = map head . group

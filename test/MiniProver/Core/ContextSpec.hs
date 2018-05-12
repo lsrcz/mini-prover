@@ -86,6 +86,74 @@ spec =
         getBinding dependentContext 1 `shouldBe` Right (VarBind (TmRel "C" 3))
       it "2" $
         getBinding dependentContext 3 `shouldBe` Right (TmAbbBind (TmRel "D" 4) (Just $ TmRel "E" 5))
+    describe "getIndTypeTerm" $ do
+      it "found" $
+        getIndTypeTerm listContext "list" `shouldBe`
+        Right
+        ( TmLambda "T"
+            TmType
+            ( TmIndType "list"
+              [ TmRel "T" 0 ]))
+      it "not found" $
+        getIndTypeTerm listContext "nil" `shouldBe`
+        Left NotATypeConstructor
+    describe "getIndTypeType" $ do
+      it "found" $
+        getIndTypeType listContext "list" `shouldBe`
+        Right
+        ( 1
+        , TmProd "T"
+            TmType
+            TmType )
+      it "not found" $
+        getIndTypeType listContext "nil" `shouldBe`
+        Left NotATypeConstructor
+    describe "getConstrTerm" $ do
+      it "found nil" $
+        getConstrTerm listContext "nil" `shouldBe`
+        Right 
+        ( TmLambda "T"
+          TmType
+          ( TmConstr "nil"
+            [ TmRel "T" 0 ]))
+      it "found cons" $
+        getConstrTerm listContext "cons" `shouldBe`
+        Right
+        ( TmLambda "T"
+          TmType
+          ( TmLambda ".0"
+            ( TmRel "T" 0 )
+            ( TmLambda ".1"
+              ( TmIndType "list"
+                [ TmRel "T" 1 ])
+              ( TmConstr "cons"
+                [ TmRel "T" 2, TmRel ".0" 1, TmRel ".1" 0 ]))))
+      it "not found" $
+        getConstrTerm listContext "list" `shouldBe`
+        Left NotAConstructor
+    describe "getConstrType" $ do
+      it "found nil" $
+        getConstrType listContext "nil" `shouldBe`
+        Right 
+        ( TmProd "T"
+          TmType
+          ( TmIndType "list"
+            [ TmRel "T" 0 ]))
+      it "found cons" $
+        getConstrType listContext "cons" `shouldBe`
+        Right
+        ( TmProd "T"
+          TmType
+          ( TmProd "_"
+            ( TmRel "T" 0 )
+            ( TmProd "_"
+              ( TmIndType "list"
+                [ TmRel "T" 1 ])
+              ( TmIndType "list"
+                [ TmRel "T" 2 ]))))
+      it "not found" $
+        getConstrType listContext "list" `shouldBe`
+        Left NotAConstructor
     describe "checkAllNameBounded" $ do
       let ctx = simpleContext
       describe "TmVar" $ do
