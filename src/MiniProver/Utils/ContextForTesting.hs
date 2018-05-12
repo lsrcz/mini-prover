@@ -44,7 +44,7 @@ natContext =
                         , TmVar "b"]])])))))))
   , ( "nat"
     , IndTypeBind 0
-      ( TmType )
+      TmType
       ( TmIndType "nat" [] )
       [ Constructor "O"
         ( TmIndType "nat" [] )
@@ -106,6 +106,46 @@ natContextWithPredefinedNumbers =
       ( Just
         ( TmConstr "S"
           [ TmRel "one" 0 ])))] ++ natContext
+
+listContext :: Context
+listContext =
+  [ ( "list"
+    , IndTypeBind 1
+      ( TmProd "T"
+        TmType
+        TmType )
+      ( TmLambda "T"
+        TmType
+        ( TmIndType "list"
+          [ TmRel "T" 0 ]))
+      [ Constructor "nil"
+        ( TmProd "T"
+          TmType
+          ( TmIndType "list"
+            [ TmRel "T" 0 ]))
+        ( TmLambda "T"
+          TmType
+          ( TmConstr "nil"
+            [ TmRel "T" 0 ]))
+      , Constructor "cons"
+        ( TmProd "T"
+          TmType
+          ( TmProd "_"
+            ( TmRel "T" 0 )
+            ( TmProd "_"
+              ( TmIndType "list"
+                [ TmRel "T" 1 ])
+              ( TmIndType "list"
+                [ TmRel "T" 2 ]))))
+        ( TmLambda "T"
+          TmType
+          ( TmLambda ".0"
+            ( TmRel "T" 0 )
+            ( TmLambda ".1"
+              ( TmIndType "list"
+                [ TmRel "T" 1 ])
+              ( TmConstr "cons"
+                [ TmRel "T" 2, TmRel ".0" 1, TmRel ".1" 0 ]))))])]
 
 natListContext :: Context
 natListContext = 
