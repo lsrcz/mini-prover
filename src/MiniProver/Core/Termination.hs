@@ -4,5 +4,7 @@ module MiniProver.Core.Termination (
 
 import MiniProver.Core.Syntax
 
-isTerminating :: Term -> Bool
+-- Not terminating => return Nothing
+-- Terminating     => the number of argument decreasing on
+isTerminating :: Term -> Maybe Int
 isTerminating = undefined

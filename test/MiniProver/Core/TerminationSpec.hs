@@ -13,4 +13,4 @@ spec :: Spec
 spec = 
   describe "termination" $ 
     it "Dummy" $
-      isTerminating DummyTm `shouldBe` True
+      isTerminating DummyTm `shouldBe` Nothing
