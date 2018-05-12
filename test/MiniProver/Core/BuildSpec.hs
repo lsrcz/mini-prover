@@ -24,11 +24,14 @@ spec = do
                                (TmProd "_" (TmIndType "nat" []) (TmIndType "nat" []))
                                (TmLambda ".0" (TmIndType "nat" []) (TmConstr "S" [TmRel ".0" 0]))]) : ctx
       it "type constructor" $
-        buildTerm (TmVar "nat") ctxInd `shouldBe` TmIndTypeRef "nat"
+        buildTerm (TmVar "nat") ctxInd `shouldBe` TmIndType "nat" []
       it "constructor" $
-        buildTerm (TmVar "S") ctxInd `shouldBe` TmConstrRef "S"
-    describe "TmAppl" $
-      it "all in one" $
+        buildTerm (TmVar "S") ctxInd `shouldBe` 
+          TmLambda ".0"
+            ( TmIndType "nat" [] )
+            ( TmConstr "S" [ TmRel ".0" 0 ])
+    describe "TmAppl" $ do
+      it "simple" $
         buildTerm (TmAppl [TmVar "A", TmVar "B", TmVar "C", TmVar "D"]) ctx
         `shouldBe`
         TmAppl 
@@ -36,6 +39,25 @@ spec = do
           , TmRel "B" 1
           , TmRel "C" 2
           , TmRel "D" 3]
+      it "flatten" $
+        buildTerm 
+        ( TmAppl 
+          [ TmAppl 
+            [ TmAppl 
+              [ TmVar "A", 
+                TmAppl 
+                [ TmVar "B"
+                , TmVar "A" ]
+              , TmVar "C" ]
+            , TmVar "D" ]]) ctx
+        `shouldBe`
+        TmAppl
+        [ TmRel "A" 0
+        , TmAppl
+          [ TmRel "B" 1
+          , TmRel "A" 0 ]
+        , TmRel "C" 2
+        , TmRel "D" 3 ]
     describe "TmProd" $
       it "all in one" $
         buildTerm 
@@ -129,12 +151,19 @@ spec = do
           `shouldBe`
           Ax "pluscomm"
           ( TmProd "a"
-            ( TmIndTypeRef "nat")
+            ( TmIndType "nat" [] )
             ( TmProd "b"
-              ( TmIndTypeRef "nat")
+              ( TmIndType "nat" [] )
               ( TmAppl
-                [ TmIndTypeRef "eq"
-                , TmIndTypeRef "nat"
+                [ TmLambda "a"
+                    TmType
+                  ( TmLambda ".0"
+                    ( TmRel "a" 0 )
+                    ( TmLambda ".1" 
+                      ( TmRel "a" 1 )
+                      ( TmIndType "eq"
+                        [ TmRel "a" 2, TmRel ".0" 1, TmRel ".1" 0 ])))
+                , TmIndType "nat" []
                 , TmAppl
                   [ TmRel "plus" 2
                   , TmRel "a" 1
@@ -181,12 +210,19 @@ spec = do
           `shouldBe`
           Def "pluscomm"
           ( TmProd "a"
-            ( TmIndTypeRef "nat")
+            ( TmIndType "nat" [] )
             ( TmProd "b"
-              ( TmIndTypeRef "nat")
+              ( TmIndType "nat" [] )
               ( TmAppl
-                [ TmIndTypeRef "eq"
-                , TmIndTypeRef "nat"
+                [ TmLambda "a"
+                    TmType
+                  ( TmLambda ".0"
+                    ( TmRel "a" 0 )
+                    ( TmLambda ".1" 
+                      ( TmRel "a" 1 )
+                      ( TmIndType "eq"
+                        [ TmRel "a" 2, TmRel ".0" 1, TmRel ".1" 0 ])))
+                , TmIndType "nat" []
                 , TmAppl
                   [ TmRel "plus" 2
                   , TmRel "a" 1
@@ -196,12 +232,17 @@ spec = do
                   , TmRel "b" 0
                   , TmRel "a" 1 ]])))
           ( TmLambda "a" 
-            ( TmIndTypeRef "nat" )
+            ( TmIndType "nat" [] )
             ( TmLambda "b"
-              ( TmIndTypeRef "nat" )
+              ( TmIndType "nat" [] )
               ( TmAppl
-                [ TmConstrRef "eqrefl"
-                , TmIndTypeRef "nat"
+                [ TmLambda "a" 
+                    TmType
+                  ( TmLambda "x"
+                    ( TmVar "a" )
+                    ( TmConstr "eqrefl"
+                      [ TmRel "a" 1, TmRel "x" 0 ]))
+                , TmIndType "nat" []
                 , TmAppl
                   [ TmRel "plus" 2
                   , TmRel "a" 1
@@ -328,34 +369,40 @@ spec = do
           `shouldBe`
           Ind "le" 1
             (TmProd "x"
-              (TmIndTypeRef "nat")
+              (TmIndType "nat" [])
               (TmProd "_"
-                (TmIndTypeRef "nat")
+                (TmIndType "nat" [])
                 TmType))
             (TmLambda "x"
-              (TmIndTypeRef "nat")
+              (TmIndType "nat" [])
               (TmLambda ".0"
-                (TmIndTypeRef "nat")
+                (TmIndType "nat" [])
                 (TmIndType "le" [TmRel "x" 1, TmRel ".0" 0])))
             [ ( "lerefl"
               , TmProd "x"
-                  (TmIndTypeRef "nat")
+                  (TmIndType "nat" [])
                   (TmIndType "le" [TmRel "x" 0, TmRel "x" 0])
               , TmLambda "x"
-                  (TmIndTypeRef "nat")
+                  (TmIndType "nat" [])
                   (TmConstr "lerefl" [TmRel "x" 0]))
             , ( "leS"
               , TmProd "x"
-                  (TmIndTypeRef "nat")
+                  (TmIndType "nat" [])
                   (TmProd "y"
-                    (TmIndTypeRef "nat")
+                    (TmIndType "nat" [])
                     (TmProd "_"
                       (TmIndType "le" [TmRel "x" 1, TmRel "y" 0])
-                      (TmIndType "le" [TmRel "x" 2, TmAppl [TmConstrRef "S", TmRel "y" 1]])))
+                      (TmIndType "le" 
+                        [ TmRel "x" 2
+                        , TmAppl 
+                          [ TmLambda ".0"
+                            ( TmIndType "nat" [] )
+                            ( TmConstr "S" [ TmRel ".0" 0 ])
+                        , TmRel "y" 1]])))
               , TmLambda "x"
-                  (TmIndTypeRef "nat")
+                  (TmIndType "nat" [])
                   (TmLambda "y"
-                    (TmIndTypeRef "nat")
+                    (TmIndType "nat" [])
                     (TmLambda ".0"
                       (TmIndType "le" [TmRel "x" 1, TmRel "y" 0])
                       (TmConstr "leS" [TmRel "x" 2, TmRel "y" 1, TmRel ".0" 0]))))]

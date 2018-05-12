@@ -86,6 +86,25 @@ spec =
         getBinding dependentContext 1 `shouldBe` Right (VarBind (TmRel "C" 3))
       it "2" $
         getBinding dependentContext 3 `shouldBe` Right (TmAbbBind (TmRel "D" 4) (Just $ TmRel "E" 5))
+    describe "getBindingType" $
+      it "simple" $
+        getBindingType natContextWithAxiom 0
+        `shouldBe`
+        Right
+        ( TmProd "x"
+          ( TmIndType "nat" [] )
+          ( TmProd "y"
+            ( TmIndType "nat" [] )
+            ( TmIndType "eq"
+              [ TmIndType "nat" []
+              , TmAppl
+                [ TmRel "plus" 3
+                , TmRel "x" 1
+                , TmRel "y" 0 ]
+              , TmAppl
+                [ TmRel "plus" 3
+                , TmRel "y" 0
+                , TmRel "x" 1 ]])))
     describe "getIndTypeTerm" $ do
       it "found" $
         getIndTypeTerm listContext "list" `shouldBe`

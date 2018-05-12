@@ -107,6 +107,26 @@ natContextWithPredefinedNumbers =
         ( TmConstr "S"
           [ TmRel "one" 0 ])))] ++ natContext
 
+natContextWithAxiom :: Context
+natContextWithAxiom =
+  ( "pluscomm"
+  , TmAbbBind
+    ( TmProd "x"
+      ( TmIndType "nat" [] )
+      ( TmProd "y"
+        ( TmIndType "nat" [] )
+        ( TmIndType "eq"
+          [ TmIndType "nat" []
+          , TmAppl
+            [ TmRel "plus" 2
+            , TmRel "x" 1
+            , TmRel "y" 0 ]
+          , TmAppl
+            [ TmRel "plus" 2
+            , TmRel "y" 0
+            , TmRel "x" 1 ]])))
+      Nothing ) : natContext
+
 listContext :: Context
 listContext =
   [ ( "list"
@@ -158,12 +178,12 @@ natListContext =
       ( TmConstr "natNil" [] )
     , Constructor "natCons"
       ( TmProd ".0"
-        ( TmIndTypeRef "nat" )
+        ( TmIndType "nat" [] )
         ( TmProd ".1"
           ( TmIndType "natList" [] )
           ( TmIndType "natList" [] )))
       ( TmLambda ".0"
-        ( TmIndTypeRef "nat" )
+        ( TmIndType "nat" [] )
         ( TmLambda ".1"
           ( TmIndType "natList" [] )
           ( TmConstr "natCons" [TmRel ".0" 1, TmRel ".1" 0])))]) : natContext

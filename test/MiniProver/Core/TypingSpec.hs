@@ -14,7 +14,7 @@ spec =
   describe "typeof" $ do
     describe "TmRel" $
       it "plus" $
-        typeof natContext (TmRel "plus" 0) `shouldBe` 
+        typeof natContext (TmRel "plus" 0) `shouldBe`
           Right
           ( TmProd "a"
             ( TmIndType "nat" [] )
@@ -23,7 +23,7 @@ spec =
               ( TmIndType "nat" [] )))
     describe "TmAppl" $ do
       it "plus 1 2" $
-        typeof natContextWithPredefinedNumbers 
+        typeof natContextWithPredefinedNumbers
           ( TmAppl
             [ TmRel "plus" 3
             , TmRel "one" 1
@@ -66,24 +66,50 @@ spec =
           ( TmIndType "nat" [] )
           ( TmIndType "nat" [] ))
       it "simple-2" $
-        -- Definition cons2 (T:Type) (a:T) (b:T) (ls:list T) := cons T a (cons T b ls).
+        -- Definition cons2 (T:Type) (a:T) (b:T) (ls:list T) : list T := cons T a (cons T b ls).
         typeof listContext
-          ( TmLambda "T"
-            TmType
-            ( TmLambda "a"
+          ( TmLambda "T" 
+              TmType 
+            ( TmLambda "a" 
               ( TmRel "T" 0 )
-              ( TmLambda "b"
+              ( TmLambda "b" 
                 ( TmRel "T" 1 )
                 ( TmLambda "ls"
-                  ( TmIndType "list"
-                    [ TmRel "T" 2 ])
-                  ( TmConstr "cons"
-                    [ TmRel "T" 3
+                  ( TmAppl 
+                    [ TmLambda "T" 
+                        TmType 
+                      ( TmIndType "list" 
+                        [ TmRel "T" 0 ])
+                    , TmRel "T" 2 ])
+                  ( TmAppl 
+                    [ TmLambda "T" 
+                        TmType 
+                      ( TmLambda ".0" 
+                        ( TmRel "T" 0 )
+                        ( TmLambda ".1"
+                          ( TmIndType "list" 
+                            [ TmRel "T" 1 ])
+                          ( TmConstr "cons" 
+                            [ TmRel "T" 2
+                            , TmRel ".0" 1
+                            , TmRel ".1" 0 ])))
+                    , TmRel "T" 3
                     , TmRel "a" 2
-                    , TmConstr "cons"
-                      [ TmRel "T" 3
+                    , TmAppl 
+                      [ TmLambda "T" 
+                          TmType 
+                        ( TmLambda ".0" 
+                          ( TmRel "T" 0 )
+                          ( TmLambda ".1" 
+                            ( TmIndType "list" 
+                              [ TmRel "T" 1 ])
+                            ( TmConstr "cons"
+                              [ TmRel "T" 2
+                              , TmRel ".0" 1
+                              , TmRel ".1" 0 ])))
+                      , TmRel "T" 3
                       , TmRel "b" 1
-                      , TmRel "ls" 0 ]])))))
+                      , TmRel "ls" 0]])))))
         `shouldBe`
         Right
         ( TmProd "T"

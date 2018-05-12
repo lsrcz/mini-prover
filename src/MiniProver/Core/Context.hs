@@ -12,6 +12,7 @@ module MiniProver.Core.Context (
   , nameToIndex
   , indexToBinding
   , getBinding
+  , getBindingType
   , getIndTypeTerm
   , getIndTypeType
   , getConstrTerm
@@ -96,6 +97,14 @@ getBinding ctx idx =
   if ctxLength ctx > idx
     then Right $ bindingShift (idx + 1) $ snd $ ctx !! idx
     else Left IndexOutOfBound
+
+getBindingType :: Context -> Index -> Either ContextError Term
+getBindingType ctx idx =
+  case getBinding ctx idx of
+    Left err -> Left err
+    Right (VarBind ty) -> Right ty
+    Right (TmAbbBind ty _) -> Right ty
+    _ -> error "This should not happen"
 
 getIndType :: Context -> Name -> Either ContextError (Int, Term, Term)
 getIndType [] _ = Left NotATypeConstructor

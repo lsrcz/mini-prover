@@ -19,11 +19,10 @@ data Term =
   | TmLambda Name Term Term         -- binder source target
   | TmFix Term
   | TmLetIn Name Term Term Term     -- binder type term body
-  | TmIndTypeRef Name
-  | TmConstrRef Name
   | TmIndType Name [Term]           -- should only be full, refering to the type
   | TmConstr Name [Term]            -- should only be full, refering to the term
   | TmType                          -- sort
+  | TmTypeHigher
   | TmMatch Term [Name] Term [Equation]  -- ind. Term [Names] RetType [Equation]
   | DummyTm                         -- Just for testing
   deriving (Eq, Show)
