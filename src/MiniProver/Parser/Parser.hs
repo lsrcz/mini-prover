@@ -86,6 +86,7 @@ ptermnapp :: Parser Term
 ptermnapp = try ptmtype
         <|> try pforall
         <|> try pfun
+        <|> try pfix
         <|> try pletin
         <|> try pmatch
         <|> try pvar
