@@ -10,7 +10,48 @@ main :: IO ()
 main = hspec spec
 
 spec :: Spec
-spec = 
+spec = do
+  describe "simplifyType" $ do
+    it "simple" $
+      simplifyType
+      ( TmAppl
+        [ TmLambda "x"
+            TmType
+          ( TmRel "x" 0 )
+        , TmIndType "nat" [] ])
+      `shouldBe`
+      TmIndType "nat" []
+    it "nested" $
+      simplifyType
+      ( TmAppl
+        [ TmLambda "f"
+          ( TmProd "_"
+            TmType
+            TmType)
+          ( TmLambda "x"
+            TmType
+            ( TmAppl
+              [ TmRel "f" 1
+              , TmRel "x" 0 ]))
+        , TmLambda "x"
+          TmType
+          ( TmRel "x" 0 )
+        , TmIndType "nat" [] ])
+      `shouldBe`
+      TmIndType "nat" []
+    it "nested-2" $
+      simplifyType
+      ( TmProd "A"
+          TmType
+        ( TmAppl
+          [ TmLambda "x"
+              TmType
+            ( TmRel "x" 0 )
+          , TmRel "A" 0 ]))
+      `shouldBe`
+      TmProd "A"
+        TmType
+      ( TmRel "A" 0 )
   describe "typeof" $ do
     describe "TmRel" $
       it "plus" $
