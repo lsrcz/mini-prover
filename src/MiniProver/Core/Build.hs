@@ -28,19 +28,10 @@ buildTerm :: Term -> BuiltTerm
 buildTerm (TmVar name) ctx = 
   case nameToIndex ctx name of
     Right i -> TmRel name i
-    Left IsConstructor -> 
-      fromRight (error "This should not happen") $ getConstrTerm ctx name
-    Left IsTypeConstructor -> 
-      fromRight (error "This should not happen") $ getIndTypeTerm ctx name
+    Left IsConstructor -> TmConstrRef name
+    Left IsTypeConstructor -> TmIndTypeRef name
     _ -> error "This should not happen"
-buildTerm (TmAppl lst) ctx =
-  case map (`buildTerm` ctx) lst of
-    [] -> error "This should not happen"
-    [h] -> h
-    ls@(x:xs) ->
-      case x of
-        TmAppl ls' -> TmAppl $ ls' ++ xs
-        _ -> TmAppl ls
+buildTerm (TmAppl lst) ctx = TmAppl $ map (`buildTerm` ctx) lst
 buildTerm (TmProd name ty tm) ctx = 
   TmProd name (buildTerm ty ctx) (buildTerm tm (addName ctx name))
 buildTerm (TmLambda name ty tm) ctx = 
@@ -57,7 +48,7 @@ buildTerm (TmIndType name tmlst) ctx =
 buildTerm (TmConstr name tmlst) ctx =
   TmConstr name $
     map (`buildTerm` ctx) tmlst
-buildTerm TmType _ = TmType
+buildTerm (TmSort s) _ = TmSort s
 buildTerm (TmMatch tm namelst rty equlst) ctx =
   TmMatch (buildTerm tm ctx) namelst (buildTerm rty (foldl addName ctx (tail namelst))) $
     map (`buildEquation` ctx) equlst
