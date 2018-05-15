@@ -100,6 +100,10 @@ spec = do
         it "simple" $
           tmShiftAbove 2 2 (TmIndType "tuplethree" [TmRel "A" 1, TmRel "B" 2, TmRel "C" 3])
             `shouldBe` TmIndType "tuplethree" [TmRel "A" 1, TmRel "B" 4, TmRel "C" 5]
+      describe "TmConstr" $ 
+        it "simple" $
+          tmShiftAbove 2 2 (TmConstr "tuplethree" [TmRel "A" 1, TmRel "B" 2, TmRel "C" 3])
+            `shouldBe` TmConstr "tuplethree" [TmRel "A" 1, TmRel "B" 4, TmRel "C" 5]
       describe "TmType" $
         it "Type" $
           tmShiftAbove 2 2 TmType `shouldBe` TmType
@@ -187,6 +191,11 @@ spec = do
           -- [A B] pair A B
           tmShift 2 (TmIndType "pair" [TmRel "A" 0, TmRel "B" 1])
             `shouldBe` TmIndType "pair" [TmRel "A" 2, TmRel "B" 3]
+      describe "TmConstr" $ 
+        it "simple" $
+          -- [A B] cons A B
+          tmShift 2 (TmConstr "cons" [TmRel "A" 0, TmRel "B" 1])
+            `shouldBe` TmConstr "cons" [TmRel "A" 2, TmRel "B" 3]
       describe "TmType" $
         it "Type" $
           tmShift 2 TmType `shouldBe` TmType
@@ -313,6 +322,12 @@ spec = do
           tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1])
             (TmIndType "tuplethree" [TmRel "x" 0, TmRel "a" 1])
             `shouldBe` TmIndType "tuplethree" [TmAppl [TmRel "a" 0, TmRel "b" 1], TmRel "a" 0]
+      describe "TmConstr" $ 
+        it "simple" $
+          -- (lambda. cons 0 1)(0 1) => cons (0 1) 0
+          tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1])
+            (TmConstr "cons" [TmRel "x" 0, TmRel "a" 1])
+            `shouldBe` TmConstr "cons" [TmAppl [TmRel "a" 0, TmRel "b" 1], TmRel "a" 0]
       describe "TmType" $
         it "Type" $
           tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1]) TmType `shouldBe` TmType
