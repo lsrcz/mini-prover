@@ -246,7 +246,7 @@ spec = do
         it "1" $
           bindingShift 1 (fromJust $ lookup "C" dependentContext) `shouldBe`
             TmAbbBind ( TmRel "D" 1 ) ( Just $ TmRel "E" 2 )
-  describe "substitude" $
+  describe "substitude" $ do
     describe "tmSubstTop" $ do
       describe "TmRel" $ do
         it "equal" $
@@ -352,4 +352,43 @@ spec = do
                 (TmAppl [TmRel "B" 0, TmAppl [TmRel "a" 1, TmRel "b" 2], TmRel "a" 1])
               , Equation ["A", "B", "c"] 
                 (TmAppl [TmRel "B" 1, TmAppl [TmRel "a" 2, TmRel "b" 3], TmRel "a" 2])]
-        
+    describe "tmSubstInsideN" $ do
+      it "simple-1" $
+        tmSubstInsideN 1 (TmRel "x" 0)
+        ( TmAppl
+          [ TmRel "y" 0
+          , TmRel "x" 1
+          , TmRel "z" 2 ])
+        `shouldBe`
+        TmAppl
+        [ TmRel "x" 0
+        , TmRel "x" 0
+        , TmRel "z" 1 ]
+      it "simple-2" $
+        tmSubstInsideN 2 (TmRel "x" 0)
+        ( TmAppl
+          [ TmRel "y" 0
+          , TmRel "z" 1
+          , TmRel "x" 2
+          , TmRel "a" 3 ])
+        `shouldBe`
+        TmAppl
+        [ TmRel "y" 0
+        , TmRel "x" 1
+        , TmRel "x" 1
+        , TmRel "a" 2 ]
+      it "simple-3" $
+        tmSubstInsideN 3 (TmRel "x" 0)
+        ( TmAppl
+          [ TmRel "y" 0
+          , TmRel "z" 1
+          , TmRel "a" 2
+          , TmRel "x" 3
+          , TmRel "b" 4 ])
+        `shouldBe`
+        TmAppl
+        [ TmRel "y" 0
+        , TmRel "z" 1
+        , TmRel "x" 2
+        , TmRel "x" 2
+        , TmRel "b" 3 ]

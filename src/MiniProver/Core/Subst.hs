@@ -1,7 +1,9 @@
 module MiniProver.Core.Subst (
     tmShiftAbove
   , tmShift
+  , tmSubst
   , tmSubstTop
+  , tmSubstInsideN
   , bindingShift
   ) where
 
@@ -45,8 +47,6 @@ bindingShift d (IndTypeBind i ty tm constrlst) =
 bindingShift d (VarBind tm) = VarBind (tmShift d tm)
 bindingShift d (TmAbbBind ty tm) = TmAbbBind (tmShift d ty) (tmShift d <$> tm)
 
-
-
 tmSubst :: Index -> Term -> Term -> Term
 tmSubst j s =
   tmMap
@@ -56,3 +56,8 @@ tmSubst j s =
 tmSubstTop :: Term -> Term -> Term
 tmSubstTop s t =
   tmShift (-1) (tmSubst 0 (tmShift 1 s) t)
+
+-- tmSubstTop is tmSubstInsideN 1
+tmSubstInsideN :: Int -> Term -> Term -> Term
+tmSubstInsideN n s t =
+  tmShiftAbove (-1) (n - 1) (tmSubst (n - 1) (tmShift 1 s) t)
