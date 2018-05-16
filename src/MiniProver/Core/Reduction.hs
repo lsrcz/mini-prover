@@ -16,6 +16,12 @@ betaReduction (TmAppl [TmLambda _ _ tm, tm1]) =
   tmSubstTop tm1 tm
 betaReduction (TmAppl (TmLambda _ _ tm:tm1:xs)) =
   TmAppl $ tmSubstTop tm1 tm : xs
+betaReduction (TmAppl [TmProd _ _ tm, tm1]) =
+  tmSubstTop tm1 tm
+betaReduction (TmAppl (TmProd _ _ tm:tm1:xs)) =
+  TmAppl $ tmSubstTop tm1 tm : xs
+betaReduction (TmAppl (TmFix tm:tm1:xs)) =
+  betaReduction $ betaReduction (TmAppl (tm:TmFix tm:tm1:xs))
 betaReduction _ = error "beta reduction can only be applied to application"
 
 zetaReduction :: Term -> Term
@@ -49,4 +55,3 @@ deltaReduction _ _ = error "delta reduction can only be applied to variables"
 -- tm : forall x:ity, ty2
 etaExpansion :: Term -> Name -> Term -> Term
 etaExpansion tm iname ity = TmLambda iname ity (TmAppl [tmShift 1 tm, TmRel iname 0])
-  
