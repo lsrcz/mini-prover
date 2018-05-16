@@ -72,13 +72,6 @@ spec =
                            , Constructor "C" (TmRel "a" 1) (TmRel "b" 1)])] "C"
           `shouldBe`
           Left IsConstructor
-    describe "indexToBinding" $ do
-      it "bounded" $
-        indexToBinding [("a", NameBind)] 0 `shouldBe` Right NameBind
-      it "bounded tail" $
-        indexToBinding [("a''", NameBind), ("a'", NameBind), ("a", NameBind)] 2 `shouldBe` Right NameBind
-      it "unbounded" $
-        indexToBinding [("a''", NameBind), ("a'", NameBind), ("a", NameBind)] 3 `shouldBe` Left IndexOutOfBound
     describe "getBinding" $ do
       it "0" $
         getBinding dependentContext 0 `shouldBe` Right (VarBind (TmRel "B" 1))

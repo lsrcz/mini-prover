@@ -10,7 +10,6 @@ module MiniProver.Core.Context (
   , pickFreshName
   , indexToName
   , nameToIndex
-  , indexToBinding
   , getBinding
   , getBindingType
   , getIndTypeTerm
@@ -85,12 +84,6 @@ nameToIndex ((nameb,binder):xs) name =
     _
       | nameb == name -> Right 0
       | otherwise -> (+1) <$> nameToIndex xs name
-
-indexToBinding :: Context -> Index -> Either ContextError Binding
-indexToBinding ctx idx =
-  if ctxLength ctx > idx
-    then Right $ snd $ ctx !! idx
-    else Left IndexOutOfBound
 
 getBinding :: Context -> Index -> Either ContextError Binding
 getBinding ctx idx =
