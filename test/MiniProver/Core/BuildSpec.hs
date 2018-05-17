@@ -239,7 +239,7 @@ spec = do
                 [ TmLambda "a" 
                     TmType
                   ( TmLambda "x"
-                    ( TmVar "a" )
+                    ( TmRel "a" 0 )
                     ( TmConstr "eqrefl"
                       [ TmRel "a" 1, TmRel "x" 0 ]))
                 , TmIndType "nat" []

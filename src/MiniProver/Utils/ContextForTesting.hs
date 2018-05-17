@@ -37,11 +37,13 @@ natContext =
                   , Equation
                     [ "S", "n" ]
                     ( TmAppl
-                      [ TmVar "plus"
-                      , TmVar "n"
+                      [ TmRel "plus" 3
+                      , TmRel "n" 0
                       , TmAppl
-                        [ TmVar "S"
-                        , TmVar "b"]])])))))))
+                        [ TmLambda ".0"
+                          ( TmIndType "nat" [] )
+                          ( TmConstr "S" [ TmRel ".0" 0 ])
+                        , TmRel "b" 1 ]])])))))))
   , ( "nat"
     , IndTypeBind 0
       TmType
@@ -77,13 +79,13 @@ natContext =
         ( TmProd "a"
           TmType
           ( TmProd "x"
-            ( TmVar "a" )
+            ( TmRel "a" 0 )
             ( TmIndType "eq"
               [ TmRel "a" 1, TmRel "x" 0, TmRel "x" 0 ])))
         ( TmLambda "a" 
           TmType
           ( TmLambda "x"
-            ( TmVar "a" )
+            ( TmRel "a" 0 )
             ( TmConstr "eqrefl"
               [ TmRel "a" 1, TmRel "x" 0 ])))])]
 
