@@ -12,8 +12,10 @@ module MiniProver.Core.Context (
   , nameToIndex
   , getBinding
   , getBindingType
+  , getIndType
   , getIndTypeTerm
   , getIndTypeType
+  , getIndTypeConstrlst
   , getConstrTerm
   , getConstrType
   , checkAllNameBounded
@@ -99,19 +101,22 @@ getBindingType ctx idx =
     Right (TmAbbBind ty _) -> Right ty
     _ -> error "This should not happen"
 
-getIndType :: Context -> Name -> Either ContextError (Int, Term, Term)
+getIndType :: Context -> Name -> Either ContextError (Int, Term, Term, [Constructor])
 getIndType [] _ = Left NotATypeConstructor
 getIndType ((nameb,binder):xs) name =
   case binder of
-    IndTypeBind i ty tm _
-      | nameb == name -> Right (i, ty, tm)
+    IndTypeBind i ty tm constrlst
+      | nameb == name -> Right (i, ty, tm, constrlst)
     _ -> getIndType xs name
 
 getIndTypeTerm :: Context -> Name -> Either ContextError Term
-getIndTypeTerm ctx name = (\(_,_,tm) -> tm) <$> getIndType ctx name
+getIndTypeTerm ctx name = (\(_,_,tm,_) -> tm) <$> getIndType ctx name
 
 getIndTypeType :: Context -> Name -> Either ContextError (Int, Term)
-getIndTypeType ctx name = (\(i,ty,_) -> (i,ty)) <$> getIndType ctx name
+getIndTypeType ctx name = (\(i,ty,_,_) -> (i,ty)) <$> getIndType ctx name
+
+getIndTypeConstrlst :: Context -> Name -> Either ContextError [Constructor]
+getIndTypeConstrlst ctx name = (\(_,_,_,constrlst) -> constrlst) <$> getIndType ctx name
 
 getConstr :: Context -> Name -> Either ContextError (Term, Term)
 getConstr [] name = Left NotAConstructor
