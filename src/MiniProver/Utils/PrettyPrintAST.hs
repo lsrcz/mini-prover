@@ -96,7 +96,7 @@ prettyShowAST' (TmProd name ty tm) indent = (spaces indent ++ "TmProd " ++ show 
   ( prettyShowAddParensNonAtom ty (indent + 2) ++ prettyShowAddParensNonAtom tm (indent + 2))
 prettyShowAST' (TmLambda name ty tm) indent = (spaces indent ++ "TmLambda " ++ show name) :
   ( prettyShowAddParensNonAtom ty (indent + 2) ++ prettyShowAddParensNonAtom tm (indent + 2))
-prettyShowAST' (TmFix tm) indent = (spaces indent ++ "TmFix") :
+prettyShowAST' (TmFix n tm) indent = (spaces indent ++ "TmFix " ++ show n) :
   addParens (prettyShowAST' tm (indent + 2)) '(' ')'
 prettyShowAST' (TmLetIn name ty tm bdy) indent = (spaces indent ++ "TmLetIn " ++ show name) :
   ( prettyShowAddParensNonAtom ty (indent + 2) ++ 

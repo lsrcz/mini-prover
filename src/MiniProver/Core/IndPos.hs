@@ -85,7 +85,7 @@ dontOccurFree name term =
       TmLambda _ tm1 tm2 -> 
         (dontOccurFree name tm1) && 
         (dontOccurFree name tm2)
-      TmFix tm -> 
+      TmFix _ tm -> 
         dontOccurFree name tm
       TmLetIn _ tm1 tm2 tm3 ->
         (dontOccurFree name tm1) && 

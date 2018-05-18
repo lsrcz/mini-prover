@@ -16,7 +16,7 @@ natContext =
           ( TmIndType "nat" [] )
           ( TmIndType "nat" [] )))
       ( Just
-        ( TmFix
+        ( TmFix 1
           ( TmLambda "plus"
             ( TmProd "a"
               ( TmIndType "nat" [] )
@@ -91,23 +91,119 @@ natContext =
 
 natContextWithPredefinedNumbers :: Context
 natContextWithPredefinedNumbers =
-  [ ( "zero"
+  [ ( "two"
     , TmAbbBind
       ( TmIndType "nat" [] )
       ( Just
-        ( TmConstr "O" [] )))
+        ( TmConstr "S"
+          [ TmRel "one" 0 ])))
   , ( "one"
     , TmAbbBind
       ( TmIndType "nat" [] )
       ( Just
         ( TmConstr "S"
           [ TmRel "zero" 0 ])))
-  , ( "two"
+  , ( "zero"
     , TmAbbBind
       ( TmIndType "nat" [] )
       ( Just
-        ( TmConstr "S"
-          [ TmRel "one" 0 ])))] ++ natContext
+        ( TmConstr "O" [] )))
+            
+            ] ++ natContext
+
+natContextWithPredefinedFunctions :: Context
+natContextWithPredefinedFunctions =
+  [ ( "plusThreeNumbers"
+    , TmAbbBind
+      ( TmProd "x"
+        ( TmIndType "nat" [] )
+        ( TmProd "y"
+          ( TmIndType "nat" [] )
+          ( TmProd "z"
+            ( TmIndType "nat" [] )
+            ( TmIndType "nat" [] ))))
+      ( Just $ TmLambda "x"
+        ( TmIndType "nat" [] )
+        ( TmLambda "y"
+          ( TmIndType "nat" [] )
+          ( TmLambda "z"
+            ( TmIndType "nat" [] )
+            ( TmAppl
+              [ TmRel "plus" 11
+              , TmRel "x" 2
+              , TmAppl
+                [ TmRel "plus" 11
+                , TmRel "y" 1
+                , TmRel "z" 0 ]])))))
+  , ( "succByPlus"
+    , TmAbbBind
+      ( TmProd "x"
+        ( TmIndType "nat" [] )
+        ( TmIndType "nat" [] ))
+      ( Just $ TmAppl
+        [ TmRel "plus" 7
+        , TmAppl
+          [ TmLambda ".0"
+            ( TmIndType "nat" [] )
+            ( TmConstr "S"
+              [ TmRel ".0" 0 ])
+          , TmConstr "O" [] ]]))
+  , ( "succthreeLetIn"
+    , TmAbbBind
+      ( TmProd "x"
+        ( TmIndType "nat" [] )
+        ( TmIndType "nat" [] ))
+      ( Just $ TmLambda "x"
+        ( TmIndType "nat" [] )
+        ( TmLetIn "y"
+          ( TmIndType "nat" [] )
+          ( TmAppl
+            [ TmRel "succtwo" 1
+            , TmRel "x" 0 ])
+          ( TmAppl
+            [ TmRel "succ" 3
+            , TmRel "y" 0 ]))))
+  ,( "succtwo"
+    , TmAbbBind
+      ( TmProd "x"
+        ( TmIndType "nat" [] )
+        ( TmIndType "nat" [] ))
+      ( Just $ TmLambda "x"
+        ( TmIndType "nat" [] )
+        ( TmAppl
+          [ TmRel "succ" 1
+          , TmAppl
+            [ TmRel "succ" 1
+            , TmRel "x" 0 ]])))
+  , ( "succ"
+    , TmAbbBind
+      ( TmProd "x"
+        ( TmIndType "nat" [] )
+        ( TmIndType "nat" [] ))
+      ( Just $ TmLambda "x"
+        ( TmIndType "nat" [] )
+        ( TmAppl
+          [ TmLambda ".0"
+            ( TmIndType "nat" [] )
+            ( TmConstr "S" [ TmRel ".0" 0 ])
+          , TmRel "x" 0 ])))
+  , ( "pred"
+    , TmAbbBind
+      ( TmProd "x"
+        ( TmIndType "nat" [] )
+        ( TmIndType "nat" [] ))
+      ( Just $ TmLambda "x"
+        ( TmIndType "nat" [] )
+        ( TmMatch
+          ( TmRel "x" 0 )
+          [ "nat" ]
+          ( TmIndType "nat" [] )
+          [ Equation
+            [ "O" ]
+            ( TmConstr "O" [] )
+          , Equation
+            [ "S", "n" ]
+            ( TmRel "n" 0 )])))] ++ natContextWithPredefinedNumbers
 
 natContextWithAxiom :: Context
 natContextWithAxiom =

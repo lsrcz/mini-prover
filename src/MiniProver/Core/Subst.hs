@@ -19,7 +19,7 @@ tmMap onRel c t =
       TmAppl lst -> TmAppl $ map (walk c') lst
       TmProd name ty tm -> TmProd name (walk c' ty) (walk (c' + 1) tm)
       TmLambda name ty tm -> TmLambda name (walk c' ty) (walk (c' + 1) tm)
-      TmFix tm -> TmFix (walk c' tm)
+      TmFix n tm -> TmFix n (walk c' tm)
       TmLetIn name ty tm bdy -> TmLetIn name (walk c' ty) (walk c' tm) (walk (c' + 1) bdy)
       TmIndType name lst -> TmIndType name $ map (walk c') lst
       TmConstr name lst -> TmConstr name $ map (walk c') lst

@@ -17,7 +17,7 @@ data Term =
   | TmAppl [Term]                   -- arguments
   | TmProd Name Term Term           -- binder source target
   | TmLambda Name Term Term         -- binder source target
-  | TmFix Term
+  | TmFix Int Term
   | TmLetIn Name Term Term Term     -- binder type term body
   | TmIndType Name [Term]           -- should only be full, refering to the type
   | TmConstr Name [Term]            -- should only be full, refering to the term

@@ -40,6 +40,9 @@ prettyLambdaTail (TmLambda name ty tm) indent =
 prettyLambdaTail tm indent =
   " => " ++ indentNewline indent ++ prettyShow' tm indent
 
+prettyFix :: Term -> Int -> String
+prettyFix (TmFix _ (TmLambda name _ tm)) indent = "fix " ++ name ++ prettyLambdaTail tm (indent + 2)
+
 prettyShow' :: Term -> Int -> String
 prettyShow' (TmRel name _) _ = name
 prettyShow' (TmVar name) _ = name
@@ -53,7 +56,7 @@ prettyShow' (TmProd name ty tm) indent =
 prettyShow' (TmLambda name ty tm) indent =
   "fun " ++ "(" ++ name ++ ":" ++ prettyShow' ty indent ++
   ")" ++ prettyLambdaTail tm (indent + 2)
-prettyShow' (TmFix (TmLambda _ _ tm)) indent = "fix " ++ prettyShow' tm indent
+prettyShow' origtm@(TmFix _ TmLambda{}) indent = prettyFix origtm indent -- "fix " ++ prettyShow' tm indent
 prettyShow' (TmLetIn name ty tm bdy) indent = 
   "let " ++ name ++ " : " ++ prettyShow' ty indent ++
   " := " ++ prettyShow' tm indent ++ " in " ++

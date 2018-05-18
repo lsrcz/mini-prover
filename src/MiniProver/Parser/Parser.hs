@@ -46,7 +46,7 @@ pfix = do
   ty <- pterm
   _ <- coloneq
   tm <- pterm
-  return $ TmFix
+  return $ TmFix (-1)
     (TmLambda name
       (addBinderAbbr TmProd ty binders)
       (addBinderAbbr TmLambda tm binders))

@@ -8,7 +8,7 @@ import           MiniProver.Core.Syntax
 -- Not terminating => return Nothing
 -- Terminating     => the number of arguments decreasing on
 isTerminating :: Term -> Maybe Int
-isTerminating (TmFix (TmLambda nm ty tm)) =
+isTerminating (TmFix _ (TmLambda nm ty tm)) =
     let (d, term) = capArg 0 tm in
         forCheck d d term
 
@@ -29,7 +29,7 @@ haltCheck deg d s term lst =
       TmLambda _ ty tm ->
         (haltCheck deg d s ty lst) &&
         (haltCheck (deg + 1) (d + 1) s tm (liftList 1 lst))
-      TmFix tm ->
+      TmFix _ tm ->
         haltCheck deg d s tm lst
       TmLetIn _ ty tm1 tm2 ->
         (haltCheck deg d s ty lst) &&

@@ -74,9 +74,9 @@ spec = do
         TmLambda "x" (TmRel "A" 0) (TmAppl [TmRel "A" 1, TmRel "x" 0])
     describe "TmFix" $
       it "all in one" $
-        buildTerm (TmFix (TmVar "A")) ctx
+        buildTerm (TmFix (-1) (TmVar "A")) ctx
         `shouldBe`
-        TmFix (TmRel "A" 0)
+        TmFix (-1) (TmRel "A" 0)
     describe "TmLetIn" $
       it "all in one" $
         buildTerm

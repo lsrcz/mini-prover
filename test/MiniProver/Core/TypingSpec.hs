@@ -68,7 +68,7 @@ spec = do
           ( TmAppl
             [ TmRel "plus" 3
             , TmRel "one" 1
-            , TmRel "two" 2 ])
+            , TmRel "two" 0 ])
           `shouldBe`
           Right
             ( TmIndType "nat" [] )
@@ -172,7 +172,7 @@ spec = do
       --   | S xx => plus xx (S y) 
       --   end
         typeof natContext
-          ( TmFix
+          ( TmFix 1
             ( TmLambda "plus"
               ( TmProd "x"
                 ( TmIndType "nat" [] )
@@ -217,7 +217,7 @@ spec = do
                 , TmRel "one" 2 ]))
             ( TmAppl
               [ TmRel "plus" 4
-              , TmRel "two" 3
+              , TmRel "two" 1
               , TmAppl
                 [ TmRel "f" 0
                 , TmRel "one" 2 ]]))
@@ -250,7 +250,7 @@ spec = do
           [ "nat" ]
           ( TmIndType "nat" [] )
           [ Equation ["O"]
-              ( TmRel "zero" 0 )
+              ( TmRel "zero" 2 )
           , Equation ["S", "xx"]
               ( TmRel "xx" 0 )])
         `shouldBe`

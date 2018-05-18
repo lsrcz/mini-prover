@@ -78,14 +78,14 @@ spec = do
               TmLambda "gt2" (TmRel "a" 0) (TmRel "b" 6)
       describe "TmFix" $ do
         it "less than" $
-          tmShiftAbove 2 2 (TmFix (TmLambda "f" (TmRel "A" 1) (TmLambda "a" (TmRel "B" 2) (TmRel "B" 3))))
-            `shouldBe` TmFix (TmLambda "f" (TmRel "A" 1) (TmLambda "a" (TmRel "B" 2) (TmRel "B" 3)))
+          tmShiftAbove 2 2 (TmFix (-1) (TmLambda "f" (TmRel "A" 1) (TmLambda "a" (TmRel "B" 2) (TmRel "B" 3))))
+            `shouldBe` TmFix (-1) (TmLambda "f" (TmRel "A" 1) (TmLambda "a" (TmRel "B" 2) (TmRel "B" 3)))
         it "equal" $
-          tmShiftAbove 2 2 (TmFix (TmLambda "f" (TmRel "A" 2) (TmLambda "a" (TmRel "B" 3) (TmRel "B" 4))))
-            `shouldBe` TmFix (TmLambda "f" (TmRel "A" 4) (TmLambda "a" (TmRel "B" 5) (TmRel "B" 6)))
+          tmShiftAbove 2 2 (TmFix (-1) (TmLambda "f" (TmRel "A" 2) (TmLambda "a" (TmRel "B" 3) (TmRel "B" 4))))
+            `shouldBe` TmFix (-1) (TmLambda "f" (TmRel "A" 4) (TmLambda "a" (TmRel "B" 5) (TmRel "B" 6)))
         it "greater than" $
-          tmShiftAbove 2 2 (TmFix (TmLambda "f" (TmRel "A" 3) (TmLambda "a" (TmRel "B" 4) (TmRel "B" 5))))
-            `shouldBe` TmFix (TmLambda "f" (TmRel "A" 5) (TmLambda "a" (TmRel "B" 6) (TmRel "B" 7)))
+          tmShiftAbove 2 2 (TmFix (-1) (TmLambda "f" (TmRel "A" 3) (TmLambda "a" (TmRel "B" 4) (TmRel "B" 5))))
+            `shouldBe` TmFix (-1) (TmLambda "f" (TmRel "A" 5) (TmLambda "a" (TmRel "B" 6) (TmRel "B" 7)))
       describe "TmLetIn" $ do
         it "less than" $
           tmShiftAbove 2 2 (TmLetIn "x" (TmRel "A" 1) (TmRel "A" 1) (TmRel "A" 2)) `shouldBe`
@@ -162,13 +162,13 @@ spec = do
         it "all in one" $
           -- [A B] fix (lambda f:A B.lambda a:f A B.f A B)
           tmShift 2
-            (TmFix 
+            (TmFix (-1)
               (TmLambda "f" (TmAppl [TmRel "A" 0, TmRel "B" 1]) 
                 (TmLambda "a" 
                   (TmAppl [TmRel "f" 0, TmRel "A" 1, TmRel "B" 2]) 
                   (TmAppl [TmRel "f" 1, TmRel "A" 2, TmRel "B" 3]))))
             `shouldBe`
-            TmFix 
+            TmFix (-1)
               (TmLambda "f" (TmAppl [TmRel "A" 2, TmRel "B" 3]) 
                 (TmLambda "a" 
                   (TmAppl [TmRel "f" 0, TmRel "A" 3, TmRel "B" 4]) 
@@ -292,13 +292,13 @@ spec = do
         it "all in one" $
           -- (lambda. fix lambda f:0 1.lambda a:0 1 2.1 2 3)(0 1) => fix lambda f:(0 1) 0.lambda a:0 (1 2) 1.1 (2 3) 2
           tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1])
-            (TmFix 
+            (TmFix (-1)
               (TmLambda "f" (TmAppl [TmRel "x" 0, TmRel "a" 1]) 
                 (TmLambda "y" 
                   (TmAppl [TmRel "f" 0, TmRel "x" 1, TmRel "a" 2]) 
                   (TmAppl [TmRel "f" 1, TmRel "x" 2, TmRel "a" 3]))))
             `shouldBe`
-            TmFix 
+            TmFix (-1)
               (TmLambda "f" (TmAppl [TmAppl [TmRel "a" 0, TmRel "b" 1], TmRel "a" 0]) 
                 (TmLambda "y"
                   (TmAppl [TmRel "f" 0, TmAppl [TmRel "a" 1, TmRel "b" 2], TmRel "a" 1]) 

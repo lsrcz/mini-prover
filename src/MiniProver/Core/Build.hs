@@ -45,7 +45,7 @@ buildTerm (TmProd name ty tm) ctx =
   TmProd name (buildTerm ty ctx) (buildTerm tm (addName ctx name))
 buildTerm (TmLambda name ty tm) ctx = 
   TmLambda name (buildTerm ty ctx) (buildTerm tm (addName ctx name))
-buildTerm (TmFix tm) ctx = TmFix (buildTerm tm ctx)
+buildTerm (TmFix n tm) ctx = TmFix n (buildTerm tm ctx)
 buildTerm (TmLetIn name ty tm bdy) ctx =
   TmLetIn name 
     (buildTerm ty ctx) 

@@ -42,7 +42,7 @@ spec = do
     describe "tmfix" $
       it "single" $
         parse pfix "" "fix plus (x:nat) (y:nat):nat:=match x in nat return nat with |O => y|S xx => plus xx (S y) end" `shouldParse`
-          TmFix
+          TmFix (-1)
             (TmLambda "plus"
               (TmProd "x"
                 (TmVar "nat")

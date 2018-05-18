@@ -224,9 +224,9 @@ spec =
             ["b"]
       describe "TmFix" $ do
         it "bounded" $
-          checkAllNameBounded ctx (TmFix (TmVar "A")) `shouldBe` []
+          checkAllNameBounded ctx (TmFix (-1) (TmVar "A")) `shouldBe` []
         it "unbounded" $
-          checkAllNameBounded ctx (TmFix (TmVar "a")) `shouldBe` ["a"]
+          checkAllNameBounded ctx (TmFix (-1) (TmVar "a")) `shouldBe` ["a"]
       describe "TmLetIn" $ do
         it "bounded" $
           checkAllNameBounded ctx

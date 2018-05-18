@@ -149,7 +149,7 @@ checkAllNameBounded ctx (TmLambda name ty tm) =
   unique $ sort $ 
     checkAllNameBounded ctx ty ++ 
     checkAllNameBounded (addName ctx name) tm
-checkAllNameBounded ctx (TmFix tm) = checkAllNameBounded ctx tm
+checkAllNameBounded ctx (TmFix _ tm) = checkAllNameBounded ctx tm
 checkAllNameBounded ctx (TmLetIn name ty tm bdy) =
   unique $ sort $ 
     checkAllNameBounded ctx ty ++ 

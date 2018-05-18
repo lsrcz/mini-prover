@@ -14,7 +14,7 @@ spec =
   describe "termination" $ do
     it "plus-yes1" $
       isTerminating
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "plus"
           ( TmProd "a"
             ( TmIndType "nat" [])
@@ -42,7 +42,7 @@ spec =
       `shouldBe` Just 1
     it "plus-no1" $
       isTerminating 
-      ( TmFix 
+      ( TmFix (-1)
         ( TmLambda "plus" 
           ( TmProd "x" 
             ( TmIndType "nat" []) 
@@ -74,7 +74,7 @@ spec =
       `shouldBe` Nothing
     it "plus-no2" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "plus"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -110,7 +110,7 @@ spec =
       `shouldBe` Nothing
     it "plus-yes3" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "plus"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -143,7 +143,7 @@ spec =
       `shouldBe` Just 2
     it "f-match-no1" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "f"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -200,7 +200,7 @@ spec =
       `shouldBe` Nothing
     it "f-match-no2" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "f"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -266,7 +266,7 @@ spec =
       `shouldBe` Nothing
     it "f-match-yes1" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "f"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -328,7 +328,7 @@ spec =
       `shouldBe` Just 2
     it "f-lambda-no1" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "f"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -400,7 +400,7 @@ spec =
       `shouldBe` Nothing
     it "f-lambda-yes1" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "f"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -472,7 +472,7 @@ spec =
       `shouldBe` Just 2
     it "f-fix-yes1" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "f"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -501,7 +501,7 @@ spec =
                     [ "S"
                     , "n" ]
                     ( TmAppl
-                      [ TmFix
+                      [ TmFix (-1)
                         ( TmLambda "plus"
                           ( TmProd "x"
                             ( TmIndType "nat" [])
@@ -527,7 +527,7 @@ spec =
       `shouldBe` Just 1
     it "f-fix-no1" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "f"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -556,7 +556,7 @@ spec =
                     [ "S"
                     , "n" ]
                     ( TmAppl
-                      [ TmFix
+                      [ TmFix (-1)
                         ( TmLambda "plus"
                           ( TmProd "x"
                             ( TmIndType "nat" [])
@@ -582,7 +582,7 @@ spec =
       `shouldBe` Nothing
     it "f-let-no1" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "f"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -614,7 +614,7 @@ spec =
                       ( TmProd "_"
                         ( TmIndType "nat" [])
                         ( TmIndType "nat" []))
-                      ( TmFix
+                      ( TmFix (-1)
                         ( TmLambda "plus"
                           ( TmProd "x"
                             ( TmIndType "nat" [])
@@ -646,7 +646,7 @@ spec =
       `shouldBe` Nothing
     it "f-let-yes1" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "f"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -678,7 +678,7 @@ spec =
                       ( TmProd "_"
                         ( TmIndType "nat" [])
                         ( TmIndType "nat" []))
-                      ( TmFix
+                      ( TmFix (-1)
                         ( TmLambda "plus"
                           ( TmProd "x"
                             ( TmIndType "nat" [])
@@ -710,7 +710,7 @@ spec =
       `shouldBe` Just 1
     it "f-let-yes2" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "f"
           ( TmProd "x"
             ( TmIndType "nat" [])
@@ -742,7 +742,7 @@ spec =
                       ( TmProd "_"
                         ( TmIndType "nat" [])
                         ( TmIndType "nat" []))
-                      ( TmFix
+                      ( TmFix (-1)
                         ( TmLambda "plus"
                           ( TmProd "x"
                             ( TmIndType "nat" [])
@@ -778,7 +778,7 @@ spec =
       `shouldBe` Just 1
     it "deep-match-yes1" $
       isTerminating 
-      ( TmFix
+      ( TmFix (-1)
         ( TmLambda "f"
           ( TmProd "x"
             ( TmIndType "nat" [])
