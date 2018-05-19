@@ -10,7 +10,7 @@ main :: IO ()
 main = hspec spec
 
 spec :: Spec
-spec =
+spec = do
   describe "termination" $ do
     it "plus-yes1" $
       isTerminating
@@ -833,3 +833,1346 @@ spec =
                           , TmRel "ny" 0
                           , TmRel "z" 2 ])])]))))))
       `shouldBe` Just 2
+  describe "computeDecParam" $ do
+    it "TmRel" $
+      computeDecParam (TmRel "x" 0) `shouldBe` Right (TmRel "x" 0)
+    it "TmAppl" $
+      computeDecParam
+      ( TmAppl
+        [ TmFix (-1)
+          ( TmLambda "plus"
+            ( TmProd "x"
+              ( TmIndType "nat" [])
+              ( TmProd "y"
+                ( TmIndType "nat" [])
+                ( TmIndType "nat" [])))
+            ( TmLambda "x"
+              ( TmIndType "nat" [])
+              ( TmLambda "y"
+                ( TmIndType "nat" [])
+                ( TmMatch
+                  ( TmRel "x" 1 )
+                  [ "nat" ]
+                  ( TmIndType "nat" [])
+                  [ Equation
+                    [ "O" ]
+                    ( TmRel "y" 0 )
+                  , Equation
+                    [ "S"
+                    , "n" ]
+                    ( TmAppl
+                      [ TmLambda ".0"
+                        ( TmIndType "nat" [])
+                        ( TmConstr "S"
+                          [ TmRel ".0" 0 ])
+                      , TmAppl
+                        [ TmRel "plus" 3
+                        , TmRel "n" 0
+                        , TmRel "y" 1 ]])]))))
+        , TmAppl
+          [ TmLambda ".0"
+            ( TmIndType "nat" [])
+            ( TmConstr "S"
+              [ TmRel ".0" 0 ])
+          , TmAppl
+            [ TmLambda ".0"
+              ( TmIndType "nat" [])
+              ( TmConstr "S"
+                [ TmRel ".0" 0 ])
+            , TmConstr "O" []]]
+        , TmConstr "O" []])
+      `shouldBe`
+      Right
+      ( TmAppl
+        [ TmFix 1
+          ( TmLambda "plus"
+            ( TmProd "x"
+              ( TmIndType "nat" [])
+              ( TmProd "y"
+                ( TmIndType "nat" [])
+                ( TmIndType "nat" [])))
+            ( TmLambda "x"
+              ( TmIndType "nat" [])
+              ( TmLambda "y"
+                ( TmIndType "nat" [])
+                ( TmMatch
+                  ( TmRel "x" 1 )
+                  [ "nat" ]
+                  ( TmIndType "nat" [])
+                  [ Equation
+                    [ "O" ]
+                    ( TmRel "y" 0 )
+                  , Equation
+                    [ "S"
+                    , "n" ]
+                    ( TmAppl
+                      [ TmLambda ".0"
+                        ( TmIndType "nat" [])
+                        ( TmConstr "S"
+                          [ TmRel ".0" 0 ])
+                      , TmAppl
+                        [ TmRel "plus" 3
+                        , TmRel "n" 0
+                        , TmRel "y" 1 ]])]))))
+        , TmAppl
+          [ TmLambda ".0"
+            ( TmIndType "nat" [])
+            ( TmConstr "S"
+              [ TmRel ".0" 0 ])
+          , TmAppl
+            [ TmLambda ".0"
+              ( TmIndType "nat" [])
+              ( TmConstr "S"
+                [ TmRel ".0" 0 ])
+            , TmConstr "O" []]]
+        , TmConstr "O" []])
+    it "TmLambda/TmMatch" $
+      computeDecParam
+      ( TmLambda "x"
+          ( TmIndType "nat" [])
+          ( TmLambda "y"
+            ( TmIndType "nat" [])
+            ( TmLambda "z"
+              ( TmIndType "nat" [])
+              ( TmMatch
+                ( TmRel "x" 2 )
+                [ "nat" ]
+                ( TmIndType "nat" [])
+                [ Equation
+                  [ "O" ]
+                  ( TmMatch
+                    ( TmRel "y" 1 )
+                    [ "nat" ]
+                    ( TmIndType "nat" [])
+                    [ Equation
+                      [ "O" ]
+                      ( TmRel "z" 0 )
+                    , Equation
+                      [ "S"
+                      , "n" ]
+                      ( TmAppl
+                        [ TmFix (-1)
+                          ( TmLambda "plus"
+                            ( TmProd "a"
+                              ( TmIndType "nat" [])
+                              ( TmProd "b"
+                                ( TmIndType "nat" [])
+                                ( TmIndType "nat" [])))
+                            ( TmLambda "a"
+                              ( TmIndType "nat" [])
+                              ( TmLambda "b"
+                                ( TmIndType "nat" [])
+                                ( TmMatch
+                                  ( TmRel "a" 1 )
+                                  [ "nat" ]
+                                  ( TmIndType "nat" [])
+                                  [ Equation
+                                    [ "O" ]
+                                    ( TmRel "b" 0 )
+                                  , Equation
+                                    [ "S"
+                                    , "n" ]
+                                    ( TmAppl
+                                      [ TmRel "plus" 3
+                                      , TmRel "n" 0
+                                      , TmConstr "S"
+                                        [ TmRel "b" 1 ]])]))))
+                        , TmRel "n" 0
+                        , TmConstr "S"
+                          [ TmRel "z" 1 ]])])
+                , Equation
+                  [ "S"
+                  , "n" ]
+                  ( TmAppl
+                    [ TmFix (-1)
+                      ( TmLambda "plus"
+                        ( TmProd "a"
+                          ( TmIndType "nat" [])
+                          ( TmProd "b"
+                            ( TmIndType "nat" [])
+                            ( TmIndType "nat" [])))
+                        ( TmLambda "a"
+                          ( TmIndType "nat" [])
+                          ( TmLambda "b"
+                            ( TmIndType "nat" [])
+                            ( TmMatch
+                              ( TmRel "a" 1 )
+                              [ "nat" ]
+                              ( TmIndType "nat" [])
+                              [ Equation
+                                [ "O" ]
+                                ( TmRel "b" 0 )
+                              , Equation
+                                [ "S"
+                                , "n" ]
+                                ( TmAppl
+                                  [ TmRel "plus" 3
+                                  , TmRel "n" 0
+                                  , TmConstr "S"
+                                    [ TmRel "b" 1 ]])]))))
+                    , TmRel "n" 0
+                    , TmConstr "S"
+                      [ TmMatch
+                        ( TmRel "y" 2 )
+                        [ "nat" ]
+                        ( TmIndType "nat" [])
+                        [ Equation
+                          [ "O" ]
+                          ( TmRel "z" 1 )
+                        , Equation
+                          [ "S"
+                          , "n" ]
+                          ( TmAppl
+                            [ TmFix (-1)
+                              ( TmLambda "plus"
+                                ( TmProd "a"
+                                  ( TmIndType "nat" [])
+                                  ( TmProd "b"
+                                    ( TmIndType "nat" [])
+                                    ( TmIndType "nat" [])))
+                                ( TmLambda "a"
+                                  ( TmIndType "nat" [])
+                                  ( TmLambda "b"
+                                    ( TmIndType "nat" [])
+                                    ( TmMatch
+                                      ( TmRel "a" 1 )
+                                      [ "nat" ]
+                                      ( TmIndType "nat" [])
+                                      [ Equation
+                                        [ "O" ]
+                                        ( TmRel "b" 0 )
+                                      , Equation
+                                        [ "S"
+                                        , "n" ]
+                                        ( TmAppl
+                                          [ TmRel "plus" 3
+                                          , TmRel "n" 0
+                                          , TmConstr "S"
+                                            [ TmRel "b" 1 ]])]))))
+                            , TmRel "n" 0
+                            , TmConstr "S"
+                              [ TmRel "z" 2 ]])]]])]))))
+      `shouldBe`
+      Right
+      ( TmLambda "x"
+          ( TmIndType "nat" [])
+          ( TmLambda "y"
+            ( TmIndType "nat" [])
+            ( TmLambda "z"
+              ( TmIndType "nat" [])
+              ( TmMatch
+                ( TmRel "x" 2 )
+                [ "nat" ]
+                ( TmIndType "nat" [])
+                [ Equation
+                  [ "O" ]
+                  ( TmMatch
+                    ( TmRel "y" 1 )
+                    [ "nat" ]
+                    ( TmIndType "nat" [])
+                    [ Equation
+                      [ "O" ]
+                      ( TmRel "z" 0 )
+                    , Equation
+                      [ "S"
+                      , "n" ]
+                      ( TmAppl
+                        [ TmFix 1
+                          ( TmLambda "plus"
+                            ( TmProd "a"
+                              ( TmIndType "nat" [])
+                              ( TmProd "b"
+                                ( TmIndType "nat" [])
+                                ( TmIndType "nat" [])))
+                            ( TmLambda "a"
+                              ( TmIndType "nat" [])
+                              ( TmLambda "b"
+                                ( TmIndType "nat" [])
+                                ( TmMatch
+                                  ( TmRel "a" 1 )
+                                  [ "nat" ]
+                                  ( TmIndType "nat" [])
+                                  [ Equation
+                                    [ "O" ]
+                                    ( TmRel "b" 0 )
+                                  , Equation
+                                    [ "S"
+                                    , "n" ]
+                                    ( TmAppl
+                                      [ TmRel "plus" 3
+                                      , TmRel "n" 0
+                                      , TmConstr "S"
+                                        [ TmRel "b" 1 ]])]))))
+                        , TmRel "n" 0
+                        , TmConstr "S"
+                          [ TmRel "z" 1 ]])])
+                , Equation
+                  [ "S"
+                  , "n" ]
+                  ( TmAppl
+                    [ TmFix 1
+                      ( TmLambda "plus"
+                        ( TmProd "a"
+                          ( TmIndType "nat" [])
+                          ( TmProd "b"
+                            ( TmIndType "nat" [])
+                            ( TmIndType "nat" [])))
+                        ( TmLambda "a"
+                          ( TmIndType "nat" [])
+                          ( TmLambda "b"
+                            ( TmIndType "nat" [])
+                            ( TmMatch
+                              ( TmRel "a" 1 )
+                              [ "nat" ]
+                              ( TmIndType "nat" [])
+                              [ Equation
+                                [ "O" ]
+                                ( TmRel "b" 0 )
+                              , Equation
+                                [ "S"
+                                , "n" ]
+                                ( TmAppl
+                                  [ TmRel "plus" 3
+                                  , TmRel "n" 0
+                                  , TmConstr "S"
+                                    [ TmRel "b" 1 ]])]))))
+                    , TmRel "n" 0
+                    , TmConstr "S"
+                      [ TmMatch
+                        ( TmRel "y" 2 )
+                        [ "nat" ]
+                        ( TmIndType "nat" [])
+                        [ Equation
+                          [ "O" ]
+                          ( TmRel "z" 1 )
+                        , Equation
+                          [ "S"
+                          , "n" ]
+                          ( TmAppl
+                            [ TmFix 1
+                              ( TmLambda "plus"
+                                ( TmProd "a"
+                                  ( TmIndType "nat" [])
+                                  ( TmProd "b"
+                                    ( TmIndType "nat" [])
+                                    ( TmIndType "nat" [])))
+                                ( TmLambda "a"
+                                  ( TmIndType "nat" [])
+                                  ( TmLambda "b"
+                                    ( TmIndType "nat" [])
+                                    ( TmMatch
+                                      ( TmRel "a" 1 )
+                                      [ "nat" ]
+                                      ( TmIndType "nat" [])
+                                      [ Equation
+                                        [ "O" ]
+                                        ( TmRel "b" 0 )
+                                      , Equation
+                                        [ "S"
+                                        , "n" ]
+                                        ( TmAppl
+                                          [ TmRel "plus" 3
+                                          , TmRel "n" 0
+                                          , TmConstr "S"
+                                            [ TmRel "b" 1 ]])]))))
+                            , TmRel "n" 0
+                            , TmConstr "S"
+                              [ TmRel "z" 2 ]])]]])]))))
+    it "TmProd" $
+      computeDecParam
+      ( TmProd "x"
+        ( TmIndType "nat" [])
+        ( TmAppl
+          [ TmLambda "a"
+              TmType
+            ( TmLambda ".0"
+              ( TmRel "a" 0 )
+              ( TmLambda ".1"
+                ( TmRel "a" 1 )
+                ( TmIndType "eq"
+                  [ TmRel "a" 2
+                  , TmRel ".0" 1
+                  , TmRel ".1" 0 ])))
+          , TmIndType "nat" []
+          , TmAppl
+            [ TmFix (-1)
+              ( TmLambda "plus"
+                ( TmProd "x"
+                  ( TmIndType "nat" [])
+                  ( TmProd "y"
+                    ( TmIndType "nat" [])
+                    ( TmIndType "nat" [])))
+                ( TmLambda "x"
+                  ( TmIndType "nat" [])
+                  ( TmLambda "y"
+                    ( TmIndType "nat" [])
+                    ( TmMatch
+                      ( TmRel "y" 0 )
+                      [ "nat" ]
+                      ( TmIndType "nat" [])
+                      [ Equation
+                        [ "O" ]
+                        ( TmRel "x" 1 )
+                      , Equation
+                        [ "S"
+                        , "n" ]
+                        ( TmAppl
+                          [ TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmConstr "S"
+                              [ TmRel ".0" 0 ])
+                          , TmAppl
+                            [ TmRel "plus" 3
+                            , TmRel "x" 2
+                            , TmRel "n" 0 ]])]))))
+            , TmRel "x" 0
+            , TmConstr "O" []]
+          , TmRel "x" 0 ]))
+      `shouldBe`
+      Right
+      ( TmProd "x"
+        ( TmIndType "nat" [])
+        ( TmAppl
+          [ TmLambda "a"
+              TmType
+            ( TmLambda ".0"
+              ( TmRel "a" 0 )
+              ( TmLambda ".1"
+                ( TmRel "a" 1 )
+                ( TmIndType "eq"
+                  [ TmRel "a" 2
+                  , TmRel ".0" 1
+                  , TmRel ".1" 0 ])))
+          , TmIndType "nat" []
+          , TmAppl
+            [ TmFix 2
+              ( TmLambda "plus"
+                ( TmProd "x"
+                  ( TmIndType "nat" [])
+                  ( TmProd "y"
+                    ( TmIndType "nat" [])
+                    ( TmIndType "nat" [])))
+                ( TmLambda "x"
+                  ( TmIndType "nat" [])
+                  ( TmLambda "y"
+                    ( TmIndType "nat" [])
+                    ( TmMatch
+                      ( TmRel "y" 0 )
+                      [ "nat" ]
+                      ( TmIndType "nat" [])
+                      [ Equation
+                        [ "O" ]
+                        ( TmRel "x" 1 )
+                      , Equation
+                        [ "S"
+                        , "n" ]
+                        ( TmAppl
+                          [ TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmConstr "S"
+                              [ TmRel ".0" 0 ])
+                          , TmAppl
+                            [ TmRel "plus" 3
+                            , TmRel "x" 2
+                            , TmRel "n" 0 ]])]))))
+            , TmRel "x" 0
+            , TmConstr "O" []]
+          , TmRel "x" 0 ]))
+    it "TmLetIn" $
+      computeDecParam
+      ( TmLetIn "plus1"
+        ( TmProd "_"
+          ( TmIndType "nat" [])
+          ( TmProd "_"
+            ( TmIndType "nat" [])
+            ( TmIndType "nat" [])))
+        ( TmFix (-1)
+          ( TmLambda "plus"
+            ( TmProd "x"
+              ( TmIndType "nat" [])
+              ( TmProd "y"
+                ( TmIndType "nat" [])
+                ( TmIndType "nat" [])))
+            ( TmLambda "x"
+              ( TmIndType "nat" [])
+              ( TmLambda "y"
+                ( TmIndType "nat" [])
+                ( TmMatch
+                  ( TmRel "y" 0 )
+                  [ "nat" ]
+                  ( TmIndType "nat" [])
+                  [ Equation
+                    [ "O" ]
+                    ( TmRel "x" 1 )
+                  , Equation
+                    [ "S"
+                    , "n" ]
+                    ( TmAppl
+                      [ TmLambda ".0"
+                        ( TmIndType "nat" [])
+                        ( TmConstr "S"
+                          [ TmRel ".0" 0 ])
+                      , TmAppl
+                        [ TmRel "plus" 3
+                        , TmRel "x" 2
+                        , TmRel "n" 0 ]])])))))
+        ( TmAppl
+          [ TmRel "plus1" 0
+          , TmAppl
+            [ TmFix (-1)
+              ( TmLambda "plus"
+                ( TmProd "x"
+                  ( TmIndType "nat" [])
+                  ( TmProd "y"
+                    ( TmIndType "nat" [])
+                    ( TmIndType "nat" [])))
+                ( TmLambda "x"
+                  ( TmIndType "nat" [])
+                  ( TmLambda "y"
+                    ( TmIndType "nat" [])
+                    ( TmMatch
+                      ( TmRel "x" 1 )
+                      [ "nat" ]
+                      ( TmIndType "nat" [])
+                      [ Equation
+                        [ "O" ]
+                        ( TmRel "y" 0 )
+                      , Equation
+                        [ "S"
+                        , "n" ]
+                        ( TmAppl
+                          [ TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmConstr "S"
+                              [ TmRel ".0" 0 ])
+                          , TmAppl
+                            [ TmRel "plus" 3
+                            , TmRel "n" 0
+                            , TmRel "y" 1 ]])]))))
+            , TmConstr "O" []
+            , TmConstr "O" []]
+          , TmConstr "O" []]))
+      `shouldBe`
+      Right
+      ( TmLetIn "plus1"
+        ( TmProd "_"
+          ( TmIndType "nat" [])
+          ( TmProd "_"
+            ( TmIndType "nat" [])
+            ( TmIndType "nat" [])))
+        ( TmFix 2
+          ( TmLambda "plus"
+            ( TmProd "x"
+              ( TmIndType "nat" [])
+              ( TmProd "y"
+                ( TmIndType "nat" [])
+                ( TmIndType "nat" [])))
+            ( TmLambda "x"
+              ( TmIndType "nat" [])
+              ( TmLambda "y"
+                ( TmIndType "nat" [])
+                ( TmMatch
+                  ( TmRel "y" 0 )
+                  [ "nat" ]
+                  ( TmIndType "nat" [])
+                  [ Equation
+                    [ "O" ]
+                    ( TmRel "x" 1 )
+                  , Equation
+                    [ "S"
+                    , "n" ]
+                    ( TmAppl
+                      [ TmLambda ".0"
+                        ( TmIndType "nat" [])
+                        ( TmConstr "S"
+                          [ TmRel ".0" 0 ])
+                      , TmAppl
+                        [ TmRel "plus" 3
+                        , TmRel "x" 2
+                        , TmRel "n" 0 ]])])))))
+        ( TmAppl
+          [ TmRel "plus1" 0
+          , TmAppl
+            [ TmFix 1
+              ( TmLambda "plus"
+                ( TmProd "x"
+                  ( TmIndType "nat" [])
+                  ( TmProd "y"
+                    ( TmIndType "nat" [])
+                    ( TmIndType "nat" [])))
+                ( TmLambda "x"
+                  ( TmIndType "nat" [])
+                  ( TmLambda "y"
+                    ( TmIndType "nat" [])
+                    ( TmMatch
+                      ( TmRel "x" 1 )
+                      [ "nat" ]
+                      ( TmIndType "nat" [])
+                      [ Equation
+                        [ "O" ]
+                        ( TmRel "y" 0 )
+                      , Equation
+                        [ "S"
+                        , "n" ]
+                        ( TmAppl
+                          [ TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmConstr "S"
+                              [ TmRel ".0" 0 ])
+                          , TmAppl
+                            [ TmRel "plus" 3
+                            , TmRel "n" 0
+                            , TmRel "y" 1 ]])]))))
+            , TmConstr "O" []
+            , TmConstr "O" []]
+          , TmConstr "O" []]))
+    it "TmIndType/TmConstr" $
+      computeDecParam
+      ( TmAppl
+        [ TmLambda "a"
+            TmType
+          ( TmLambda ".0"
+            ( TmRel "a" 0 )
+            ( TmLambda ".1"
+              ( TmRel "a" 1 )
+              ( TmIndType "eq"
+                [ TmRel "a" 2
+                , TmRel ".0" 1
+                , TmRel ".1" 0 ])))
+        , TmIndType "nat" []
+        , TmAppl
+          [ TmFix (-1)
+            ( TmLambda "plus"
+              ( TmProd "x"
+                ( TmIndType "nat" [])
+                ( TmProd "y"
+                  ( TmIndType "nat" [])
+                  ( TmIndType "nat" [])))
+              ( TmLambda "x"
+                ( TmIndType "nat" [])
+                ( TmLambda "y"
+                  ( TmIndType "nat" [])
+                  ( TmMatch
+                    ( TmRel "y" 0 )
+                    [ "nat" ]
+                    ( TmIndType "nat" [])
+                    [ Equation
+                      [ "O" ]
+                      ( TmRel "x" 1 )
+                    , Equation
+                      [ "S"
+                      , "n" ]
+                      ( TmAppl
+                        [ TmLambda ".0"
+                          ( TmIndType "nat" [])
+                          ( TmConstr "S"
+                            [ TmRel ".0" 0 ])
+                        , TmAppl
+                          [ TmRel "plus" 3
+                          , TmRel "x" 2
+                          , TmRel "n" 0 ]])]))))
+          , TmAppl
+            [ TmLambda ".0"
+              ( TmIndType "nat" [])
+              ( TmConstr "S"
+                [ TmRel ".0" 0 ])
+            , TmConstr "O" []]
+          , TmAppl
+            [ TmLambda ".0"
+              ( TmIndType "nat" [])
+              ( TmConstr "S"
+                [ TmRel ".0" 0 ])
+            , TmConstr "O" []]]
+        , TmAppl
+          [ TmLambda ".0"
+            ( TmIndType "nat" [])
+            ( TmConstr "S"
+              [ TmRel ".0" 0 ])
+          , TmAppl
+            [ TmFix (-1)
+              ( TmLambda "plus"
+                ( TmProd "x"
+                  ( TmIndType "nat" [])
+                  ( TmProd "y"
+                    ( TmIndType "nat" [])
+                    ( TmIndType "nat" [])))
+                ( TmLambda "x"
+                  ( TmIndType "nat" [])
+                  ( TmLambda "y"
+                    ( TmIndType "nat" [])
+                    ( TmMatch
+                      ( TmRel "y" 0 )
+                      [ "nat" ]
+                      ( TmIndType "nat" [])
+                      [ Equation
+                        [ "O" ]
+                        ( TmRel "x" 1 )
+                      , Equation
+                        [ "S"
+                        , "n" ]
+                        ( TmAppl
+                          [ TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmConstr "S"
+                              [ TmRel ".0" 0 ])
+                          , TmAppl
+                            [ TmRel "plus" 3
+                            , TmRel "x" 2
+                            , TmRel "n" 0 ]])]))))
+            , TmAppl
+              [ TmLambda ".0"
+                ( TmIndType "nat" [])
+                ( TmConstr "S"
+                  [ TmRel ".0" 0 ])
+              , TmConstr "O" []]
+            , TmConstr "O" []]]])
+      `shouldBe`
+      Right
+      ( TmAppl
+        [ TmLambda "a"
+            TmType
+          ( TmLambda ".0"
+            ( TmRel "a" 0 )
+            ( TmLambda ".1"
+              ( TmRel "a" 1 )
+              ( TmIndType "eq"
+                [ TmRel "a" 2
+                , TmRel ".0" 1
+                , TmRel ".1" 0 ])))
+        , TmIndType "nat" []
+        , TmAppl
+          [ TmFix 2
+            ( TmLambda "plus"
+              ( TmProd "x"
+                ( TmIndType "nat" [])
+                ( TmProd "y"
+                  ( TmIndType "nat" [])
+                  ( TmIndType "nat" [])))
+              ( TmLambda "x"
+                ( TmIndType "nat" [])
+                ( TmLambda "y"
+                  ( TmIndType "nat" [])
+                  ( TmMatch
+                    ( TmRel "y" 0 )
+                    [ "nat" ]
+                    ( TmIndType "nat" [])
+                    [ Equation
+                      [ "O" ]
+                      ( TmRel "x" 1 )
+                    , Equation
+                      [ "S"
+                      , "n" ]
+                      ( TmAppl
+                        [ TmLambda ".0"
+                          ( TmIndType "nat" [])
+                          ( TmConstr "S"
+                            [ TmRel ".0" 0 ])
+                        , TmAppl
+                          [ TmRel "plus" 3
+                          , TmRel "x" 2
+                          , TmRel "n" 0 ]])]))))
+          , TmAppl
+            [ TmLambda ".0"
+              ( TmIndType "nat" [])
+              ( TmConstr "S"
+                [ TmRel ".0" 0 ])
+            , TmConstr "O" []]
+          , TmAppl
+            [ TmLambda ".0"
+              ( TmIndType "nat" [])
+              ( TmConstr "S"
+                [ TmRel ".0" 0 ])
+            , TmConstr "O" []]]
+        , TmAppl
+          [ TmLambda ".0"
+            ( TmIndType "nat" [])
+            ( TmConstr "S"
+              [ TmRel ".0" 0 ])
+          , TmAppl
+            [ TmFix 2
+              ( TmLambda "plus"
+                ( TmProd "x"
+                  ( TmIndType "nat" [])
+                  ( TmProd "y"
+                    ( TmIndType "nat" [])
+                    ( TmIndType "nat" [])))
+                ( TmLambda "x"
+                  ( TmIndType "nat" [])
+                  ( TmLambda "y"
+                    ( TmIndType "nat" [])
+                    ( TmMatch
+                      ( TmRel "y" 0 )
+                      [ "nat" ]
+                      ( TmIndType "nat" [])
+                      [ Equation
+                        [ "O" ]
+                        ( TmRel "x" 1 )
+                      , Equation
+                        [ "S"
+                        , "n" ]
+                        ( TmAppl
+                          [ TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmConstr "S"
+                              [ TmRel ".0" 0 ])
+                          , TmAppl
+                            [ TmRel "plus" 3
+                            , TmRel "x" 2
+                            , TmRel "n" 0 ]])]))))
+            , TmAppl
+              [ TmLambda ".0"
+                ( TmIndType "nat" [])
+                ( TmConstr "S"
+                  [ TmRel ".0" 0 ])
+              , TmConstr "O" []]
+            , TmConstr "O" []]]])
+    it "TmAppl-fail" $
+      computeDecParam
+      ( TmAppl
+        [ TmFix (-1)
+          ( TmLambda "plus" 
+            ( TmProd "x" 
+              ( TmIndType "nat" []) 
+              ( TmProd "y" 
+                ( TmIndType "nat" []) 
+                ( TmIndType "nat" []))) 
+            ( TmLambda "x" 
+              ( TmIndType "nat" []) 
+              ( TmLambda "y" 
+                ( TmIndType "nat" []) 
+                ( TmMatch 
+                  ( TmRel "x" 1) ["nat"] 
+                    ( TmIndType "nat" []) 
+                    [ Equation ["O"] 
+                      ( TmAppl 
+                        [ TmRel "plus" 2
+                        , TmRel "x" 1
+                        , TmRel "y" 0])
+                    , Equation ["S","n"] 
+                      ( TmAppl 
+                        [ TmLambda ".0" 
+                          ( TmIndType "nat" []) 
+                          ( TmConstr "S" 
+                            [ TmRel ".0" 0])
+                        , TmAppl 
+                          [ TmRel "plus" 3
+                          , TmRel "n" 0
+                          , TmRel "y" 1]])]))))
+        , TmAppl
+          [ TmLambda ".0"
+            ( TmIndType "nat" [])
+            ( TmConstr "S"
+              [ TmRel ".0" 0 ])
+          , TmAppl
+            [ TmLambda ".0"
+              ( TmIndType "nat" [])
+              ( TmConstr "S"
+                [ TmRel ".0" 0 ])
+            , TmConstr "O" []]]
+        , TmConstr "O" []])
+      `shouldBe`
+      Left
+      ( TmFix (-1)
+          ( TmLambda "plus" 
+            ( TmProd "x" 
+              ( TmIndType "nat" []) 
+              ( TmProd "y" 
+                ( TmIndType "nat" []) 
+                ( TmIndType "nat" []))) 
+            ( TmLambda "x" 
+              ( TmIndType "nat" []) 
+              ( TmLambda "y" 
+                ( TmIndType "nat" []) 
+                ( TmMatch 
+                  ( TmRel "x" 1) ["nat"] 
+                    ( TmIndType "nat" []) 
+                    [ Equation ["O"] 
+                      ( TmAppl 
+                        [ TmRel "plus" 2
+                        , TmRel "x" 1
+                        , TmRel "y" 0])
+                    , Equation ["S","n"] 
+                      ( TmAppl 
+                        [ TmLambda ".0" 
+                          ( TmIndType "nat" []) 
+                          ( TmConstr "S" 
+                            [ TmRel ".0" 0])
+                        , TmAppl 
+                          [ TmRel "plus" 3
+                          , TmRel "n" 0
+                          , TmRel "y" 1]])])))))
+    it "TmLambda/TmMatch-fail" $
+      computeDecParam
+      ( TmLambda "x"
+          ( TmIndType "nat" [])
+          ( TmLambda "y"
+            ( TmIndType "nat" [])
+            ( TmLambda "z"
+              ( TmIndType "nat" [])
+              ( TmMatch
+                ( TmRel "x" 2 )
+                [ "nat" ]
+                ( TmIndType "nat" [])
+                [ Equation
+                  [ "O" ]
+                  ( TmMatch
+                    ( TmRel "y" 1 )
+                    [ "nat" ]
+                    ( TmIndType "nat" [])
+                    [ Equation
+                      [ "O" ]
+                      ( TmRel "z" 0 )
+                    , Equation
+                      [ "S"
+                      , "n" ]
+                      ( TmAppl
+                        [ TmFix (-1)
+                          ( TmLambda "plus"
+                            ( TmProd "a"
+                              ( TmIndType "nat" [])
+                              ( TmProd "b"
+                                ( TmIndType "nat" [])
+                                ( TmIndType "nat" [])))
+                            ( TmLambda "a"
+                              ( TmIndType "nat" [])
+                              ( TmLambda "b"
+                                ( TmIndType "nat" [])
+                                ( TmMatch
+                                  ( TmRel "a" 1 )
+                                  [ "nat" ]
+                                  ( TmIndType "nat" [])
+                                  [ Equation
+                                    [ "O" ]
+                                    ( TmRel "b" 0 )
+                                  , Equation
+                                    [ "S"
+                                    , "n" ]
+                                    ( TmAppl
+                                      [ TmRel "plus" 3
+                                      , TmRel "n" 0
+                                      , TmConstr "S"
+                                        [ TmRel "b" 1 ]])]))))
+                        , TmRel "n" 0
+                        , TmConstr "S"
+                          [ TmRel "z" 1 ]])])
+                , Equation
+                  [ "S"
+                  , "n" ]
+                  ( TmAppl
+                    [ TmFix (-1)
+                      ( TmLambda "plus"
+                        ( TmProd "a"
+                          ( TmIndType "nat" [])
+                          ( TmProd "b"
+                            ( TmIndType "nat" [])
+                            ( TmIndType "nat" [])))
+                        ( TmLambda "a"
+                          ( TmIndType "nat" [])
+                          ( TmLambda "b"
+                            ( TmIndType "nat" [])
+                            ( TmMatch
+                              ( TmRel "a" 1 )
+                              [ "nat" ]
+                              ( TmIndType "nat" [])
+                              [ Equation
+                                [ "O" ]
+                                ( TmRel "b" 0 )
+                              , Equation
+                                [ "S"
+                                , "n" ]
+                                ( TmAppl
+                                  [ TmRel "plus" 3
+                                  , TmRel "n" 0
+                                  , TmConstr "S"
+                                    [ TmRel "b" 1 ]])]))))
+                    , TmRel "n" 0
+                    , TmConstr "S"
+                      [ TmMatch
+                        ( TmRel "y" 2 )
+                        [ "nat" ]
+                        ( TmIndType "nat" [])
+                        [ Equation
+                          [ "O" ]
+                          ( TmRel "z" 1 )
+                        , Equation
+                          [ "S"
+                          , "n" ]
+                          ( TmAppl
+                            [ TmFix (-1)
+                              ( TmLambda "plus" 
+                                ( TmProd "x" 
+                                  ( TmIndType "nat" []) 
+                                  ( TmProd "y" 
+                                    ( TmIndType "nat" []) 
+                                    ( TmIndType "nat" []))) 
+                                ( TmLambda "x" 
+                                  ( TmIndType "nat" []) 
+                                  ( TmLambda "y" 
+                                    ( TmIndType "nat" []) 
+                                    ( TmMatch 
+                                      ( TmRel "x" 1) ["nat"] 
+                                        ( TmIndType "nat" []) 
+                                        [ Equation ["O"] 
+                                          ( TmAppl 
+                                            [ TmRel "plus" 2
+                                            , TmRel "x" 1
+                                            , TmRel "y" 0])
+                                        , Equation ["S","n"] 
+                                          ( TmAppl 
+                                            [ TmLambda ".0" 
+                                              ( TmIndType "nat" []) 
+                                              ( TmConstr "S" 
+                                                [ TmRel ".0" 0])
+                                            , TmAppl 
+                                              [ TmRel "plus" 3
+                                              , TmRel "n" 0
+                                              , TmRel "y" 1]])]))))
+                            , TmRel "n" 0
+                            , TmConstr "S"
+                              [ TmRel "z" 2 ]])]]])]))))
+      `shouldBe`
+      Left
+      ( TmFix (-1)
+        ( TmLambda "plus" 
+          ( TmProd "x" 
+            ( TmIndType "nat" []) 
+            ( TmProd "y" 
+              ( TmIndType "nat" []) 
+              ( TmIndType "nat" []))) 
+          ( TmLambda "x" 
+            ( TmIndType "nat" []) 
+            ( TmLambda "y" 
+              ( TmIndType "nat" []) 
+              ( TmMatch 
+                ( TmRel "x" 1) ["nat"] 
+                  ( TmIndType "nat" []) 
+                  [ Equation ["O"] 
+                    ( TmAppl 
+                      [ TmRel "plus" 2
+                      , TmRel "x" 1
+                      , TmRel "y" 0])
+                  , Equation ["S","n"] 
+                    ( TmAppl 
+                      [ TmLambda ".0" 
+                        ( TmIndType "nat" []) 
+                        ( TmConstr "S" 
+                          [ TmRel ".0" 0])
+                      , TmAppl 
+                        [ TmRel "plus" 3
+                        , TmRel "n" 0
+                        , TmRel "y" 1]])])))))
+    it "TmProd-fail" $
+      computeDecParam
+      ( TmProd "x"
+        ( TmIndType "nat" [])
+        ( TmAppl
+          [ TmLambda "a"
+              TmType
+            ( TmLambda ".0"
+              ( TmRel "a" 0 )
+              ( TmLambda ".1"
+                ( TmRel "a" 1 )
+                ( TmIndType "eq"
+                  [ TmRel "a" 2
+                  , TmRel ".0" 1
+                  , TmRel ".1" 0 ])))
+          , TmIndType "nat" []
+          , TmAppl
+            [ TmFix (-1)
+              ( TmLambda "plus" 
+                ( TmProd "x" 
+                  ( TmIndType "nat" []) 
+                  ( TmProd "y" 
+                    ( TmIndType "nat" []) 
+                    ( TmIndType "nat" []))) 
+                ( TmLambda "x" 
+                  ( TmIndType "nat" []) 
+                  ( TmLambda "y" 
+                    ( TmIndType "nat" []) 
+                    ( TmMatch 
+                      ( TmRel "x" 1) ["nat"] 
+                        ( TmIndType "nat" []) 
+                        [ Equation ["O"] 
+                          ( TmAppl 
+                            [ TmRel "plus" 2
+                            , TmRel "x" 1
+                            , TmRel "y" 0])
+                        , Equation ["S","n"] 
+                          ( TmAppl 
+                            [ TmLambda ".0" 
+                              ( TmIndType "nat" []) 
+                              ( TmConstr "S" 
+                                [ TmRel ".0" 0])
+                            , TmAppl 
+                              [ TmRel "plus" 3
+                              , TmRel "n" 0
+                              , TmRel "y" 1]])]))))
+            , TmRel "x" 0
+            , TmConstr "O" []]
+          , TmRel "x" 0 ]))
+      `shouldBe`
+      Left
+      ( TmFix (-1)
+        ( TmLambda "plus" 
+          ( TmProd "x" 
+            ( TmIndType "nat" []) 
+            ( TmProd "y" 
+              ( TmIndType "nat" []) 
+              ( TmIndType "nat" []))) 
+          ( TmLambda "x" 
+            ( TmIndType "nat" []) 
+            ( TmLambda "y" 
+              ( TmIndType "nat" []) 
+              ( TmMatch 
+                ( TmRel "x" 1) ["nat"] 
+                  ( TmIndType "nat" []) 
+                  [ Equation ["O"] 
+                    ( TmAppl 
+                      [ TmRel "plus" 2
+                      , TmRel "x" 1
+                      , TmRel "y" 0])
+                  , Equation ["S","n"] 
+                    ( TmAppl 
+                      [ TmLambda ".0" 
+                        ( TmIndType "nat" []) 
+                        ( TmConstr "S" 
+                          [ TmRel ".0" 0])
+                      , TmAppl 
+                        [ TmRel "plus" 3
+                        , TmRel "n" 0
+                        , TmRel "y" 1]])])))))
+    it "TmLetIn" $
+      computeDecParam
+      ( TmLetIn "plus1"
+        ( TmProd "_"
+          ( TmIndType "nat" [])
+          ( TmProd "_"
+            ( TmIndType "nat" [])
+            ( TmIndType "nat" [])))
+        ( TmFix (-1)
+          ( TmLambda "plus"
+            ( TmProd "x"
+              ( TmIndType "nat" [])
+              ( TmProd "y"
+                ( TmIndType "nat" [])
+                ( TmIndType "nat" [])))
+            ( TmLambda "x"
+              ( TmIndType "nat" [])
+              ( TmLambda "y"
+                ( TmIndType "nat" [])
+                ( TmMatch
+                  ( TmRel "y" 0 )
+                  [ "nat" ]
+                  ( TmIndType "nat" [])
+                  [ Equation
+                    [ "O" ]
+                    ( TmRel "x" 1 )
+                  , Equation
+                    [ "S"
+                    , "n" ]
+                    ( TmAppl
+                      [ TmLambda ".0"
+                        ( TmIndType "nat" [])
+                        ( TmConstr "S"
+                          [ TmRel ".0" 0 ])
+                      , TmAppl
+                        [ TmRel "plus" 3
+                        , TmRel "x" 2
+                        , TmRel "n" 0 ]])])))))
+        ( TmAppl
+          [ TmRel "plus1" 0
+          , TmAppl
+            [ TmFix (-1)
+              ( TmLambda "plus" 
+                ( TmProd "x" 
+                  ( TmIndType "nat" []) 
+                  ( TmProd "y" 
+                    ( TmIndType "nat" []) 
+                    ( TmIndType "nat" []))) 
+                ( TmLambda "x" 
+                  ( TmIndType "nat" []) 
+                  ( TmLambda "y" 
+                    ( TmIndType "nat" []) 
+                    ( TmMatch 
+                      ( TmRel "x" 1) ["nat"] 
+                        ( TmIndType "nat" []) 
+                        [ Equation ["O"] 
+                          ( TmAppl 
+                            [ TmRel "plus" 2
+                            , TmRel "x" 1
+                            , TmRel "y" 0])
+                        , Equation ["S","n"] 
+                          ( TmAppl 
+                            [ TmLambda ".0" 
+                              ( TmIndType "nat" []) 
+                              ( TmConstr "S" 
+                                [ TmRel ".0" 0])
+                            , TmAppl 
+                              [ TmRel "plus" 3
+                              , TmRel "n" 0
+                              , TmRel "y" 1]])]))))
+            , TmConstr "O" []
+            , TmConstr "O" []]
+          , TmConstr "O" []]))
+      `shouldBe`
+      Left
+      ( TmFix (-1)
+        ( TmLambda "plus" 
+          ( TmProd "x" 
+            ( TmIndType "nat" []) 
+            ( TmProd "y" 
+              ( TmIndType "nat" []) 
+              ( TmIndType "nat" []))) 
+          ( TmLambda "x" 
+            ( TmIndType "nat" []) 
+            ( TmLambda "y" 
+              ( TmIndType "nat" []) 
+              ( TmMatch 
+                ( TmRel "x" 1) ["nat"] 
+                  ( TmIndType "nat" []) 
+                  [ Equation ["O"] 
+                    ( TmAppl 
+                      [ TmRel "plus" 2
+                      , TmRel "x" 1
+                      , TmRel "y" 0])
+                  , Equation ["S","n"] 
+                    ( TmAppl 
+                      [ TmLambda ".0" 
+                        ( TmIndType "nat" []) 
+                        ( TmConstr "S" 
+                          [ TmRel ".0" 0])
+                      , TmAppl 
+                        [ TmRel "plus" 3
+                        , TmRel "n" 0
+                        , TmRel "y" 1]])])))))
+    it "TmIndType/TmConstr" $
+      computeDecParam
+      ( TmAppl
+        [ TmLambda "a"
+            TmType
+          ( TmLambda ".0"
+            ( TmRel "a" 0 )
+            ( TmLambda ".1"
+              ( TmRel "a" 1 )
+              ( TmIndType "eq"
+                [ TmRel "a" 2
+                , TmRel ".0" 1
+                , TmRel ".1" 0 ])))
+        , TmIndType "nat" []
+        , TmAppl
+          [ TmFix (-1)
+            ( TmLambda "plus"
+              ( TmProd "x"
+                ( TmIndType "nat" [])
+                ( TmProd "y"
+                  ( TmIndType "nat" [])
+                  ( TmIndType "nat" [])))
+              ( TmLambda "x"
+                ( TmIndType "nat" [])
+                ( TmLambda "y"
+                  ( TmIndType "nat" [])
+                  ( TmMatch
+                    ( TmRel "y" 0 )
+                    [ "nat" ]
+                    ( TmIndType "nat" [])
+                    [ Equation
+                      [ "O" ]
+                      ( TmRel "x" 1 )
+                    , Equation
+                      [ "S"
+                      , "n" ]
+                      ( TmAppl
+                        [ TmLambda ".0"
+                          ( TmIndType "nat" [])
+                          ( TmConstr "S"
+                            [ TmRel ".0" 0 ])
+                        , TmAppl
+                          [ TmRel "plus" 3
+                          , TmRel "x" 2
+                          , TmRel "n" 0 ]])]))))
+          , TmAppl
+            [ TmLambda ".0"
+              ( TmIndType "nat" [])
+              ( TmConstr "S"
+                [ TmRel ".0" 0 ])
+            , TmConstr "O" []]
+          , TmAppl
+            [ TmLambda ".0"
+              ( TmIndType "nat" [])
+              ( TmConstr "S"
+                [ TmRel ".0" 0 ])
+            , TmConstr "O" []]]
+        , TmAppl
+          [ TmLambda ".0"
+            ( TmIndType "nat" [])
+            ( TmConstr "S"
+              [ TmRel ".0" 0 ])
+          , TmAppl
+            [ TmFix (-1)
+              ( TmLambda "plus" 
+                ( TmProd "x" 
+                  ( TmIndType "nat" []) 
+                  ( TmProd "y" 
+                    ( TmIndType "nat" []) 
+                    ( TmIndType "nat" []))) 
+                ( TmLambda "x" 
+                  ( TmIndType "nat" []) 
+                  ( TmLambda "y" 
+                    ( TmIndType "nat" []) 
+                    ( TmMatch 
+                      ( TmRel "x" 1) ["nat"] 
+                        ( TmIndType "nat" []) 
+                        [ Equation ["O"] 
+                          ( TmAppl 
+                            [ TmRel "plus" 2
+                            , TmRel "x" 1
+                            , TmRel "y" 0])
+                        , Equation ["S","n"] 
+                          ( TmAppl 
+                            [ TmLambda ".0" 
+                              ( TmIndType "nat" []) 
+                              ( TmConstr "S" 
+                                [ TmRel ".0" 0])
+                            , TmAppl 
+                              [ TmRel "plus" 3
+                              , TmRel "n" 0
+                              , TmRel "y" 1]])]))))
+            , TmAppl
+              [ TmLambda ".0"
+                ( TmIndType "nat" [])
+                ( TmConstr "S"
+                  [ TmRel ".0" 0 ])
+              , TmConstr "O" []]
+            , TmConstr "O" []]]])
+      `shouldBe`
+      Left
+      ( TmFix (-1)
+        ( TmLambda "plus" 
+          ( TmProd "x" 
+            ( TmIndType "nat" []) 
+            ( TmProd "y" 
+              ( TmIndType "nat" []) 
+              ( TmIndType "nat" []))) 
+          ( TmLambda "x" 
+            ( TmIndType "nat" []) 
+            ( TmLambda "y" 
+              ( TmIndType "nat" []) 
+              ( TmMatch 
+                ( TmRel "x" 1) ["nat"] 
+                  ( TmIndType "nat" []) 
+                  [ Equation ["O"] 
+                    ( TmAppl 
+                      [ TmRel "plus" 2
+                      , TmRel "x" 1
+                      , TmRel "y" 0])
+                  , Equation ["S","n"] 
+                    ( TmAppl 
+                      [ TmLambda ".0" 
+                        ( TmIndType "nat" []) 
+                        ( TmConstr "S" 
+                          [ TmRel ".0" 0])
+                      , TmAppl 
+                        [ TmRel "plus" 3
+                        , TmRel "n" 0
+                        , TmRel "y" 1]])])))))
+

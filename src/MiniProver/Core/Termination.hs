@@ -1,9 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
 module MiniProver.Core.Termination (
     isTerminating
+  , computeDecParam
   ) where
 
 import           MiniProver.Core.Syntax
+import           Data.Either (partitionEithers)
 
 -- Not terminating => return Nothing
 -- Terminating     => the number of arguments decreasing on
@@ -91,3 +93,49 @@ capArg d term =
 
 liftList :: Int -> [Int] -> [Int]
 liftList d lst = map (+d) lst
+
+computeDecParam :: Term -> Either Term Term
+computeDecParam tm@(TmRel _ _) = Right tm
+computeDecParam (TmAppl tmlst) =
+  case partitionEithers $ map computeDecParam tmlst of
+    ([], lst) -> Right $ TmAppl lst
+    (x:_, _) -> Left x
+computeDecParam (TmProd name ty tm) =
+  TmProd <$> Right name <*> computeDecParam ty <*> computeDecParam tm
+computeDecParam (TmLambda name ty tm) =
+  TmLambda <$> Right name <*> computeDecParam ty <*> computeDecParam tm
+computeDecParam tm@(TmFix _ term) =
+  case computeDecParam term of
+    Left tmfail -> Left tmfail
+    Right tmok ->
+      case isTerminating tm of
+        Nothing -> Left tm
+        Just i -> Right $ TmFix i tmok
+computeDecParam (TmLetIn name ty tm bdy) =
+  TmLetIn <$> Right name 
+          <*> computeDecParam ty 
+          <*> computeDecParam tm 
+          <*> computeDecParam bdy
+computeDecParam (TmIndType name tmlst) =
+  case partitionEithers $ map computeDecParam tmlst of
+    ([], lst) -> Right $ TmIndType name lst
+    (x:_, _) -> Left x
+computeDecParam (TmConstr name tmlst) =
+  case partitionEithers $ map computeDecParam tmlst of
+    ([], lst) -> Right $ TmConstr name lst
+    (x:_, _) -> Left x
+computeDecParam TmType = Right TmType
+computeDecParam TmTypeHigher = Right TmTypeHigher
+computeDecParam (TmMatch tm namelst ty equlst) =
+  TmMatch <$> computeDecParam tm <*> Right namelst <*> computeDecParam ty
+          <*> computeDecParamEqulst equlst
+
+computeDecParamEqulst :: [Equation] -> Either Term [Equation]
+computeDecParamEqulst equlst =
+  case partitionEithers $ map computeDecParamEqu equlst of
+    ([], lst) -> Right lst
+    (x:_, _) -> Left x
+
+computeDecParamEqu :: Equation -> Either Term Equation
+computeDecParamEqu (Equation namelst tm) =
+  Equation namelst <$> computeDecParam tm
