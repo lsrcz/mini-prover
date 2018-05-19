@@ -96,7 +96,7 @@ prettyShowAST' (TmProd name ty tm) indent = (spaces indent ++ "TmProd " ++ show 
   ( prettyShowAddParensNonAtom ty (indent + 2) ++ prettyShowAddParensNonAtom tm (indent + 2))
 prettyShowAST' (TmLambda name ty tm) indent = (spaces indent ++ "TmLambda " ++ show name) :
   ( prettyShowAddParensNonAtom ty (indent + 2) ++ prettyShowAddParensNonAtom tm (indent + 2))
-prettyShowAST' (TmFix n tm) indent = (spaces indent ++ "TmFix " ++ show n) :
+prettyShowAST' (TmFix n tm) indent = (spaces indent ++ "TmFix " ++ if n >= 0 then show n else "(" ++ show n ++ ")") :
   addParens (prettyShowAST' tm (indent + 2)) '(' ')'
 prettyShowAST' (TmLetIn name ty tm bdy) indent = (spaces indent ++ "TmLetIn " ++ show name) :
   ( prettyShowAddParensNonAtom ty (indent + 2) ++ 
@@ -116,8 +116,8 @@ prettyShowAST' (TmConstr name tmlst) indent =
     else
       (spaces indent ++ "TmConstr " ++ show name) :
         addParens (prettyShowTermList tmlst (indent + 2)) '[' ']'
-prettyShowAST' TmType indent = [spaces indent ++ "Type"]
-prettyShowAST' TmTypeHigher indent = [spaces indent ++ "TypeHigher"]
+prettyShowAST' TmType indent = [spaces indent ++ "TmType"]
+prettyShowAST' TmTypeHigher indent = [spaces indent ++ "TmTypeHigher"]
 
 prettyShowAST' (TmMatch tm namelst ty equlst) indent = (spaces indent ++ "TmMatch") :
   ( prettyShowAddParensNonAtom tm (indent + 2) ++
