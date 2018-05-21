@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-module MiniProver.PrettyPrint (
+module MiniProver.TopLevel.PrettyPrint (
     prettyShow
   ) where
 
