@@ -1,4 +1,4 @@
-module MiniProver.Utils.PrettyPrintAST (
+module MiniProver.PrettyPrint.PrettyPrintAST (
     prettyShowAST
   , prettyPrintAST
   , prettyShowCommandAST

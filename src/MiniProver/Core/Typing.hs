@@ -6,7 +6,7 @@ module MiniProver.Core.Typing (
 import MiniProver.Core.Syntax
 import MiniProver.Core.Subst
 import MiniProver.Core.Context
-import MiniProver.TopLevel.PrettyPrint
+import MiniProver.PrettyPrint.PrettyPrint
 
 data TypingError = 
     TypingError Term String

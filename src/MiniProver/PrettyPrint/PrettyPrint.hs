@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
-module MiniProver.TopLevel.PrettyPrint (
+module MiniProver.PrettyPrint.PrettyPrint (
     prettyShow
+  , prettyPrint
   ) where
 
 import MiniProver.Core.Syntax
@@ -24,6 +25,9 @@ addParens tm indent =
 
 indentNewline :: Int -> String
 indentNewline i = "\n" ++ replicate i ' '
+
+prettyPrint :: Term -> IO ()
+prettyPrint tm = putStrLn $ prettyShow tm
 
 prettyShow :: Term -> String
 prettyShow tm = prettyShow' tm 0
