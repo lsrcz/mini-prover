@@ -4,6 +4,7 @@ import Test.Hspec
 import MiniProver.Core.Syntax
 import MiniProver.Core.Context
 import MiniProver.Utils.ContextForTesting
+import Data.List (sort)
 
 main :: IO ()
 main = hspec spec
@@ -36,6 +37,16 @@ spec =
         isNameBound [("a", NameBind), ("b", NameBind)] "b" `shouldBe` True
       it "unbounded" $
         isNameBound [("a", NameBind), ("b", NameBind)] "c" `shouldBe` False
+      it "Induction type -- nat" $
+        isNameBound natContext "nat" `shouldBe` True
+      it "Induction type -- eq" $
+        isNameBound natContext "eq" `shouldBe` True
+      it "Constructor -- O" $
+        isNameBound natContext "O" `shouldBe` True
+      it "Constructor -- S" $
+        isNameBound natContext "S" `shouldBe` True
+      it "Constructor -- eqrefl" $
+        isNameBound natContext "eqrefl" `shouldBe` True
     describe "pickFreshName" $ do
       it "unbounded" $
         pickFreshName emptyContext "a" `shouldBe` ([("a", NameBind)], "a")
@@ -173,6 +184,16 @@ spec =
           checkAllNameBounded ctx (TmVar "A") `shouldBe` []
         it "unbounded" $
           checkAllNameBounded ctx (TmVar "a") `shouldBe` ["a"]
+        it "Induction types -- nat" $
+          checkAllNameBounded natContext (TmVar "nat") `shouldBe` []
+        it "Induction types -- eq" $
+          checkAllNameBounded natContext (TmVar "eq") `shouldBe` []
+        it "Constructor -- O" $
+          checkAllNameBounded natContext (TmVar "O") `shouldBe` []
+        it "Constructor -- S" $
+          checkAllNameBounded natContext (TmVar "S") `shouldBe` []
+        it "Constructor -- eqrefl" $
+          checkAllNameBounded natContext (TmVar "eqrefl") `shouldBe` []
       describe "TmAppl" $ do
         it "bounded" $
           checkAllNameBounded ctx (TmAppl [TmVar "A", TmVar "D"]) `shouldBe` []
@@ -291,3 +312,204 @@ spec =
               , Equation ["a", "b"] (TmAppl [TmVar "A", TmVar "b"])])
           `shouldBe`
           ["t"]
+    describe "checkAllNameBoundedCommand" $ do
+      describe "Ax" $ do
+        it "bounded" $
+          checkAllNameBoundedCommand natContext
+          ( Ax "pluscomm"
+            ( TmProd "x"
+              ( TmVar "nat" )
+              ( TmProd "y"
+                ( TmVar "nat" )
+                ( TmAppl
+                  [ TmVar "eq"
+                  , TmVar "nat"
+                  , TmAppl
+                    [ TmVar "plus"
+                    , TmVar "x"
+                    , TmVar "y" ]
+                  , TmAppl
+                    [ TmVar "plus"
+                    , TmVar "y"
+                    , TmVar "x" ]]))))
+          `shouldBe` []
+        it "unbounded" $
+          checkAllNameBoundedCommand natContext
+          ( Ax "pluscomm"
+            ( TmProd "x"
+              ( TmVar "nat1" )
+              ( TmProd "y"
+                ( TmVar "nat" )
+                ( TmAppl
+                  [ TmVar "eq"
+                  , TmVar "nat"
+                  , TmAppl
+                    [ TmVar "plus"
+                    , TmVar "x"
+                    , TmVar "y" ]
+                  , TmAppl
+                    [ TmVar "plus"
+                    , TmVar "y"
+                    , TmVar "z" ]]))))
+          `shouldBe` ["nat1","z"]
+      describe "Def" $ do
+        it "bounded" $
+          checkAllNameBoundedCommand natContext
+          ( Def "plus2"
+            ( TmProd "x"
+              ( TmVar "nat" )
+              ( TmProd "y"
+                ( TmVar "nat" )
+                ( TmVar "nat" )))
+            ( TmLambda "x"
+              ( TmVar "nat" )
+              ( TmLambda "y"
+                ( TmVar "nat" )
+                ( TmAppl
+                  [ TmVar "plus"
+                  , TmVar "x"
+                  , TmVar "y" ]))))
+          `shouldBe` []
+        it "unbounded" $
+          checkAllNameBoundedCommand natContext
+          ( Def "minus"
+            ( TmProd "x"
+              ( TmVar "nat" )
+              ( TmProd "y"
+                ( TmVar "nat" )
+                ( TmVar "nat" )))
+            ( TmLambda "x"
+              ( TmVar "nat" )
+              ( TmLambda "y"
+                ( TmVar "nat" )
+                ( TmMatch
+                  ( TmVar "x" )
+                  [ "nat" ]
+                  ( TmVar "nat" )
+                  [ Equation
+                    [ "O" ]
+                    ( TmVar "O" )
+                  , Equation
+                    [ "S"
+                    , "xx" ]
+                    ( TmMatch
+                      ( TmVar "y" )
+                      [ "nat" ]
+                      ( TmVar "nat" )
+                      [ Equation
+                        [ "O" ]
+                        ( TmVar "x" )
+                      , Equation
+                        [ "S"
+                        , "yy" ]
+                        ( TmAppl
+                          [ TmVar "minus"
+                          , TmVar "xx"
+                          , TmVar "yy" ])])]))))
+          `shouldBe` ["minus"]
+      describe "Ind" $ do
+        it "bounded" $
+          checkAllNameBoundedCommand natContext
+          ( Ind "natlist" 0
+              TmType
+            ( TmIndType "natlist" [])
+            [ ( "nil"
+              , TmIndType "natlist" []
+              , TmConstr "nil" [])
+            , ( "cons"
+              , TmProd "_"
+                ( TmVar "nat" )
+                ( TmProd "_"
+                  ( TmIndType "natlist" [])
+                  ( TmIndType "natlist" []))
+              , TmLambda ".0"
+                ( TmVar "nat" )
+                ( TmLambda ".1"
+                  ( TmIndType "natlist" [])
+                  ( TmConstr "cons"
+                    [ TmVar ".0"
+                    , TmVar ".1" ])))])
+          `shouldBe` []
+        it "unbounded" $
+          checkAllNameBoundedCommand natContext
+          ( Ind "natlist" 0
+              TmType
+            ( TmIndType "natlist" [])
+            [ ( "nil"
+              , TmIndType "natlist1" []
+              , TmConstr "nil" [])
+            , ( "cons"
+              , TmProd "_"
+                ( TmVar "nat" )
+                ( TmProd "_"
+                  ( TmIndType "natlist" [])
+                  ( TmIndType "natlist" []))
+              , TmLambda ".0"
+                ( TmVar "nat" )
+                ( TmLambda ".1"
+                  ( TmIndType "natlist" [])
+                  ( TmConstr "cons1"
+                    [ TmVar ".0"
+                    , TmVar ".11" ])))])
+          `shouldBe` sort [".11", "cons1", "natlist1"]
+      describe "Fix" $ do
+        it "bounded" $
+          checkAllNameBoundedCommand natContext
+          ( Fix "plus1"
+            ( TmLambda "plus1"
+              ( TmProd "x"
+                ( TmVar "nat" )
+                ( TmProd "y"
+                  ( TmVar "nat" )
+                  ( TmVar "nat" )))
+              ( TmLambda "x"
+                ( TmVar "nat" )
+                ( TmLambda "y"
+                  ( TmVar "nat" )
+                  ( TmMatch
+                    ( TmVar "x" )
+                    [ "nat" ]
+                    ( TmVar "nat" )
+                    [ Equation
+                      [ "O" ]
+                      ( TmVar "y" )
+                    , Equation
+                      [ "S"
+                      , "xx" ]
+                      ( TmAppl
+                        [ TmVar "S"
+                        , TmAppl
+                          [ TmVar "plus1"
+                          , TmVar "xx"
+                          , TmVar "y" ]])])))))
+          `shouldBe` []
+        it "unbounded" $
+          checkAllNameBoundedCommand natContext
+          ( Fix "plus1"
+            ( TmLambda "plus1"
+              ( TmProd "x"
+                ( TmVar "nat" )
+                ( TmProd "y"
+                  ( TmVar "nat" )
+                  ( TmVar "nat" )))
+              ( TmLambda "x"
+                ( TmVar "nat" )
+                ( TmLambda "y"
+                  ( TmVar "nat" )
+                  ( TmMatch
+                    ( TmVar "x" )
+                    [ "nat" ]
+                    ( TmVar "nat2" )
+                    [ Equation
+                      [ "O" ]
+                      ( TmVar "y2" )
+                    , Equation
+                      [ "S"
+                      , "xx" ]
+                      ( TmAppl
+                        [ TmVar "S"
+                        , TmAppl
+                          [ TmVar "plus2"
+                          , TmVar "xx2"
+                          , TmVar "y2" ]])])))))
+          `shouldBe` sort ["nat2", "y2", "xx2", "plus2"]

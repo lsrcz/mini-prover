@@ -19,12 +19,14 @@ module MiniProver.Core.Context (
   , getConstrTerm
   , getConstrType
   , checkAllNameBounded
+  , checkAllNameBoundedCommand
   ) where
 
 import MiniProver.Core.Syntax
 import MiniProver.Core.Subst
 import Data.List (group, sort, concatMap, find)
 import Data.Maybe (fromMaybe)
+import Debug.Trace
 
 type Context = [(Name, Binding)]
 
@@ -57,7 +59,7 @@ isNameBound ctx name =
       name == n ||
         case b of
           IndTypeBind _ _ _ lst ->
-            any (\case Constructor namei _ _ -> namei == n) lst
+            any (\case Constructor namei _ _ -> namei == name) lst
           _ -> False
   in
     any nameBoundInBinding ctx
@@ -137,11 +139,12 @@ unique :: (Eq a) => [a] -> [a]
 unique = map head . group
 
 checkAllNameBounded :: Context -> Term -> [String]
-checkAllNameBounded _ (TmRel _ _) = error "This should not happen"
+checkAllNameBounded _ (TmRel _ _) =
+  error "This should not happen: checkAllNameBound TmRel"
 checkAllNameBounded ctx (TmVar name) = if isNameBound ctx name then [] else [name]
 checkAllNameBounded ctx (TmAppl lst) = 
   unique $ sort $ concatMap (checkAllNameBounded ctx) lst
-checkAllNameBounded ctx (TmProd name ty tm) = 
+checkAllNameBounded ctx (TmProd name ty tm) =
   unique $ sort $ 
     checkAllNameBounded ctx ty ++ 
     checkAllNameBounded (addName ctx name) tm
@@ -155,8 +158,17 @@ checkAllNameBounded ctx (TmLetIn name ty tm bdy) =
     checkAllNameBounded ctx ty ++ 
     checkAllNameBounded ctx tm ++
     checkAllNameBounded (addName ctx name) bdy
-checkAllNameBounded _ (TmIndType _ _) = error "This should not happen"
+checkAllNameBounded ctx (TmIndType name tmlst) =
+  unique $ sort $
+    (if isNameBound ctx name then [] else [name]) ++
+    concatMap (checkAllNameBounded ctx) tmlst
+checkAllNameBounded ctx (TmConstr name tmlst) =
+  unique $ sort $
+    (if isNameBound ctx name then [] else [name]) ++
+    concatMap (checkAllNameBounded ctx) tmlst
 checkAllNameBounded _ TmType = []
+checkAllNameBounded _ TmTypeHigher = 
+  error "This should not happen: checkAllNameBounded TmTypeHigher"
 checkAllNameBounded ctx (TmMatch tm namelst rty equlst) = 
   unique $ sort $
     checkAllNameBounded ctx tm ++
@@ -166,4 +178,22 @@ checkAllNameBounded ctx (TmMatch tm namelst rty equlst) =
 checkAllNameBoundedEqu :: Context -> Equation -> [String]
 checkAllNameBoundedEqu ctx (Equation namelst tm) =
   checkAllNameBounded (foldl addName ctx (tail namelst)) tm
+
+checkAllNameBoundedCommand :: Context -> Command -> [String]
+checkAllNameBoundedCommand ctx (Ax _ tm) = checkAllNameBounded ctx tm
+checkAllNameBoundedCommand ctx (Def _ ty tm) = 
+  unique $ sort $
+    checkAllNameBounded ctx ty ++ checkAllNameBounded ctx tm
+checkAllNameBoundedCommand ctx (Ind name _ ty tm constrlst) =
+  let
+    ctxWithName = addName ctx name
+  in
+    unique $ sort $
+      checkAllNameBounded ctxWithName ty ++
+      checkAllNameBounded ctxWithName tm ++
+      concatMap (\(namec,tyc,tmc) ->
+        checkAllNameBounded (addName ctxWithName namec) tyc ++ 
+        checkAllNameBounded (addName ctxWithName namec) tmc)
+      constrlst
+checkAllNameBoundedCommand ctx (Fix _ tm) = checkAllNameBounded ctx tm
 
