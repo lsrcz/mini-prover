@@ -1,5 +1,7 @@
 module MiniProver.Utils.PrettyPrintAST (
-    prettyPrintAST
+    prettyShowAST
+  , prettyPrintAST
+  , prettyShowCommandAST
   , prettyPrintCommandAST
   ) where
 
