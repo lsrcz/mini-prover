@@ -1,5 +1,6 @@
 module MiniProver.Utils.PrettyPrintAST (
     prettyPrintAST
+  , prettyPrintCommandAST
   ) where
 
 import MiniProver.Core.Syntax
@@ -124,3 +125,37 @@ prettyShowAST' (TmMatch tm namelst ty equlst) indent = (spaces indent ++ "TmMatc
     addParens (prettyShowNameList namelst (indent + 2)) '[' ']' ++
     prettyShowAddParensNonAtom ty (indent + 2) ++
     addParens (prettyShowEquationList equlst (indent + 2)) '[' ']' )
+
+prettyPrintCommandAST :: Command -> IO ()
+prettyPrintCommandAST cmd = putStrLn $ prettyShowCommandAST cmd
+
+prettyShowCommandAST :: Command -> String
+prettyShowCommandAST cmd = unlines $ prettyShowCommandAST' cmd 2
+
+prettyShowCommandAST' :: Command -> Int -> [String]
+prettyShowCommandAST' (Ax name tm) indent = (spaces indent ++ "Ax " ++ show name) :
+  prettyShowAddParensNonAtom tm (indent + 2)
+prettyShowCommandAST' (Def name ty tm) indent = (spaces indent ++ "Def " ++ show name) :
+  ( prettyShowAddParensNonAtom ty (indent + 2) ++ prettyShowAddParensNonAtom tm (indent + 2))
+prettyShowCommandAST' (Ind name i ty tm constrlst) indent =
+  ( spaces indent ++ "Ind " ++ show name ++ " " ++ show i ) :
+  ( prettyShowAddParensNonAtom ty (indent + 2) ++
+    prettyShowAddParensNonAtom tm (indent + 2) ++
+    addParens (prettyShowConstrList constrlst (indent + 2)) '[' ']')
+prettyShowCommandAST' (Fix name tm) indent = (spaces indent ++ "Fix " ++ show name) :
+  prettyShowAddParensNonAtom tm (indent + 2)
+
+prettyShowConstr :: (Name, Term, Term) -> Int -> [String]
+prettyShowConstr (name, ty, tm) indent = (spaces indent ++ show name) :
+  ( ( case prettyShowAST' ty indent of
+        (h:t) -> addLeftParens h ',' : t) ++
+    ( case prettyShowAST' tm indent of
+        (h:t) -> addLeftParens h ',' : t))
+
+prettyShowConstrList :: [(Name, Term, Term)] -> Int -> [String]
+prettyShowConstrList constrlst indent =
+  addParens (prettyShowConstr (head constrlst) (indent + 2)) '(' ')' ++
+  concatMap
+    (\constr ->
+      case addParens (prettyShowConstr constr (indent + 2)) '(' ')' of
+        (h:t) -> addLeftParens h ',' : t) (tail constrlst)
