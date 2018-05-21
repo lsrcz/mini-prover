@@ -232,3 +232,9 @@ pfixdefinition = do
     (TmLambda name
       (addBinderAbbr TmProd ty binders)
       (addBinderAbbr TmLambda tm binders))
+
+pcommand :: Parser Command
+pcommand = try paxiom
+       <|> try pdefinition
+       <|> try pinductive
+       <|> try pfixdefinition

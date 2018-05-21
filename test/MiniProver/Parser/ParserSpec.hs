@@ -543,3 +543,227 @@ spec = do
                           , TmAppl
                               [ TmVar "S"
                               , TmVar "y"]])]))))
+  describe "pcommand" $ do
+    it "axiom" $
+      parse pcommand "" "Axiom a:b->c." `shouldParse`
+        Ax "a" (TmProd "_" (TmVar "b") (TmVar "c"))
+    it "definition" $
+      parse pcommand "" "Definition a (b:c) (d:e) : f -> g := a b c." `shouldParse`
+        Def "a"
+          (TmProd "b"
+            (TmVar "c")
+            (TmProd "d"
+              (TmVar "e")
+              (TmProd "_"
+                (TmVar "f")
+                (TmVar "g"))))
+          (TmLambda "b"
+            (TmVar "c")
+            (TmLambda "d"
+              (TmVar "e")
+              (TmAppl
+                [ TmVar "a"
+                , TmVar "b"
+                , TmVar "c"])))
+    describe "inductive" $ do
+      it "simple" $
+        parse pcommand "" ("Inductive r1 (A:Type) (B:Type) : A -> A -> B -> B -> Type :="
+          ++ "| p : forall (x:A),forall (y:B),forall (z:B), r1 A B x x y z "
+          ++ "| q : forall (x:A),forall (y:A),forall (z:B),r1 A B x y z z.") `shouldParse`
+          Ind "r1" 2
+            (TmProd "A"
+              TmType
+              (TmProd "B"
+                TmType
+                (TmProd "_"
+                  (TmVar "A")
+                  (TmProd "_"
+                    (TmVar "A")
+                    (TmProd "_"
+                      (TmVar "B")
+                      (TmProd "_"
+                        (TmVar "B")
+                        TmType))))))
+            (TmLambda "A"
+              TmType
+              (TmLambda "B"
+                TmType
+                (TmLambda ".0"
+                  (TmVar "A")
+                  (TmLambda ".1"
+                    (TmVar "A")
+                    (TmLambda ".2"
+                      (TmVar "B")
+                      (TmLambda ".3"
+                        (TmVar "B")
+                        (TmIndType "r1" 
+                          [ TmVar "A", TmVar "B", TmVar ".0"
+                          , TmVar ".1", TmVar ".2", TmVar ".3"])))))))
+            [ ( "p"
+              , TmProd "A"
+                  TmType
+                  (TmProd "B"
+                    TmType
+                    (TmProd "x"
+                      (TmVar "A")
+                      (TmProd "y"
+                        (TmVar "B")
+                        (TmProd "z"
+                          (TmVar "B")
+                          (TmIndType "r1"
+                            [ TmVar "A"
+                            , TmVar "B"
+                            , TmVar "x"
+                            , TmVar "x"
+                            , TmVar "y"
+                            , TmVar "z" ])))))
+              , TmLambda "A"
+                  TmType
+                  (TmLambda "B"
+                    TmType
+                    (TmLambda "x"
+                      (TmVar "A")
+                      (TmLambda "y"
+                        (TmVar "B")
+                        (TmLambda "z"
+                          (TmVar "B")
+                          (TmConstr "p" 
+                            [TmVar "A", TmVar "B", TmVar "x", TmVar "y", TmVar "z"]))))))
+            , ( "q",
+                TmProd "A"
+                  TmType
+                  (TmProd "B"
+                    TmType
+                    (TmProd "x"
+                      (TmVar "A")
+                      (TmProd "y"
+                        (TmVar "A")
+                        (TmProd "z"
+                          (TmVar "B")
+                          (TmIndType "r1"
+                            [ TmVar "A"
+                            , TmVar "B"
+                            , TmVar "x"
+                            , TmVar "y"
+                            , TmVar "z"
+                            , TmVar "z" ])))))
+                , TmLambda "A"
+                  TmType
+                  (TmLambda "B"
+                    TmType
+                    (TmLambda "x"
+                      (TmVar "A")
+                      (TmLambda "y"
+                        (TmVar "A")
+                        (TmLambda "z"
+                          (TmVar "B")
+                          (TmConstr "q" 
+                            [TmVar "A", TmVar "B", TmVar "x", TmVar "y", TmVar "z"]))))))]
+      it "le" $
+        parse pcommand "" ("Inductive le (x:nat):nat->Type:= "
+          ++ "|lerefl:le x x|leS:forall (y:nat), (le x y) -> (le x (S y)).")
+          `shouldParse`
+          Ind "le" 1
+            (TmProd "x"
+              (TmVar "nat")
+              (TmProd "_"
+                (TmVar "nat")
+                TmType))
+            (TmLambda "x"
+              (TmVar "nat")
+              (TmLambda ".0"
+                (TmVar "nat")
+                (TmIndType "le" [TmVar "x", TmVar ".0"])))
+            [ ( "lerefl"
+              , TmProd "x"
+                  (TmVar "nat")
+                  (TmIndType "le" [TmVar "x", TmVar "x"])
+              , TmLambda "x"
+                  (TmVar "nat")
+                  (TmConstr "lerefl" [TmVar "x"]))
+            , ( "leS"
+              , TmProd "x"
+                  (TmVar "nat")
+                  (TmProd "y"
+                    (TmVar "nat")
+                    (TmProd "_"
+                      (TmIndType "le" [TmVar "x", TmVar "y"])
+                      (TmIndType "le" [TmVar "x", TmAppl [TmVar "S", TmVar "y"]])))
+              , TmLambda "x"
+                  (TmVar "nat")
+                  (TmLambda "y"
+                    (TmVar "nat")
+                    (TmLambda ".0"
+                      (TmIndType "le" [TmVar "x", TmVar "y"])
+                      (TmConstr "leS" [TmVar "x", TmVar "y", TmVar ".0"]))))]
+      it "btree" $
+        parse pcommand "" ("Inductive btree (x:Type) : Type :="
+          ++ "| leaf : x -> btree x"
+          ++ "| node : x -> btree x -> btree x -> btree x.") `shouldParse`
+          Ind "btree" 1
+            (TmProd "x"
+              TmType
+              TmType)
+            (TmLambda "x"
+              TmType
+              (TmIndType "btree" [TmVar "x"]))
+            [ ( "leaf"
+              , TmProd "x"
+                  TmType
+                  (TmProd "_"
+                    (TmVar "x")
+                    (TmIndType "btree" [TmVar "x"]))
+              , TmLambda "x"
+                  TmType
+                  (TmLambda ".0"
+                    (TmVar "x")
+                    (TmConstr "leaf" [TmVar "x", TmVar ".0"])))
+            , ( "node"
+              , TmProd "x"
+                ( TmType )
+                ( TmProd "_"
+                  ( TmVar "x" )
+                  ( TmProd "_"
+                    ( TmIndType "btree" [TmVar "x"] )
+                    ( TmProd "_"
+                      ( TmIndType "btree" [TmVar "x"] )
+                      ( TmIndType "btree" [TmVar "x"] ))))
+              , TmLambda "x"
+                ( TmType )
+                ( TmLambda ".0"
+                  ( TmVar "x" )
+                  ( TmLambda ".1"
+                    ( TmIndType "btree" [TmVar "x"] )
+                    ( TmLambda ".2"
+                      ( TmIndType "btree" [TmVar "x"] )
+                      ( TmConstr "node" [TmVar "x", TmVar ".0", TmVar ".1", TmVar ".2"])))))]
+    describe "fixpoint" $
+      it "single" $
+        parse pcommand "" 
+          ( "Fixpoint plus (x:nat) (y:nat):nat:="
+          ++ "match x in t return t with |O => y|S xx => plus xx (S y) end.")
+          `shouldParse`
+          Fix "plus"
+            (TmLambda "plus"
+              (TmProd "x"
+                (TmVar "nat")
+                (TmProd "y"
+                  (TmVar "nat")
+                  (TmVar "nat")))
+              (TmLambda "x"
+                (TmVar "nat")
+                (TmLambda "y"
+                  (TmVar "nat")
+                  (TmMatch
+                    (TmVar "x")
+                    [ "t" ]
+                    (TmVar "t")
+                    [ Equation ["O"]
+                        (TmVar "y")
+                    , Equation ["S", "xx"]
+                        (TmAppl
+                          [ TmVar "plus"
+                          , TmVar "xx"
+                          , TmAppl
+                              [ TmVar "S"
+                              , TmVar "y"]])]))))
