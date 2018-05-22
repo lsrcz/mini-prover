@@ -68,7 +68,7 @@ spec = do
           ( TmAppl
             [ TmRel "plus" 3
             , TmRel "one" 1
-            , TmRel "two" 0 ])
+            , TmRel "two" 2 ])
           `shouldBe`
           Right
             ( TmIndType "nat" [] )
@@ -160,8 +160,12 @@ spec = do
               ( TmProd "b"
                 ( TmRel "T" 1 )
                 ( TmProd "ls"
-                  ( TmIndType "list"
-                    [ TmRel "T" 2 ])
+                  ( TmAppl 
+                    [ TmLambda "T" 
+                        TmType 
+                      ( TmIndType "list" 
+                        [ TmRel "T" 0 ])
+                    , TmRel "T" 2 ])
                   ( TmIndType "list"
                     [ TmRel "T" 3 ])))))
     describe "TmFix" $
@@ -172,7 +176,7 @@ spec = do
       --   | S xx => plus xx (S y) 
       --   end
         typeof natContext
-          ( TmFix 1
+          ( TmFix (-1)
             ( TmLambda "plus"
               ( TmProd "x"
                 ( TmIndType "nat" [] )
@@ -217,7 +221,7 @@ spec = do
                 , TmRel "one" 2 ]))
             ( TmAppl
               [ TmRel "plus" 4
-              , TmRel "two" 1
+              , TmRel "two" 3
               , TmAppl
                 [ TmRel "f" 0
                 , TmRel "one" 2 ]]))
@@ -250,7 +254,7 @@ spec = do
           [ "nat" ]
           ( TmIndType "nat" [] )
           [ Equation ["O"]
-              ( TmRel "zero" 2 )
+              ( TmRel "zero" 0 )
           , Equation ["S", "xx"]
               ( TmRel "xx" 0 )])
         `shouldBe`
@@ -341,4 +345,216 @@ spec = do
                       , TmAppl
                         [ TmRel "f" 3
                         , TmRel "y" 1 ]])))))))
+    describe "lzw_TmLambda" $ 
+      it "" $
+        typeof [("A",TmAbbBind (TmTypeHigher) (Just TmType))] 
+          (TmLambda
+            "x"
+            (TmRel "A" 0)
+            (TmLambda
+              "y"
+              (TmRel "x" 0)
+              (TmLambda
+                "z"
+                (TmRel "y" 0)
+                (TmRel "z" 0)))) 
+        `shouldBe` 
+          Right 
+          (TmProd     
+            "x"
+            (TmRel "A" 0)
+            (TmProd  
+              "y"
+              (TmRel "x" 0)
+              (TmProd   
+                "z"
+                (TmRel "y" 0)
+                (TmRel "y" 1))))
+    describe "lzw_Prod" $
+      it "" $
+        typeof [] 
+          (TmProd
+            "x"
+            (TmType)
+            (TmProd
+              "y"
+              (TmType)
+              (TmRel "x" 1)))
+        `shouldBe` 
+          Right TmType
+    describe "lzw_TmFix" $
+      it "" $
+        typeof []
+          (TmFix (-1)
+            (TmLambda
+              "f"
+              (TmProd
+                "x"
+                (TmType)
+                (TmProd
+                  "y"
+                  (TmProd
+                    "_"
+                    (TmType)
+                    (TmType))
+                  (TmAppl
+                    [TmRel "y" 0,
+                     (TmAppl
+                       [TmRel "y" 0,
+                        TmRel "x" 1])])))
+                (TmLambda
+                  "x"
+                  (TmType)
+                  (TmLambda
+                    "y"
+                    (TmType)
+                    (TmLambda
+                      "z"
+                      (TmType)
+                      (TmRel "x" 2))))))
+        `shouldBe`
+          Right 
+          (TmProd
+            "x"
+            (TmType)
+            (TmProd
+              "y"
+              (TmProd
+                "_"
+                (TmType)
+                (TmType))
+              (TmAppl
+                [TmRel "y" 0,
+                  (TmAppl
+                    [TmRel "y" 0,
+                    TmRel "x" 1])])))
+    describe "lzw_TmLetIn" $
+      it "" $
+        typeof natContextWithPredefinedNumbers
+        ( TmLetIn "x"
+            ( TmIndType "nat" [])
+            ( TmRel "zero" 2 )
+            ( TmLetIn "y"
+              ( TmIndType "nat" [])
+              ( TmRel "zero" 3 )
+              ( TmLetIn "z"
+                ( TmAppl
+                  [ TmLambda "a"
+                      TmType
+                    ( TmLambda ".0"
+                      ( TmRel "a" 0 )
+                      ( TmLambda ".1"
+                        ( TmRel "a" 1 )
+                        ( TmIndType "eq"
+                          [ TmRel "a" 2
+                          , TmRel ".0" 1
+                          , TmRel ".1" 0 ])))
+                  , TmIndType "nat" []
+                  , TmRel "y" 0
+                  , TmRel "x" 1 ])
+                ( TmAppl
+                  [ TmLambda "a"
+                      TmType
+                    ( TmLambda "x"
+                      ( TmRel "a" 0 )
+                      ( TmConstr "eqrefl"
+                        [ TmRel "a" 1
+                        , TmRel "x" 0 ]))
+                  , TmIndType "nat" []
+                  , TmRel "zero" 4 ])
+                ( TmAppl
+                  [ TmLambda "a"
+                      TmType
+                    ( TmLambda "x"
+                      ( TmRel "a" 0 )
+                      ( TmConstr "eqrefl"
+                        [ TmRel "a" 1
+                        , TmRel "x" 0 ]))
+                  , TmIndType "nat" []
+                  , TmRel "x" 2 ]))))
+        `shouldBe` 
+          Right 
+          (TmIndType
+            "eq"
+            [
+              (TmIndType "nat" []),
+              (TmRel "zero" 0),
+              (TmRel "zero" 0)])
+    describe "lzw_IndType" $
+      it "" $
+        typeof (listContext ++ natContextWithPredefinedNumbers)
+          (TmIndType 
+            "list"
+            [
+              TmIndType "nat" []
+            ])
+        `shouldBe`
+          Right TmType
+    describe "lzw_Constr" $
+      it "" $
+        typeof (listContext ++ natContextWithPredefinedNumbers)
+          (TmConstr
+            "cons"
+            [
+              (TmIndType "nat" []),
+              (TmRel "zero" 1),
+              (TmConstr
+                "cons"
+                [
+                  (TmIndType "nat" []),
+                  (TmRel "one" 2),
+                  (TmConstr
+                    "cons"
+                    [
+                      (TmIndType "nat" []),
+                      (TmRel "two" 3),
+                      (TmConstr
+                        "nil"
+                        [
+                          (TmIndType "nat" [])
+                        ])
+                    ])
+                ])
+            ])
+        `shouldBe` 
+           Right 
+           (TmIndType
+             "list"
+             [
+               TmIndType "nat" []
+             ])
 
+
+
+
+
+{-
+    describe "lzw_Error" $ do
+      it "rel not exist" $
+        typeof 
+          [] 
+          (TmRel "x" 0)
+        `shouldBe`
+        Left 
+        (TypingError 
+          (TmRel "x" 0) 
+          "There is no such bind")
+      it "rel is a NameBind" $
+        typeof 
+          [(NameBind "x")] 
+          (TmRel "x" 0)
+      `shouldBe`
+        Left 
+        (TypingError 
+          (TmRel "x" 0) 
+          "NameBind is not a type.") 
+      it "apply is not a func" $
+        typeof 
+          [(VarBind "x" TmType)] 
+          (TmAppl [(TmRel "x" 0)])
+        `shouldBe`
+        Left 
+        (TypingError
+          (TmRel "x" 0)
+          "")
+-}
