@@ -520,6 +520,7 @@ spec = do
           ++ "match x in t return t with |O => y|S xx => plus xx (S y) end.")
           `shouldParse`
           Fix "plus"
+          ( TmFix (-1)
             (TmLambda "plus"
               (TmProd "x"
                 (TmVar "nat")
@@ -542,7 +543,7 @@ spec = do
                           , TmVar "xx"
                           , TmAppl
                               [ TmVar "S"
-                              , TmVar "y"]])]))))
+                              , TmVar "y"]])])))))
   describe "pcommand" $ do
     it "axiom" $
       parse pcommand "" "Axiom a:b->c." `shouldParse`
@@ -744,6 +745,7 @@ spec = do
           ++ "match x in t return t with |O => y|S xx => plus xx (S y) end.")
           `shouldParse`
           Fix "plus"
+          ( TmFix (-1)
             (TmLambda "plus"
               (TmProd "x"
                 (TmVar "nat")
@@ -766,4 +768,4 @@ spec = do
                           , TmVar "xx"
                           , TmAppl
                               [ TmVar "S"
-                              , TmVar "y"]])]))))
+                              , TmVar "y"]])])))))

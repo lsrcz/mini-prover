@@ -229,9 +229,10 @@ pfixdefinition = do
   tm <- pterm
   _ <- dot
   return $ Fix name
-    (TmLambda name
-      (addBinderAbbr TmProd ty binders)
-      (addBinderAbbr TmLambda tm binders))
+    ( TmFix (-1)
+      (TmLambda name
+        (addBinderAbbr TmProd ty binders)
+        (addBinderAbbr TmLambda tm binders)))
 
 pcommand :: Parser Command
 pcommand = try paxiom
