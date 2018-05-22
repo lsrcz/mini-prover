@@ -2,6 +2,7 @@
 module MiniProver.Core.Termination (
     isTerminating
   , computeDecParam
+  , computeDecParamCmd
   ) where
 
 import           MiniProver.Core.Syntax
@@ -139,3 +140,23 @@ computeDecParamEqulst equlst =
 computeDecParamEqu :: Equation -> Either Term Equation
 computeDecParamEqu (Equation namelst tm) =
   Equation namelst <$> computeDecParam tm
+
+computeDecParamConstrlst :: [(Name, Term, Term)] -> Either Term [(Name, Term, Term)]
+computeDecParamConstrlst constrlst =
+  case partitionEithers $ map computeDecParamConstr constrlst of
+    ([], lst) -> Right lst
+    (x:_, _) -> Left x
+
+computeDecParamConstr :: (Name, Term, Term) -> Either Term (Name, Term, Term)
+computeDecParamConstr (name, ty, tm) =
+  (,,) <$> Right name <*> computeDecParam ty <*> computeDecParam tm
+
+computeDecParamCmd :: Command -> Either Term Command
+computeDecParamCmd (Ax name tm) = Ax name <$> computeDecParam tm
+computeDecParamCmd (Def name ty tm) =
+  Def name <$> computeDecParam ty <*> computeDecParam tm
+computeDecParamCmd (Ind name n ty tm constrlst) =
+  Ind name n <$> computeDecParam ty <*> computeDecParam tm <*>
+    computeDecParamConstrlst constrlst
+computeDecParamCmd (Fix name tm) =
+  Fix name <$> computeDecParam tm
