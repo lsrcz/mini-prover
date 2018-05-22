@@ -2,6 +2,8 @@
 module MiniProver.PrettyPrint.PrettyPrint (
     prettyShow
   , prettyPrint
+  , prettyShowCommand
+  , prettyPrintCommand
   ) where
 
 import MiniProver.Core.Syntax
@@ -80,3 +82,33 @@ prettyShow' (TmMatch tm names ty equlst) indent =
         indentNewline (indent + 2) ++ "| " ++ unwords names' ++
         " => " ++ prettyShow' tm' (indent + 4))
     equlst
+
+prettyDefinitionTail :: Term -> Term -> String
+prettyDefinitionTail ty@(TmProd namety tyty tmty) tm@(TmLambda nametm tytm tmtm)
+  | namety == nametm && tyty == tytm =
+      " (" ++ namety ++ ":" ++ prettyShow' tyty 0 ++ ")" ++ prettyDefinitionTail tmty tmtm
+prettyDefinitionTail ty tm =
+  " : " ++ prettyShow' ty 0 ++ " :=" ++ indentNewline 2 ++ prettyShow' tm 2
+
+prettyInductiveTyTail :: Int -> Term -> String
+prettyInductiveTyTail n (TmProd name ty tm)
+  | n > 0 = " (" ++ name ++ ":" ++ prettyShow' ty 0 ++ ")" ++ prettyInductiveTyTail (n-1) tm
+prettyInductiveTyTail _ tm = " : " ++ prettyShow' tm 0 ++ " :="
+
+prettyConstrTyTail :: Int -> Int -> Term -> String
+prettyConstrTyTail l n (TmProd _ _ tm)
+  | n > 0 = prettyConstrTyTail l (n - 1) tm
+prettyConstrTyTail l _ tm = prettyShow' tm (l + 7)
+
+prettyConstrLst :: Int -> [(Name,Term,Term)] -> String
+prettyConstrLst _ [] = ""
+prettyConstrLst n ((name,ty,_):xs) = indentNewline 2 ++ "| " ++ name ++ " : " ++ prettyConstrTyTail (length name) n ty ++ prettyConstrLst n xs
+
+prettyShowCommand :: Command -> String
+prettyShowCommand (Ax name ty) = "Axiom " ++ name ++ " : " ++ prettyShow ty
+prettyShowCommand (Def name ty tm) = "Definition " ++ name ++ prettyDefinitionTail ty tm
+prettyShowCommand (Ind name n ty _ constrlst) = "Inductive " ++ name ++ prettyInductiveTyTail n ty ++ prettyConstrLst n constrlst
+prettyShowCommand (Fix name (TmFix _ (TmLambda _ ty tm))) = "Fixpoint " ++ name ++ prettyDefinitionTail ty tm
+
+prettyPrintCommand :: Command -> IO ()
+prettyPrintCommand cmd = putStrLn $ prettyShowCommand cmd
