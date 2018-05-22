@@ -1,5 +1,6 @@
 module MiniProver.Core.Typing (
-    simplifyType
+    TypingError(..)
+  , simplifyType
   , typeof
   ) where
 
