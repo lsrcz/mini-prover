@@ -406,3 +406,68 @@ spec = do
                     (TmLambda ".0"
                       (TmIndType "le" [TmRel "x" 1, TmRel "y" 0])
                       (TmConstr "leS" [TmRel "x" 2, TmRel "y" 1, TmRel ".0" 0]))))]
+    describe "Fix" $
+      it "plus" $
+        buildCommand
+        ( Fix "plus"
+          ( TmFix (-1)
+            ( TmLambda "plus"
+              ( TmProd "x"
+                ( TmVar "nat" )
+                ( TmProd "y"
+                  ( TmVar "nat" )
+                  ( TmVar "nat" )))
+              ( TmLambda "x"
+                ( TmVar "nat" )
+                ( TmLambda "y"
+                  ( TmVar "nat" )
+                  ( TmMatch
+                    ( TmVar "x" )
+                    [ "nat" ]
+                    ( TmVar "nat" )
+                    [ Equation
+                      [ "O" ]
+                      ( TmVar "y" )
+                    , Equation
+                      [ "S"
+                      , "n" ]
+                      ( TmAppl
+                        [ TmVar "S"
+                        , TmAppl
+                          [ TmVar "plus"
+                          , TmVar "n"
+                          , TmVar "y" ]])]))))))
+        natContext
+        `shouldBe`
+        Fix "plus"
+          ( TmFix (-1)
+            ( TmLambda "plus"
+              ( TmProd "x"
+                ( TmIndType "nat" [])
+                ( TmProd "y"
+                  ( TmIndType "nat" [])
+                  ( TmIndType "nat" [])))
+              ( TmLambda "x"
+                ( TmIndType "nat" [])
+                ( TmLambda "y"
+                  ( TmIndType "nat" [])
+                  ( TmMatch
+                    ( TmRel "x" 1 )
+                    [ "nat" ]
+                    ( TmIndType "nat" [])
+                    [ Equation
+                      [ "O" ]
+                      ( TmRel "y" 0 )
+                    , Equation
+                      [ "S"
+                      , "n" ]
+                      ( TmAppl
+                        [ TmLambda ".0"
+                          ( TmIndType "nat" [])
+                          ( TmConstr "S"
+                            [ TmRel ".0" 0 ])
+                        , TmAppl
+                          [ TmRel "plus" 3
+                          , TmRel "n" 0
+                          , TmRel "y" 1 ]])])))))
+      

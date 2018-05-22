@@ -21,7 +21,8 @@ buildCommand (Def name ty tm) ctx = Def name (buildTerm ty ctx) (buildTerm tm ct
 buildCommand (Ind name int ty tm lst) ctx =
   Ind name int (buildTerm ty ctx) (buildTerm tm ctx) $
     map (\(namei, cty, ctm) -> (namei, buildTerm cty ctx, buildTerm ctm ctx)) lst
-
+buildCommand (Fix name tm) ctx =
+  Fix name (buildTerm tm ctx)
 
 -- before building the term, check whether all the names are bounded
 buildTerm :: Term -> BuiltTerm
