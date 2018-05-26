@@ -107,22 +107,41 @@ spec = do
       describe "TmType" $
         it "Type" $
           tmShiftAbove 2 2 TmType `shouldBe` TmType
-      describe "TmMatch" $
-        it "all in one" $ 
+      describe "TmMatch" $ do
+        it "0" $ 
           tmShiftAbove 2 2 
-            (TmMatch (TmAppl [TmRel "A" 1, TmRel "B" 2, TmRel "C" 3])
+            (TmMatch 0 (TmAppl [TmRel "A" 1, TmRel "B" 2, TmRel "C" 3])
+              "x0"
               ["a", "b", "c"]
               (TmAppl [TmRel "A" 3, TmRel "B" 4, TmRel "C" 5])
               [ Equation ["a"] (TmAppl [TmRel "A" 1, TmRel "B" 2, TmRel "C" 3])
               , Equation ["a", "b"] (TmAppl [TmRel "A" 2, TmRel "B" 3, TmRel "C" 4])
               , Equation ["a", "b", "c"] (TmAppl [TmRel "A" 3, TmRel "B" 4, TmRel "C" 5])])
             `shouldBe`
-            TmMatch (TmAppl [TmRel "A" 1, TmRel "B" 4, TmRel "C" 5])
+            TmMatch 0 (TmAppl [TmRel "A" 1, TmRel "B" 4, TmRel "C" 5])
+              "x0"
               ["a", "b", "c"]
               (TmAppl [TmRel "A" 3, TmRel "B" 6, TmRel "C" 7])
               [ Equation ["a"] (TmAppl [TmRel "A" 1, TmRel "B" 4, TmRel "C" 5])
               , Equation ["a", "b"] (TmAppl [TmRel "A" 2, TmRel "B" 5, TmRel "C" 6])
               , Equation ["a", "b", "c"] (TmAppl [TmRel "A" 3, TmRel "B" 6, TmRel "C" 7])]
+        it "1" $ 
+          tmShiftAbove 2 2 
+            (TmMatch 1 (TmAppl [TmRel "A" 1, TmRel "B" 2, TmRel "C" 3])
+              "x0"
+              ["a", "_", "b", "c"]
+              (TmAppl [TmRel "A" 3, TmRel "B" 4, TmRel "C" 5])
+              [ Equation ["a", "_"] (TmAppl [TmRel "A" 1, TmRel "B" 2, TmRel "C" 3])
+              , Equation ["a", "_", "b"] (TmAppl [TmRel "A" 2, TmRel "B" 3, TmRel "C" 4])
+              , Equation ["a", "_", "b", "c"] (TmAppl [TmRel "A" 3, TmRel "B" 4, TmRel "C" 5])])
+            `shouldBe`
+            TmMatch 1 (TmAppl [TmRel "A" 1, TmRel "B" 4, TmRel "C" 5])
+              "x0"
+              ["a", "_", "b", "c"]
+              (TmAppl [TmRel "A" 3, TmRel "B" 6, TmRel "C" 7])
+              [ Equation ["a", "_"] (TmAppl [TmRel "A" 1, TmRel "B" 4, TmRel "C" 5])
+              , Equation ["a", "_", "b"] (TmAppl [TmRel "A" 2, TmRel "B" 5, TmRel "C" 6])
+              , Equation ["a", "_", "b", "c"] (TmAppl [TmRel "A" 3, TmRel "B" 6, TmRel "C" 7])]
     describe "tmShift" $ do
       describe "TmRel" $ do
         it "0" $
@@ -199,23 +218,42 @@ spec = do
       describe "TmType" $
         it "Type" $
           tmShift 2 TmType `shouldBe` TmType
-      describe "TmMatch" $
-        it "all in one" $ 
-          -- [A B] match A B in a b c return A B b c with |a => A B |a b => b A B |a b c => b A B end
+      describe "TmMatch" $ do
+        it "0" $ 
+          -- [A B] match A B as x0 in a b c return A B b c with |a => A B |a b => b A B |a b c => b A B end
           tmShift 2
-            (TmMatch (TmAppl [TmRel "A" 0, TmRel "B" 1])
+            (TmMatch 0 (TmAppl [TmRel "A" 0, TmRel "B" 1])
+              "x0"
               ["a", "b", "c"]
               (TmAppl [TmRel "A" 2, TmRel "B" 3, TmRel "b" 1, TmRel "c" 0])
               [ Equation ["a"] (TmAppl [TmRel "A" 0, TmRel "B" 1])
               , Equation ["a", "b"] (TmAppl [TmRel "b" 0, TmRel "A" 1, TmRel "B" 2])
               , Equation ["a", "b", "c"] (TmAppl [TmRel "b" 1, TmRel "A" 2, TmRel "B" 3])])
             `shouldBe`
-            TmMatch (TmAppl [TmRel "A" 2, TmRel "B" 3])
+            TmMatch 0 (TmAppl [TmRel "A" 2, TmRel "B" 3])
+              "x0"
               ["a", "b", "c"]
               (TmAppl [TmRel "A" 4, TmRel "B" 5, TmRel "b" 1, TmRel "c" 0])
               [ Equation ["a"] (TmAppl [TmRel "A" 2, TmRel "B" 3])
               , Equation ["a", "b"] (TmAppl [TmRel "b" 0, TmRel "A" 3, TmRel "B" 4])
               , Equation ["a", "b", "c"] (TmAppl [TmRel "b" 1, TmRel "A" 4, TmRel "B" 5])]
+        it "1" $ 
+          tmShift 2
+            (TmMatch 1 (TmAppl [TmRel "A" 0, TmRel "B" 1])
+              "x0"
+              ["a", "_", "b", "c"]
+              (TmAppl [TmRel "A" 2, TmRel "B" 3, TmRel "b" 1, TmRel "c" 0])
+              [ Equation ["a", "_"] (TmAppl [TmRel "A" 0, TmRel "B" 1])
+              , Equation ["a", "_", "b"] (TmAppl [TmRel "b" 0, TmRel "A" 1, TmRel "B" 2])
+              , Equation ["a", "_", "b", "c"] (TmAppl [TmRel "b" 1, TmRel "A" 2, TmRel "B" 3])])
+            `shouldBe`
+            TmMatch 1 (TmAppl [TmRel "A" 2, TmRel "B" 3])
+              "x0"
+              ["a", "_", "b", "c"]
+              (TmAppl [TmRel "A" 4, TmRel "B" 5, TmRel "b" 1, TmRel "c" 0])
+              [ Equation ["a", "_"] (TmAppl [TmRel "A" 2, TmRel "B" 3])
+              , Equation ["a", "_", "b"] (TmAppl [TmRel "b" 0, TmRel "A" 3, TmRel "B" 4])
+              , Equation ["a", "_", "b", "c"] (TmAppl [TmRel "b" 1, TmRel "A" 4, TmRel "B" 5])]
     describe "bindingShift" $ do
       describe "NameBind" $ do
         it "0" $
@@ -331,19 +369,21 @@ spec = do
       describe "TmType" $
         it "Type" $
           tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1]) TmType `shouldBe` TmType
-      describe "TmMatch" $
+      describe "TmMatch" $ do
         it "all in one" $
-          -- (lambda. match 0 1 in r s t return 0 1 2 3 4 with |a => 0 1|a b => 0 1 2|a b c => 1 2 3 end)(0 1) => 
+          -- (lambda. match 0 1 as x0 in r s t return 0 1 2 3 4 with |a => 0 1|a b => 0 1 2|a b c => 1 2 3 end)(0 1) => 
           -- match (0 1) 0 with |a => (0 1) 0|a b => 0 (1 2) 1|a b c => 1 (2 3) 2
           tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1])
-            (TmMatch (TmAppl [TmRel "x" 0, TmRel "a" 1])
+            (TmMatch 0 (TmAppl [TmRel "x" 0, TmRel "a" 1])
+              "x0"
               ["r", "s", "t"]
               (TmAppl [TmRel "t" 0, TmRel "s" 1, TmRel "x" 2, TmRel "a" 3, TmRel "b" 4])
               [ Equation ["A"] (TmAppl [TmRel "x" 0, TmRel "a" 1])
               , Equation ["A", "B"] (TmAppl [TmRel "B" 0, TmRel "x" 1, TmRel "a" 2])
               , Equation ["A", "B", "c"] (TmAppl [TmRel "B" 1, TmRel "x" 2, TmRel "a" 3])])
             `shouldBe`
-            TmMatch (TmAppl [TmAppl [TmRel "a" 0, TmRel "b" 1], TmRel "a" 0])
+            TmMatch 0 (TmAppl [TmAppl [TmRel "a" 0, TmRel "b" 1], TmRel "a" 0])
+              "x0"
               ["r", "s", "t"]
               (TmAppl [TmRel "t" 0, TmRel "s" 1, TmAppl [TmRel "a" 2, TmRel "b" 3], TmRel "a" 2, TmRel "b" 3])
               [ Equation ["A"] 
@@ -351,6 +391,26 @@ spec = do
               , Equation ["A", "B"] 
                 (TmAppl [TmRel "B" 0, TmAppl [TmRel "a" 1, TmRel "b" 2], TmRel "a" 1])
               , Equation ["A", "B", "c"] 
+                (TmAppl [TmRel "B" 1, TmAppl [TmRel "a" 2, TmRel "b" 3], TmRel "a" 2])]
+        it "all in one" $
+          tmSubstTop (TmAppl [TmRel "a" 0, TmRel "b" 1])
+            (TmMatch 1 (TmAppl [TmRel "x" 0, TmRel "a" 1])
+              "x0"
+              ["r", "_", "s", "t"]
+              (TmAppl [TmRel "t" 0, TmRel "s" 1, TmRel "x" 2, TmRel "a" 3, TmRel "b" 4])
+              [ Equation ["A", "_"] (TmAppl [TmRel "x" 0, TmRel "a" 1])
+              , Equation ["A", "_", "B"] (TmAppl [TmRel "B" 0, TmRel "x" 1, TmRel "a" 2])
+              , Equation ["A", "_", "B", "c"] (TmAppl [TmRel "B" 1, TmRel "x" 2, TmRel "a" 3])])
+            `shouldBe`
+            TmMatch 1 (TmAppl [TmAppl [TmRel "a" 0, TmRel "b" 1], TmRel "a" 0])
+              "x0"
+              ["r", "_", "s", "t"]
+              (TmAppl [TmRel "t" 0, TmRel "s" 1, TmAppl [TmRel "a" 2, TmRel "b" 3], TmRel "a" 2, TmRel "b" 3])
+              [ Equation ["A", "_"] 
+                (TmAppl [TmAppl [TmRel "a" 0, TmRel "b" 1], TmRel "a" 0])
+              , Equation ["A", "_", "B"] 
+                (TmAppl [TmRel "B" 0, TmAppl [TmRel "a" 1, TmRel "b" 2], TmRel "a" 1])
+              , Equation ["A", "_", "B", "c"] 
                 (TmAppl [TmRel "B" 1, TmAppl [TmRel "a" 2, TmRel "b" 3], TmRel "a" 2])]
     describe "tmSubstInsideN" $ do
       it "simple-1" $

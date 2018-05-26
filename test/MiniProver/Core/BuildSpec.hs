@@ -107,25 +107,228 @@ spec = do
     describe "TmType" $
       it "Type" $
         buildTerm TmType ctx `shouldBe` TmType
-    describe "TmMatch" $
-      it "all in one" $
+    describe "TmMatch" $ do
+      it "nat" $
         buildTerm
-          (TmMatch (TmVar "A")
-            [ "a", "b", "c" ]
-            (TmAppl [TmVar "A", TmVar "b", TmVar "c"])
-            [ Equation ["a"] (TmVar "A")
-            , Equation ["a", "b"] (TmAppl [TmVar "A", TmVar "D", TmVar "b"])
-            , Equation ["a", "b", "c"] (TmAppl [TmVar "A", TmVar "b", TmVar "c"])])
-          ctx
+          (TmMatch (-1) (TmVar "one")
+            "x0"
+            [ "nat" ]
+            (TmVar "nat")
+            [ Equation ["O"] (TmVar "two")
+            , Equation ["S", "n"]
+              (TmAppl
+                [ TmVar "plus"
+                , TmAppl [TmVar "S", TmVar "O"], TmVar "n"])])
+          natContextWithPredefinedNumbers
           `shouldBe`
-          TmMatch (TmRel "A" 0)
-            [ "a", "b", "c" ]
-            (TmAppl [TmRel "A" 2, TmRel "b" 1, TmRel "c" 0])
-            [ Equation ["a"] (TmRel "A" 0)
-            , Equation ["a", "b"]
-                (TmAppl [TmRel "A" 1, TmRel "D" 4, TmRel "b" 0])
-            , Equation ["a", "b", "c"]
-                (TmAppl [TmRel "A" 2, TmRel "b" 1, TmRel "c" 0])]
+          TmMatch 0 (TmRel "one" 1)
+            "x0"
+            [ "nat" ]
+            (TmIndType "nat" [])
+            [ Equation ["O"] (TmRel "two" 0)
+            , Equation ["S", "n"]
+              (TmAppl
+                [ TmRel "plus" 4
+                , TmAppl
+                  [ TmLambda ".0"
+                    ( TmIndType "nat" [] )
+                    ( TmConstr "S" [ TmRel ".0" 0 ])
+                  , TmConstr "O" []]
+                , TmRel "n" 0])]
+      it "eq" $
+        buildTerm
+          ( TmMatch (-1)
+            ( TmAppl
+              [ TmVar "eq"
+              , TmVar "nat"
+              , TmVar "one"
+              , TmVar "one" ])
+            "H0"
+            [ "eq", "_", "a", "b" ]
+            ( TmAppl
+              [ TmVar "eq"
+              , TmVar "nat"
+              , TmAppl
+                [ TmVar "S"
+                , TmVar "a"]
+              , TmAppl
+                [ TmVar "S"
+                , TmVar "b" ]])
+            [ Equation ["eqrefl", "_", "t"]
+              ( TmAppl
+                [ TmVar "eqrefl"
+                , TmVar "nat"
+                , TmAppl
+                  [ TmVar "S"
+                  , TmVar "t" ]])])
+          natContextWithPredefinedNumbers
+          `shouldBe`
+          TmMatch 1
+            ( TmAppl
+              [ TmLambda "a"
+                  TmType
+                ( TmLambda ".0"
+                  ( TmRel "a" 0 )
+                  ( TmLambda ".1" 
+                    ( TmRel "a" 1 )
+                    ( TmIndType "eq"
+                      [ TmRel "a" 2, TmRel ".0" 1, TmRel ".1" 0 ])))
+              , TmIndType "nat" []
+              , TmRel "one" 1
+              , TmRel "one" 1 ])
+            "H0"
+            [ "eq", "_", "a", "b" ]
+            ( TmAppl
+              [ TmLambda "a"
+                  TmType
+                  ( TmLambda ".0"
+                    ( TmRel "a" 0 )
+                    ( TmLambda ".1" 
+                      ( TmRel "a" 1 )
+                      ( TmIndType "eq"
+                      [ TmRel "a" 2, TmRel ".0" 1, TmRel ".1" 0 ])))
+              , TmIndType "nat" []
+              , TmAppl
+                [ TmLambda ".0"
+                  ( TmIndType "nat" [] )
+                  ( TmConstr "S" [ TmRel ".0" 0 ])
+                , TmRel "a" 2 ]
+              , TmAppl
+                [ TmLambda ".0"
+                  ( TmIndType "nat" [] )
+                  ( TmConstr "S" [ TmRel ".0" 0 ])
+                , TmRel "b" 1 ]])
+            [ Equation ["eqrefl", "_", "t"]
+              ( TmAppl
+                [ TmLambda "a" 
+                    TmType
+                  ( TmLambda "x"
+                    ( TmRel "a" 0 )
+                    ( TmConstr "eqrefl"
+                      [ TmRel "a" 1, TmRel "x" 0 ]))
+                , TmIndType "nat" []
+                , TmAppl
+                  [ TmLambda ".0"
+                    ( TmIndType "nat" [] )
+                    ( TmConstr "S" [ TmRel ".0" 0 ])
+                  , TmRel "t" 0 ]])]
+      it "eqrefl" $
+        buildTerm
+        ( TmMatch (-1)
+          ( TmAppl
+            [ TmVar "eqrefl"
+            , TmVar "nat"
+            , TmVar "one" ])
+          "x0"
+          ["eq","_","b","c"]
+          ( TmAppl
+            [ TmVar "eq"
+            , TmVar "nat"
+            , TmVar "c"
+            , TmVar "b" ])
+          [ Equation ["eqrefl","_","t"]
+            ( TmAppl [ TmVar "eqrefl", TmVar "nat", TmVar "t" ])])
+        natContextWithPredefinedNumbers
+        `shouldBe`
+        TmMatch 1
+        ( TmAppl
+          [ TmLambda "a" 
+              TmType
+            ( TmLambda "x"
+              ( TmRel "a" 0 )
+              ( TmConstr "eqrefl"
+                [ TmRel "a" 1, TmRel "x" 0 ]))
+          , TmIndType "nat" []
+          , TmRel "one" 1 ])
+        "x0"
+        ["eq","_","b","c"]
+        ( TmAppl
+          [ TmLambda "a"
+              TmType
+            ( TmLambda ".0"
+              ( TmRel "a" 0 )
+              ( TmLambda ".1" 
+                ( TmRel "a" 1 )
+                ( TmIndType "eq"
+                  [ TmRel "a" 2, TmRel ".0" 1, TmRel ".1" 0 ])))
+          , TmIndType "nat" []
+          , TmRel "c" 1
+          , TmRel "b" 2 ])
+        [ Equation ["eqrefl","_","t"]
+          ( TmAppl
+            [ TmLambda "a" 
+                TmType
+              ( TmLambda "x"
+                ( TmRel "a" 0 )
+                ( TmConstr "eqrefl"
+                  [ TmRel "a" 1, TmRel "x" 0 ]))
+            , TmIndType "nat" []
+            , TmRel "t" 0 ])]
+      it "dependent on term" $
+        buildTerm
+          ( TmMatch (-1)
+            ( TmVar "one" )
+            "x0"
+            ["nat"]
+            ( TmAppl
+              [ TmVar "eq"
+              , TmVar "nat"
+              , TmVar "x0"
+              , TmVar "x0" ])
+            [ Equation ["O"]
+              ( TmAppl
+                [ TmVar "eqrefl"
+                , TmVar "nat"
+                , TmVar "O" ])
+            , Equation ["S","n"]
+              ( TmAppl
+                [ TmVar "eqrefl"
+                , TmVar "nat"
+                , TmAppl
+                  [ TmVar "S"
+                  , TmVar "n" ]])])
+          natContextWithPredefinedNumbers
+          `shouldBe`
+          TmMatch 0
+          ( TmRel "one" 1 )
+          "x0"
+          ["nat"]
+          ( TmAppl
+            [ TmLambda "a"
+                TmType
+              ( TmLambda ".0"
+                ( TmRel "a" 0 )
+                ( TmLambda ".1" 
+                  ( TmRel "a" 1 )
+                  ( TmIndType "eq"
+                    [ TmRel "a" 2, TmRel ".0" 1, TmRel ".1" 0 ])))
+            , TmIndType "nat" []
+            , TmRel "x0" 0
+            , TmRel "x0" 0 ])
+          [ Equation ["O"]
+            ( TmAppl
+              [ TmLambda "a" 
+                  TmType
+                ( TmLambda "x"
+                  ( TmRel "a" 0 )
+                  ( TmConstr "eqrefl"
+                    [ TmRel "a" 1, TmRel "x" 0 ]))
+              , TmIndType "nat" []
+              , TmConstr "O" [] ])
+          , Equation ["S","n"]
+            ( TmAppl
+              [ TmLambda "a" 
+                  TmType
+                ( TmLambda "x"
+                  ( TmRel "a" 0 )
+                  ( TmConstr "eqrefl"
+                    [ TmRel "a" 1, TmRel "x" 0 ]))
+              , TmIndType "nat" []
+              , TmAppl
+                [ TmLambda ".0"
+                  ( TmIndType "nat" [] )
+                  ( TmConstr "S" [ TmRel ".0" 0 ])
+                , TmRel "n" 0 ]])]
   describe "buildCommand" $ do
     let ctx = natContext
     describe "Ax" $
@@ -421,8 +624,9 @@ spec = do
                 ( TmVar "nat" )
                 ( TmLambda "y"
                   ( TmVar "nat" )
-                  ( TmMatch
+                  ( TmMatch (-1)
                     ( TmVar "x" )
+                    "x0"
                     [ "nat" ]
                     ( TmVar "nat" )
                     [ Equation
@@ -451,8 +655,9 @@ spec = do
                 ( TmIndType "nat" [])
                 ( TmLambda "y"
                   ( TmIndType "nat" [])
-                  ( TmMatch
+                  ( TmMatch 0
                     ( TmRel "x" 1 )
+                    "x0"
                     [ "nat" ]
                     ( TmIndType "nat" [])
                     [ Equation

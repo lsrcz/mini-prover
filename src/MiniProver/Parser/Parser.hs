@@ -107,19 +107,21 @@ pmatch :: Parser Term
 pmatch = do
   _ <- rword "match"
   tm <- pterm
+  _ <- rword "as"
+  name <- ident
   _ <- rword "in"
-  namelst <- some ident
+  namelst <- some (ident <|> underscore)
   _ <- rword "return"
   rty <- pterm
   _ <- rword "with"
   eqs <- many pequation
   _ <- rword "end"
-  return $ TmMatch tm namelst rty eqs
+  return $ TmMatch (-1) tm name namelst rty eqs
 
 pequation :: Parser Equation
 pequation = do
   _ <- mid
-  namelst <- some ident
+  namelst <- some (ident <|> underscore)
   _ <- darrow
   tm <- pterm
   return $ Equation namelst tm

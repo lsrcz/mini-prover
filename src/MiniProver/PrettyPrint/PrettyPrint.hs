@@ -73,15 +73,15 @@ prettyShow' (TmConstr name tmlst) indent =
   unwords $ name : map (`addParens` indent) tmlst
 prettyShow' TmType _ = "Type"
 prettyShow' TmTypeHigher _ = "TypeH"
-prettyShow' (TmMatch tm names ty equlst) indent = 
-  "match " ++ prettyShow' tm indent ++ " in " ++ unwords names ++
+prettyShow' (TmMatch _ tm name names ty equlst) indent = 
+  "match " ++ prettyShow' tm indent ++ " as " ++ name ++ " in " ++ unwords names ++
   " return " ++ prettyShow' ty indent ++ " with " ++ 
   concatMap 
     (\case 
       Equation names' tm' -> 
         indentNewline (indent + 2) ++ "| " ++ unwords names' ++
         " => " ++ prettyShow' tm' (indent + 4))
-    equlst
+    equlst ++ indentNewline (indent + 2) ++ "end"
 
 prettyDefinitionTail :: Term -> Term -> String
 prettyDefinitionTail ty@(TmProd namety tyty tmty) tm@(TmLambda nametm tytm tmtm)

@@ -23,12 +23,14 @@ tmMap onRel c t =
       TmLetIn name ty tm bdy -> TmLetIn name (walk c' ty) (walk c' tm) (walk (c' + 1) bdy)
       TmIndType name lst -> TmIndType name $ map (walk c') lst
       TmConstr name lst -> TmConstr name $ map (walk c') lst
-      TmMatch tm namelst rty equlst -> 
-        TmMatch (walk c' tm) namelst (walk (c' + length namelst - 1) rty) (map (walkequ c') equlst)
+      TmMatch n tm name namelst rty equlst ->
+        if n == (-1)
+          then error "This should not happen"
+          else TmMatch n (walk c' tm) name namelst (walk (c' + length namelst - 1 - n) rty) (map (walkequ n c') equlst)
       _ -> t'
-    walkequ :: Int -> Equation -> Equation
-    walkequ c' e' = case e' of
-      Equation namelst tm -> Equation namelst (walk (c' + length namelst - 1) tm)
+    walkequ :: Int -> Int -> Equation -> Equation
+    walkequ n c' e' = case e' of
+      Equation namelst tm -> Equation namelst (walk (c' + length namelst - 1 - n) tm)
   in
     walk c t
 

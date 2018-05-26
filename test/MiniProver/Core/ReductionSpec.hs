@@ -114,8 +114,9 @@ spec = do
               ( TmIndType "nat" [])
               ( TmLambda "b"
                 ( TmIndType "nat" [])
-                ( TmMatch
+                ( TmMatch 0
                   ( TmRel "a" 1)
+                    "x0"
                     [ "nat" ]
                     ( TmIndType "nat" [])
                     [ Equation ["O"] (TmRel "b" 0)
@@ -132,8 +133,9 @@ spec = do
       `shouldBe`
       TmLambda "b"
       ( TmIndType "nat" [] )
-      ( TmMatch
+      ( TmMatch 0
         ( TmConstr "O" [] )
+        "x0"
         [ "nat" ]
         ( TmIndType "nat" [])
         [ Equation ["O"] (TmRel "b" 0)
@@ -154,20 +156,21 @@ spec = do
                     ( TmIndType "nat" [])
                     ( TmLambda "b"
                       ( TmIndType "nat" [])
-                      ( TmMatch
+                      ( TmMatch 0
                         ( TmRel "a" 1)
-                          [ "nat" ]
-                          ( TmIndType "nat" [])
-                          [ Equation ["O"] (TmRel "b" 0)
-                          , Equation ["S","n"]
-                            ( TmAppl
-                              [ TmLambda ".0"
-                                ( TmIndType "nat" [])
-                                ( TmConstr "S" [TmRel ".0" 0])
-                              , TmAppl
-                                [ TmRel "plus" 3
-                                , TmRel "n" 0
-                                , TmRel "b" 1]])]))))
+                        "x0"
+                        [ "nat" ]
+                        ( TmIndType "nat" [])
+                        [ Equation ["O"] (TmRel "b" 0)
+                        , Equation ["S","n"]
+                          ( TmAppl
+                            [ TmLambda ".0"
+                              ( TmIndType "nat" [])
+                              ( TmConstr "S" [TmRel ".0" 0])
+                            , TmAppl
+                              [ TmRel "plus" 3
+                              , TmRel "n" 0
+                              , TmRel "b" 1]])]))))
               , TmRel "n" 0
               , TmRel "b" 1 ]])])
   describe "zetaReduction" $
@@ -188,8 +191,9 @@ spec = do
   describe "iotaReduction" $ do
     it "iotaReduction-nat-O" $
       iotaReduction
-      ( TmMatch
+      ( TmMatch 0
         ( TmConstr "O" [] )
+        "x0"
         [ "nat" ]
         ( TmIndType "nat" [] )
         [ Equation
@@ -204,9 +208,10 @@ spec = do
       TmRel "a" 0
     it "iotaReduction-nat-S" $
       iotaReduction
-      ( TmMatch
+      ( TmMatch 0
         ( TmConstr "S" 
           [ TmRel "x" 2 ] )
+        "x0"
         [ "nat" ]
         ( TmIndType "nat" [] )
         [ Equation
@@ -223,39 +228,40 @@ spec = do
         , TmRel "x" 2 ]
     it "iotaReduction-list-nil" $
       iotaReduction
-      ( TmMatch
+      ( TmMatch 1
         ( TmConstr "nil" [ TmIndType "nat" [] ] )
-        [ "list", "T" ]
-        ( TmIndType "list" [ TmIndType "list" [ TmRel "T" 0 ]])
+        "l0"
+        [ "list", "_" ]
+        ( TmIndType "list" [ TmIndType "list" [ TmIndType "nat" [] ]])
         [ Equation
-          [ "nil", "nat" ]
+          [ "nil", "_" ]
           ( TmConstr "nil"
             [ TmIndType "list"
-              [ TmRel "nat" 0 ]])
+              [ TmIndType "nat" [] ]])
         , Equation
-          [ "cons", "nat", "x", "xs" ]
+          [ "cons", "_", "x", "xs" ]
           ( TmConstr "cons"
             [ TmIndType "list"
-              [ TmRel "nat" 2 ]
+              [ TmIndType "nat" [] ]
             , TmConstr "cons"
-              [ TmRel "nat" 2
+              [ TmIndType "nat" []
               , TmRel "x" 1
               , TmConstr "nil"
-                [ TmRel "nat" 2 ]]
+                [ TmIndType "nat" [] ]]
             , TmConstr "cons"
               [ TmIndType "list"
-                [ TmRel "nat" 2 ]
+                [ TmIndType "nat" [] ]
               , TmRel "xs" 0
               , TmConstr "nil"
                 [ TmIndType "list"
-                  [ TmRel "nat" 2 ]]]])])
+                  [ TmIndType "nat" [] ]]]])])
       `shouldBe`
       TmConstr "nil"
         [ TmIndType "list"
           [ TmIndType "nat" [] ]]
     it "iotaReduction-list-cons" $
       iotaReduction
-      ( TmMatch
+      ( TmMatch 1
         ( TmConstr "cons" 
           [ TmIndType "nat" []
           , TmRel "one" 1
@@ -264,30 +270,31 @@ spec = do
             , TmRel "two" 2
             , TmConstr "nil"
               [ TmIndType "nat" [] ]]])
-        [ "list", "T" ]
-        ( TmIndType "list" [ TmIndType "list" [ TmRel "T" 0 ]])
+        "l0"
+        [ "list", "_" ]
+        ( TmIndType "list" [ TmIndType "list" [ TmIndType "nat" [] ]])
         [ Equation
-          [ "nil", "nat" ]
+          [ "nil", "_" ]
           ( TmConstr "nil"
             [ TmIndType "list"
-              [ TmRel "nat" 0 ]])
+              [ TmIndType "nat" [] ]])
         , Equation
-          [ "cons", "nat", "x", "xs" ]
+          [ "cons", "_", "x", "xs" ]
           ( TmConstr "cons"
             [ TmIndType "list"
-              [ TmRel "nat" 2 ]
+              [ TmIndType "nat" [] ]
             , TmConstr "cons"
-              [ TmRel "nat" 2
+              [ TmIndType "nat" []
               , TmRel "x" 1
               , TmConstr "nil"
-                [ TmRel "nat" 2 ]]
+                [ TmIndType "nat" [] ]]
             , TmConstr "cons"
               [ TmIndType "list"
-                [ TmRel "nat" 2 ]
+                [ TmIndType "nat" [] ]
               , TmRel "xs" 0
               , TmConstr "nil"
                 [ TmIndType "list"
-                  [ TmRel "nat" 2 ]]]])])
+                  [ TmIndType "nat" [] ]]]])])
       `shouldBe`
       TmConstr "cons"
         [ TmIndType "list"
@@ -635,8 +642,9 @@ spec = do
               ( TmIndType "nat" [] )
               ( TmLambda "b"
                 ( TmIndType "nat" [] )
-                ( TmMatch
+                ( TmMatch 0
                   ( TmRel "a" 1 )
+                  "a0"
                   [ "nat" ]
                   ( TmIndType "nat" [] )
                   [ Equation
@@ -659,8 +667,9 @@ spec = do
           `shouldBe`
           TmLambda "x"
           ( TmIndType "nat" [] )
-          ( TmMatch
+          ( TmMatch 0
             ( TmRel "x" 0 )
+            "x0"
             [ "nat" ]
             ( TmIndType "nat" [] )
             [ Equation
@@ -702,14 +711,16 @@ spec = do
             ( TmIndType "nat" [])
             ( TmLambda "z"
               ( TmIndType "nat" [])
-              ( TmMatch
+              ( TmMatch 0
                 ( TmRel "x" 2 )
+                "a0"
                 [ "nat" ]
                 ( TmIndType "nat" [])
                 [ Equation
                   [ "O" ]
-                  ( TmMatch
+                  ( TmMatch 0
                     ( TmRel "y" 1 )
+                    "a0"
                     [ "nat" ]
                     ( TmIndType "nat" [])
                     [ Equation
@@ -730,8 +741,9 @@ spec = do
                               ( TmIndType "nat" [])
                               ( TmLambda "b"
                                 ( TmIndType "nat" [])
-                                ( TmMatch
+                                ( TmMatch 0
                                   ( TmRel "a" 1 )
+                                  "a0"
                                   [ "nat" ]
                                   ( TmIndType "nat" [])
                                   [ Equation
@@ -763,8 +775,9 @@ spec = do
                           ( TmIndType "nat" [])
                           ( TmLambda "b"
                             ( TmIndType "nat" [])
-                            ( TmMatch
+                            ( TmMatch 0
                               ( TmRel "a" 1 )
+                              "a0"
                               [ "nat" ]
                               ( TmIndType "nat" [])
                               [ Equation
@@ -780,8 +793,9 @@ spec = do
                                     [ TmRel "b" 1 ]])]))))
                     , TmRel "n" 0
                     , TmConstr "S"
-                      [ TmMatch
+                      [ TmMatch 0
                         ( TmRel "y" 2 )
+                        "a0"
                         [ "nat" ]
                         ( TmIndType "nat" [])
                         [ Equation
@@ -802,8 +816,9 @@ spec = do
                                   ( TmIndType "nat" [])
                                   ( TmLambda "b"
                                     ( TmIndType "nat" [])
-                                    ( TmMatch
+                                    ( TmMatch 0
                                       ( TmRel "a" 1 )
+                                      "a0"
                                       [ "nat" ]
                                       ( TmIndType "nat" [])
                                       [ Equation
@@ -852,8 +867,9 @@ spec = do
             ( TmIndType "nat" [])
             ( TmLambda "z"
               ( TmIndType "nat" [])
-              ( TmMatch
+              ( TmMatch 0
                 ( TmRel "y" 1 )
+                "a0"
                 [ "nat" ]
                 ( TmIndType "nat" [])
                 [ Equation
@@ -874,8 +890,9 @@ spec = do
                           ( TmIndType "nat" [])
                           ( TmLambda "b"
                             ( TmIndType "nat" [])
-                            ( TmMatch
+                            ( TmMatch 0
                               ( TmRel "a" 1 )
+                              "a0"
                               [ "nat" ]
                               ( TmIndType "nat" [])
                               [ Equation
@@ -900,8 +917,9 @@ spec = do
           ( TmLambda "z"
             ( TmIndType "nat" [] )
             ( TmConstr "S"
-              [ TmMatch
+              [ TmMatch 0
                 ( TmRel "y" 1 )
+                "a0"
                 [ "nat" ]
                 ( TmIndType "nat" [] )
                 [ Equation
@@ -921,8 +939,9 @@ spec = do
                           ( TmIndType "nat" [] )
                           ( TmLambda "b"
                             ( TmIndType "nat" [] )
-                            ( TmMatch
+                            ( TmMatch 0
                               ( TmRel "a" 1 )
+                              "a0"
                               [ "nat" ]
                               ( TmIndType "nat" [] )
                               [ Equation

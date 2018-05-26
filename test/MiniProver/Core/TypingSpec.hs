@@ -259,39 +259,12 @@ spec = do
               ( TmRel "xx" 0 )])
         `shouldBe`
         Right ( TmIndType "nat" [] )
-      it "dependent" $
-        typeof natContextWithPredefinedNumbers
-        ( TmLambda "x"
-          ( TmIndType "nat" [] )
-          ( TmMatch
-            ( TmRel "x" 0 )
-            [ "nat" ]
-            ( TmIndType "eq"
-              [ TmIndType "nat" []
-              , TmRel "x" 0
-              , TmRel "x" 0 ])
-            [ Equation ["O"]
-              ( TmConstr "eqrefl"
-                [ TmIndType "nat" []
-                , TmRel "x" 0 ])
-            , Equation ["S", "n"]
-              ( TmConstr "eqrefl"
-                [ TmIndType "nat" []
-                , TmRel "n" 0 ])]))
-        `shouldBe`
-        Right 
-        ( TmProd "x"
-          ( TmIndType "nat" [] )
-          ( TmIndType "eq"
-            [ TmIndType "nat" []
-            , TmRel "x" 0
-            , TmRel "x" 0 ]))
       it "f_equal" $
         typeof natContextWithPredefinedNumbers
         ( TmLambda "A"
-          TmType
-          ( TmLambda "B"
             TmType
+          ( TmLambda "B"
+              TmType
             ( TmLambda "f"
               ( TmProd "_"
                 ( TmRel "A" 1 )
@@ -301,22 +274,57 @@ spec = do
                 ( TmLambda "y"
                   ( TmRel "A" 3 )
                   ( TmLambda "H"
-                    ( TmIndType "eq"
-                      [ TmRel "A" 4, TmRel "x" 1, TmRel "y" 0 ])
+                    ( TmAppl
+                      [ TmLambda "a"
+                          TmType
+                        ( TmLambda ".0"
+                          ( TmRel "a" 0 )
+                          ( TmLambda ".1"
+                            ( TmRel "a" 1 )
+                            ( TmIndType "eq"
+                              [ TmRel "a" 2
+                              , TmRel ".0" 1
+                              , TmRel ".1" 0 ])))
+                      , TmRel "A" 4
+                      , TmRel "x" 1
+                      , TmRel "y" 0 ])
                     ( TmMatch
                       ( TmRel "H" 0 )
-                      [ "eq1", "t", "x0", "y0" ]
-                      ( TmIndType "eq1"
-                        [ TmRel "B" 7
+                      [ "eq"
+                      , "t"
+                      , "x0"
+                      , "y0" ]
+                      ( TmAppl
+                        [ TmLambda "a"
+                            TmType
+                          ( TmLambda ".0"
+                            ( TmRel "a" 0 )
+                            ( TmLambda ".1"
+                              ( TmRel "a" 1 )
+                              ( TmIndType "eq"
+                                [ TmRel "a" 2
+                                , TmRel ".0" 1
+                                , TmRel ".1" 0 ])))
+                        , TmRel "B" 7
                         , TmAppl
                           [ TmRel "f" 6
                           , TmRel "x0" 1 ]
                         , TmAppl
                           [ TmRel "f" 6
                           , TmRel "y0" 0 ]])
-                      [ Equation ["eqrefl", "t", "x0"]
-                        ( TmConstr "eqrefl"
-                          [ TmRel "B" 6
+                      [ Equation
+                        [ "eqrefl"
+                        , "t"
+                        , "x0" ]
+                        ( TmAppl
+                          [ TmLambda "a"
+                              TmType
+                            ( TmLambda "x"
+                              ( TmRel "a" 0 )
+                              ( TmConstr "eqrefl"
+                                [ TmRel "a" 1
+                                , TmRel "x" 0 ]))
+                          , TmRel "B" 6
                           , TmAppl
                             [ TmRel "f" 5
                             , TmRel "x0" 0 ]])])))))))
@@ -478,8 +486,8 @@ spec = do
             "eq"
             [
               (TmIndType "nat" []),
-              (TmRel "zero" 0),
-              (TmRel "zero" 0)])
+              (TmRel "zero" 2),
+              (TmRel "zero" 2)])
     describe "lzw_IndType" $
       it "" $
         typeof (listContext ++ natContextWithPredefinedNumbers)

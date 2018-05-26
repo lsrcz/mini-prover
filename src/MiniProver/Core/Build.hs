@@ -59,12 +59,16 @@ buildTerm (TmConstr name tmlst) ctx =
   TmConstr name $
     map (`buildTerm` ctx) tmlst
 buildTerm TmType _ = TmType
-buildTerm (TmMatch tm namelst rty equlst) ctx =
-  TmMatch (buildTerm tm ctx) namelst (buildTerm rty (foldl addName ctx (tail namelst))) $
-    map (`buildEquation` ctx) equlst
+
+buildTerm (TmMatch _ tm name namelst rty equlst) ctx =
+  let
+    Right(n, _) = getIndTypeType ctx (head namelst)
+  in
+    TmMatch n (buildTerm tm ctx) name namelst (buildTerm rty (addName (foldl addName ctx (drop (1+n) namelst)) name)) $
+      map (\eq -> buildEquation n eq ctx) equlst
 buildTerm _ _ = error "this should not happen"
 
-buildEquation :: Equation -> BuiltEquation
-buildEquation (Equation namelst tm) ctx =
+buildEquation :: Int -> Equation -> BuiltEquation
+buildEquation n (Equation namelst tm) ctx =
   Equation namelst $
-    buildTerm tm (foldl addName ctx (tail namelst))
+    buildTerm tm (foldl addName ctx (drop (1+n) namelst))

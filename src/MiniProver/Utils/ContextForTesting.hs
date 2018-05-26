@@ -27,8 +27,9 @@ natContext =
               ( TmIndType "nat" [] )
               ( TmLambda "b"
                 ( TmIndType "nat" [] )
-                ( TmMatch
+                ( TmMatch 0
                   ( TmRel "a" 1 )
+                  "a0"
                   [ "nat" ]
                   ( TmIndType "nat" [] )
                   [ Equation
@@ -194,8 +195,9 @@ natContextWithPredefinedFunctions =
         ( TmIndType "nat" [] ))
       ( Just $ TmLambda "x"
         ( TmIndType "nat" [] )
-        ( TmMatch
+        ( TmMatch 0
           ( TmRel "x" 0 )
+          "x0"
           [ "nat" ]
           ( TmIndType "nat" [] )
           [ Equation

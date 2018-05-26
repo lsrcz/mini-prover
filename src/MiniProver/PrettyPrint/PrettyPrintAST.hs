@@ -122,8 +122,10 @@ prettyShowAST' (TmConstr name tmlst) indent =
 prettyShowAST' TmType indent = [spaces indent ++ "TmType"]
 prettyShowAST' TmTypeHigher indent = [spaces indent ++ "TmTypeHigher"]
 
-prettyShowAST' (TmMatch tm namelst ty equlst) indent = (spaces indent ++ "TmMatch") :
+prettyShowAST' (TmMatch n tm name namelst ty equlst) indent =
+  ( spaces indent ++ "TmMatch " ++ if n == (-1) then "(-1)" else show n) :
   ( prettyShowAddParensNonAtom tm (indent + 2) ++
+    [spaces (indent + 2) ++ show name] ++
     addParens (prettyShowNameList namelst (indent + 2)) '[' ']' ++
     prettyShowAddParensNonAtom ty (indent + 2) ++
     addParens (prettyShowEquationList equlst (indent + 2)) '[' ']' )

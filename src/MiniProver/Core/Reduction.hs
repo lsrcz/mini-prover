@@ -76,7 +76,7 @@ zetaReduction (TmLetIn _ _ tm bdy) =
 zetaReduction _ = error "zeta reduction can only be applied to local definition(letin)"
 
 iotaReduction :: Term -> Term
-iotaReduction (TmMatch (TmConstr name lst) _ _ equlist) = go equlist
+iotaReduction (TmMatch i (TmConstr name lst) _ _ _ equlist) = go equlist
   where
     go :: [Equation] -> Term
     go [] = error "Pattern matching shouldn't fail in well-typed term"
@@ -86,7 +86,7 @@ iotaReduction (TmMatch (TmConstr name lst) _ _ equlist) = go equlist
           if name == head names
             then
               snd $ foldl (\(n,acc) tm1 -> (n - 1, tmSubstInsideN n tm1 acc))
-                (length lst, tm) lst
+                (length lst - i, tm) (drop i lst)
             else go xs
 
 -- should only be applied to global definitions
@@ -303,7 +303,7 @@ reductionWithStrategy strategy = go
       | hasStrategyInSet strategy BetaFix = go ctx n $ betaReduction tmold
     go ctx n tmold@TmLetIn{}
       | hasStrategyInSet strategy ZetaLetIn = go ctx n $ zetaReduction tmold
-    go ctx n tmold@(TmMatch TmConstr{} _ _ _)
+    go ctx n tmold@(TmMatch _ TmConstr{} _ _ _ _)
       | hasStrategyInSet strategy IotaMatch = go ctx n $ iotaReduction tmold
     -- no evaluation rule, go into the subterm
     go ctx n tmold@(TmAppl tmlst) =
@@ -386,7 +386,7 @@ reductionWithStrategy strategy = go
           map (reductionWithStrategy maskedStrategySet ctx n) tmlst
       in
         goIfUnequal ctx n tmold reducedTm
-    go ctx n tmold@(TmMatch tm namelst ty equlst) =
+    go ctx n tmold@(TmMatch i tm name namelst ty equlst) =
       let
         maskedStrategySetTm =
           clearIfUnSet BetaInMatchTm ZetaInMatchTm
@@ -397,8 +397,9 @@ reductionWithStrategy strategy = go
           ( clearIfUnSet BetaInMatchBranch ZetaInMatchBranch
               IotaInMatchBranch DeltaInMatchBranch strategy )
             BetaFix
-        reducedTm = TmMatch
+        reducedTm = TmMatch i
           (reductionWithStrategy maskedStrategySetTm ctx n tm)
+          name
           namelst
           ty
           (map

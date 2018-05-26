@@ -181,24 +181,24 @@ spec =
       let ctx = simpleContext
       describe "TmVar" $ do
         it "bounded" $
-          checkAllNameBounded ctx (TmVar "A") `shouldBe` []
+          checkAllNameBounded ctx (TmVar "A") `shouldBe` AllNameBounded
         it "unbounded" $
-          checkAllNameBounded ctx (TmVar "a") `shouldBe` ["a"]
+          checkAllNameBounded ctx (TmVar "a") `shouldBe` UnboundNameInTerm ["a"]
         it "Induction types -- nat" $
-          checkAllNameBounded natContext (TmVar "nat") `shouldBe` []
+          checkAllNameBounded natContext (TmVar "nat") `shouldBe` AllNameBounded
         it "Induction types -- eq" $
-          checkAllNameBounded natContext (TmVar "eq") `shouldBe` []
+          checkAllNameBounded natContext (TmVar "eq") `shouldBe` AllNameBounded
         it "Constructor -- O" $
-          checkAllNameBounded natContext (TmVar "O") `shouldBe` []
+          checkAllNameBounded natContext (TmVar "O") `shouldBe` AllNameBounded
         it "Constructor -- S" $
-          checkAllNameBounded natContext (TmVar "S") `shouldBe` []
+          checkAllNameBounded natContext (TmVar "S") `shouldBe` AllNameBounded
         it "Constructor -- eqrefl" $
-          checkAllNameBounded natContext (TmVar "eqrefl") `shouldBe` []
+          checkAllNameBounded natContext (TmVar "eqrefl") `shouldBe` AllNameBounded
       describe "TmAppl" $ do
         it "bounded" $
-          checkAllNameBounded ctx (TmAppl [TmVar "A", TmVar "D"]) `shouldBe` []
+          checkAllNameBounded ctx (TmAppl [TmVar "A", TmVar "D"]) `shouldBe` AllNameBounded
         it "unbounded" $
-          checkAllNameBounded ctx (TmAppl [TmVar "A", TmVar "c"]) `shouldBe` ["c"]
+          checkAllNameBounded ctx (TmAppl [TmVar "A", TmVar "c"]) `shouldBe` UnboundNameInTerm ["c"]
       describe "TmProd" $ do
         it "bounded" $
           checkAllNameBounded ctx 
@@ -206,21 +206,21 @@ spec =
               (TmAppl [TmVar "A", TmVar "B"]) 
               (TmAppl [TmVar "A", TmVar "a"]))
             `shouldBe`
-            []
+            AllNameBounded
         it "unbounded ty" $
           checkAllNameBounded ctx 
             (TmProd "a" 
               (TmAppl [TmVar "A", TmVar "a"]) 
               (TmAppl [TmVar "A", TmVar "a"]))
             `shouldBe`
-            ["a"]
+            UnboundNameInTerm ["a"]
         it "unbounded tm" $
           checkAllNameBounded ctx 
             (TmProd "a" 
               (TmAppl [TmVar "A", TmVar "B"]) 
               (TmAppl [TmVar "A", TmVar "b"]))
             `shouldBe`
-            ["b"]
+            UnboundNameInTerm ["b"]
       describe "TmLambda" $ do
         it "bounded" $
           checkAllNameBounded ctx 
@@ -228,26 +228,26 @@ spec =
               (TmAppl [TmVar "A", TmVar "B"]) 
               (TmAppl [TmVar "A", TmVar "a"]))
             `shouldBe`
-            []
+            AllNameBounded
         it "unbounded ty" $
           checkAllNameBounded ctx 
             (TmLambda "a" 
               (TmAppl [TmVar "A", TmVar "a"]) 
               (TmAppl [TmVar "A", TmVar "a"]))
             `shouldBe`
-            ["a"]
+            UnboundNameInTerm ["a"]
         it "unbounded tm" $
           checkAllNameBounded ctx 
             (TmLambda "a" 
               (TmAppl [TmVar "A", TmVar "B"]) 
               (TmAppl [TmVar "A", TmVar "b"]))
             `shouldBe`
-            ["b"]
+            UnboundNameInTerm ["b"]
       describe "TmFix" $ do
         it "bounded" $
-          checkAllNameBounded ctx (TmFix (-1) (TmVar "A")) `shouldBe` []
+          checkAllNameBounded ctx (TmFix (-1) (TmVar "A")) `shouldBe` AllNameBounded
         it "unbounded" $
-          checkAllNameBounded ctx (TmFix (-1) (TmVar "a")) `shouldBe` ["a"]
+          checkAllNameBounded ctx (TmFix (-1) (TmVar "a")) `shouldBe` UnboundNameInTerm ["a"]
       describe "TmLetIn" $ do
         it "bounded" $
           checkAllNameBounded ctx
@@ -256,7 +256,7 @@ spec =
               (TmVar "B")
               (TmAppl [TmVar "A", TmVar "x"]))
           `shouldBe`
-          []
+          AllNameBounded
         it "unbounded ty" $
           checkAllNameBounded ctx
             (TmLetIn "x" 
@@ -264,7 +264,7 @@ spec =
               (TmVar "B")
               (TmAppl [TmVar "A", TmVar "x"]))
           `shouldBe`
-          ["x"]
+          UnboundNameInTerm ["x"]
         it "unbounded tm" $
           checkAllNameBounded ctx
             (TmLetIn "x" 
@@ -272,7 +272,7 @@ spec =
               (TmVar "x")
               (TmAppl [TmVar "A", TmVar "x"]))
           `shouldBe`
-          ["x"]
+          UnboundNameInTerm ["x"]
         it "unbounded bdy" $
           checkAllNameBounded ctx
             (TmLetIn "x" 
@@ -280,38 +280,170 @@ spec =
               (TmVar "B")
               (TmAppl [TmVar "A", TmVar "y"]))
           `shouldBe`
-          ["y"]
+          UnboundNameInTerm ["y"]
       describe "TmType" $
-        it "bounded" $ checkAllNameBounded ctx TmType `shouldBe` []
-      describe "TmMatch" $ do
-        it "bounded" $
-          checkAllNameBounded ctx
-            (TmMatch (TmVar "A") ["t","r"] (TmAppl [TmVar "A", TmVar "r"])
+        it "bounded" $ checkAllNameBounded ctx TmType `shouldBe` AllNameBounded
+      describe "TmMatch (-1)" $ do
+        it "Bounded" $
+          checkAllNameBounded natContext
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["S", "n"] (TmAppl [TmVar "S", TmVar "n"])])
+          `shouldBe`
+          AllNameBounded
+        it "Bounded-2" $
+          checkAllNameBounded natContextWithPredefinedNumbers
+            (TmMatch (-1) (TmVar "plus") "x0" ["eq","_","b","c"] (TmVar "nat")
+              [ Equation ["eqrefl","_","a"] (TmVar "a")])
+          `shouldBe`
+          AllNameBounded
+        it "NoIndTypeProvided" $
+          checkAllNameBounded natContext
+            (TmMatch (-1) (TmVar "plus") "x0" [] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["S", "n"] (TmAppl [TmVar "S", TmVar "n"])])
+          `shouldBe`
+          NoIndTypeProvided
+            (TmMatch (-1) (TmVar "plus") "x0" [] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["S", "n"] (TmAppl [TmVar "S", TmVar "n"])])
+        it "UnknownIndType" $
+          checkAllNameBounded natContextWithPredefinedNumbers
+            (TmMatch (-1) (TmVar "one") "x0" ["t","r"] (TmAppl [TmVar "A", TmVar "t"])
               [ Equation ["a"] (TmVar "A")
               , Equation ["a", "b"] (TmAppl [TmVar "A", TmVar "b"])])
           `shouldBe`
-          []
+          UnknownIndType
+            (TmMatch (-1) (TmVar "one") "x0" ["t","r"] (TmAppl [TmVar "A", TmVar "t"])
+              [ Equation ["a"] (TmVar "A")
+              , Equation ["a", "b"] (TmAppl [TmVar "A", TmVar "b"])]) "t"
+        it "WrongNumParamsInTypeMatching" $
+          checkAllNameBounded natContextWithPredefinedNumbers
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat", "p"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["S", "n"] (TmAppl [TmVar "S", TmVar "n"])])
+          `shouldBe`
+          WrongNumParamsInTypeMatching
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat", "p"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["S", "n"] (TmAppl [TmVar "S", TmVar "n"])]) ["nat", "p"]
+        it "WrongNumParamsInTypeMatching-2" $
+          checkAllNameBounded natContextWithPredefinedNumbers
+            (TmMatch (-1) (TmVar "v") "x0" ["eq"] (TmVar "nat")
+              [ Equation ["eq_refl","_","a","b"] (TmVar "a")])
+          `shouldBe`
+          WrongNumParamsInTypeMatching
+            (TmMatch (-1) (TmVar "v") "x0" ["eq"] (TmVar "nat")
+              [ Equation ["eq_refl","_","a","b"] (TmVar "a")]) ["eq"]
+        it "WrongNumParamsInTypeMatching-3" $
+          checkAllNameBounded natContextWithPredefinedNumbers
+            (TmMatch (-1) (TmVar "v") "x0" ["eq","_","b"] (TmVar "nat")
+              [ Equation ["eq_refl","_","a","b"] (TmVar "a")])
+          `shouldBe`
+          WrongNumParamsInTypeMatching
+            (TmMatch (-1) (TmVar "v") "x0" ["eq","_","b"] (TmVar "nat")
+              [ Equation ["eq_refl","_","a","b"] (TmVar "a")]) ["eq","_","b"]
+        it "UnusedNameInTypeMatching" $
+          checkAllNameBounded natContextWithPredefinedFunctions
+            (TmMatch (-1) (TmVar "plus") "x0" ["eq", "a", "b", "c"] (TmVar "nat")
+              [ Equation ["eq_refl","_","a","b"] (TmVar "a")])
+          `shouldBe`
+          UnusedNameInTypeMatching
+            (TmMatch (-1) (TmVar "plus") "x0" ["eq", "a", "b", "c"] (TmVar "nat")
+              [ Equation ["eq_refl","_","a","b"] (TmVar "a")]) ["a"]
+        it "DuplicateNameInTypeMatching" $
+          checkAllNameBounded natContextWithPredefinedFunctions
+            (TmMatch (-1) (TmVar "plus") "x0" ["eq", "_", "b", "b"] (TmVar "nat")
+              [ Equation ["eq_refl","_","a","b"] (TmVar "a")])
+          `shouldBe`
+          DuplicateNameInTypeMatching
+            (TmMatch (-1) (TmVar "plus") "x0" ["eq", "_", "b", "b"] (TmVar "nat")
+              [ Equation ["eq_refl","_","a","b"] (TmVar "a")]) ["b"]
+        it "UnknownConstr" $
+          checkAllNameBounded natContext
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["SS", "n"] (TmAppl [TmVar "S", TmVar "n"])])
+          `shouldBe`
+          UnknownConstr
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["SS", "n"] (TmAppl [TmVar "S", TmVar "n"])]) ["SS"]
+        it "DuplicateConstr" $
+          checkAllNameBounded natContext
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["O"] (TmVar "O")])
+          `shouldBe`
+          DuplicateConstr
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["O"] (TmVar "O")]) ["O"]
+        it "InsufficientConstrs" $
+          checkAllNameBounded natContext
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")])
+          `shouldBe`
+          InsufficientConstrs
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")]) ["S"]
+        it "InsufficientConstrs-2" $
+          checkAllNameBounded natContext
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              [])
+          `shouldBe`
+          InsufficientConstrs
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              []) (sort ["S", "O"])
+        it "WrongNumParamsInConstrMatching" $
+          checkAllNameBounded natContext
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["S", "n", "b"] (TmAppl [TmVar "S", TmVar "n"])])
+          `shouldBe`
+          WrongNumParamsInConstrMatching
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["S", "n", "b"] (TmAppl [TmVar "S", TmVar "n"])]) ["S", "n", "b"]
+        it "UnusedNameInConstrMatching" $
+          checkAllNameBounded natContextWithPredefinedNumbers
+            (TmMatch (-1) (TmVar "plus") "x0" ["eq","_","b","c"] (TmVar "nat")
+              [ Equation ["eqrefl","nat","a"] (TmVar "a")])
+          `shouldBe`
+          UnusedNameInConstrMatching
+            (TmMatch (-1) (TmVar "plus") "x0" ["eq","_","b","c"] (TmVar "nat")
+              [ Equation ["eqrefl","nat","a"] (TmVar "a")]) ["eqrefl","nat","a"] ["nat"]
+        it "DuplicateNameInConstrMatching" $
+          checkAllNameBounded natListContext
+            (TmMatch (-1) (TmVar "plus") "x0" ["natList"] (TmVar "natList")
+              [ Equation ["natNil"] (TmVar "plus")
+              , Equation ["natCons", "t", "t"] (TmVar "t")])
+          `shouldBe`
+          DuplicateNameInConstrMatching
+            (TmMatch (-1) (TmVar "plus") "x0" ["natList"] (TmVar "natList")
+            [ Equation ["natNil"] (TmVar "plus")
+            , Equation ["natCons", "t", "t"] (TmVar "t")]) ["natCons", "t", "t"] ["t"]
         it "unbounded tm" $
-          checkAllNameBounded ctx
-            (TmMatch (TmVar "x") ["t","r"] (TmAppl [TmVar "A", TmVar "r"])
-              [ Equation ["a"] (TmVar "A")
-              , Equation ["a", "b"] (TmAppl [TmVar "A", TmVar "b"])])
+          checkAllNameBounded natContext
+            (TmMatch (-1) (TmVar "x") "x0" ["nat"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["S", "n"] (TmAppl [TmVar "S", TmVar "n"])])
           `shouldBe`
-          ["x"]
+          UnboundNameInTerm ["x"]
         it "unbounded branch constr" $
-          checkAllNameBounded ctx
-            (TmMatch (TmVar "A") ["t","r"] (TmAppl [TmVar "A", TmVar "r"])
-              [ Equation ["a"] (TmAppl [TmVar "A", TmVar "a"])
-              , Equation ["a", "b"] (TmAppl [TmVar "A", TmVar "b"])])
+          checkAllNameBounded natContext
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "nat")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["S", "n"] (TmAppl [TmVar "S", TmVar "x"])])
           `shouldBe`
-          ["a"]
+          UnboundNameInTerm ["x"]
         it "unbounded rty" $
-          checkAllNameBounded ctx
-            (TmMatch (TmVar "A") ["t","r"] (TmAppl [TmVar "A", TmVar "t"])
-              [ Equation ["a"] (TmVar "A")
-              , Equation ["a", "b"] (TmAppl [TmVar "A", TmVar "b"])])
+          checkAllNameBounded natContext
+            (TmMatch (-1) (TmVar "plus") "x0" ["nat"] (TmVar "x")
+              [ Equation ["O"] (TmVar "O")
+              , Equation ["S", "n"] (TmAppl [TmVar "S", TmVar "n"])])
           `shouldBe`
-          ["t"]
+          UnboundNameInTerm ["x"]
     describe "checkAllNameBoundedCommand" $ do
       describe "Ax" $ do
         it "bounded" $
@@ -332,7 +464,7 @@ spec =
                     [ TmVar "plus"
                     , TmVar "y"
                     , TmVar "x" ]]))))
-          `shouldBe` []
+          `shouldBe` AllNameBounded
         it "unbounded" $
           checkAllNameBoundedCommand natContext
           ( Ax "pluscomm"
@@ -351,7 +483,7 @@ spec =
                     [ TmVar "plus"
                     , TmVar "y"
                     , TmVar "z" ]]))))
-          `shouldBe` ["nat1","z"]
+          `shouldBe` UnboundNameInTerm ["nat1","z"]
       describe "Def" $ do
         it "bounded" $
           checkAllNameBoundedCommand natContext
@@ -369,7 +501,7 @@ spec =
                   [ TmVar "plus"
                   , TmVar "x"
                   , TmVar "y" ]))))
-          `shouldBe` []
+          `shouldBe` AllNameBounded
         it "unbounded" $
           checkAllNameBoundedCommand natContext
           ( Def "minus"
@@ -382,8 +514,9 @@ spec =
               ( TmVar "nat" )
               ( TmLambda "y"
                 ( TmVar "nat" )
-                ( TmMatch
+                ( TmMatch (-1)
                   ( TmVar "x" )
+                  "x0"
                   [ "nat" ]
                   ( TmVar "nat" )
                   [ Equation
@@ -392,8 +525,9 @@ spec =
                   , Equation
                     [ "S"
                     , "xx" ]
-                    ( TmMatch
+                    ( TmMatch (-1)
                       ( TmVar "y" )
+                      "y0"
                       [ "nat" ]
                       ( TmVar "nat" )
                       [ Equation
@@ -406,7 +540,7 @@ spec =
                           [ TmVar "minus"
                           , TmVar "xx"
                           , TmVar "yy" ])])]))))
-          `shouldBe` ["minus"]
+          `shouldBe` UnboundNameInTerm ["minus"]
       describe "Ind" $ do
         it "bounded" $
           checkAllNameBoundedCommand natContext
@@ -429,7 +563,7 @@ spec =
                   ( TmConstr "cons"
                     [ TmVar ".0"
                     , TmVar ".1" ])))])
-          `shouldBe` []
+          `shouldBe` AllNameBounded
         it "unbounded" $
           checkAllNameBoundedCommand natContext
           ( Ind "natlist" 0
@@ -451,7 +585,7 @@ spec =
                   ( TmConstr "cons1"
                     [ TmVar ".0"
                     , TmVar ".11" ])))])
-          `shouldBe` sort [".11", "cons1", "natlist1"]
+          `shouldBe` UnboundNameInTerm (sort [".11", "cons1", "natlist1"])
       describe "Fix" $ do
         it "bounded" $
           checkAllNameBoundedCommand natContext
@@ -466,8 +600,9 @@ spec =
                 ( TmVar "nat" )
                 ( TmLambda "y"
                   ( TmVar "nat" )
-                  ( TmMatch
+                  ( TmMatch (-1)
                     ( TmVar "x" )
+                    "x0"
                     [ "nat" ]
                     ( TmVar "nat" )
                     [ Equation
@@ -482,7 +617,7 @@ spec =
                           [ TmVar "plus1"
                           , TmVar "xx"
                           , TmVar "y" ]])])))))
-          `shouldBe` []
+          `shouldBe` AllNameBounded
         it "unbounded" $
           checkAllNameBoundedCommand natContext
           ( Fix "plus1"
@@ -496,8 +631,9 @@ spec =
                 ( TmVar "nat" )
                 ( TmLambda "y"
                   ( TmVar "nat" )
-                  ( TmMatch
+                  ( TmMatch (-1)
                     ( TmVar "x" )
+                    "x0"
                     [ "nat" ]
                     ( TmVar "nat2" )
                     [ Equation
@@ -512,4 +648,4 @@ spec =
                           [ TmVar "plus2"
                           , TmVar "xx2"
                           , TmVar "y2" ]])])))))
-          `shouldBe` sort ["nat2", "y2", "xx2", "plus2"]
+          `shouldBe` UnboundNameInTerm (sort ["nat2", "y2", "xx2", "plus2"])

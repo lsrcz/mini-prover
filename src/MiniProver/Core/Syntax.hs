@@ -23,7 +23,7 @@ data Term =
   | TmConstr Name [Term]            -- should only be full, refering to the term
   | TmType                          -- sort
   | TmTypeHigher
-  | TmMatch Term [Name] Term [Equation]  -- ind. Term [Names] RetType [Equation]
+  | TmMatch Int Term Name [Name] Term [Equation]
   | DummyTm                         -- Just for testing
   deriving (Eq, Show)
 

@@ -41,7 +41,7 @@ spec = do
           (TmLambda "z" TmType TmType))
     describe "tmfix" $
       it "single" $
-        parse pfix "" "fix plus (x:nat) (y:nat):nat:=match x in nat return nat with |O => y|S xx => plus xx (S y) end" `shouldParse`
+        parse pfix "" "fix plus (x:nat) (y:nat):nat:=match x as x0 in nat return nat with |O => y|S xx => plus xx (S y) end" `shouldParse`
           TmFix (-1)
             (TmLambda "plus"
               (TmProd "x"
@@ -53,8 +53,9 @@ spec = do
                 (TmVar "nat")
                 (TmLambda "y"
                   (TmVar "nat")
-                  (TmMatch
+                  (TmMatch (-1)
                     (TmVar "x")
+                    "x0"
                     [ "nat" ]
                     (TmVar "nat")
                     [ Equation ["O"]
@@ -133,21 +134,26 @@ spec = do
             Equation ["a","b","c"] TmType
       describe "match" $ do
         it "empty" $
-          parse pmatch "" "match Type in x return x with end" `shouldParse` 
-            TmMatch TmType ["x"] (TmVar "x") []
+          parse pmatch "" "match Type as t in x return x with end" `shouldParse` 
+            TmMatch (-1) TmType "t" ["x"] (TmVar "x") []
         it "single" $
-          parse pmatch "" "match Type in x return x with |a => Type end" `shouldParse` 
-            TmMatch TmType ["x"] (TmVar "x") [Equation ["a"] TmType]
+          parse pmatch "" "match Type as t in x return x with |a => Type end" `shouldParse` 
+            TmMatch (-1) TmType "t" ["x"] (TmVar "x") [Equation ["a"] TmType]
         it "multiple" $
-          parse pmatch "" "match Type in x return x with |a => Type |b c=>Type|c=>Type end" `shouldParse` 
-            TmMatch TmType ["x"] (TmVar "x") [
+          parse pmatch "" "match Type as t in x return x with |a => Type |b c=>Type|c=>Type end" `shouldParse` 
+            TmMatch (-1) TmType "t" ["x"] (TmVar "x") [
                 Equation ["a"] TmType
               , Equation ["b", "c"] TmType
               , Equation ["c"] TmType
               ]
         it "long type" $
-          parse pmatch "" "match Type in x y z return x y z with |a => Type end" `shouldParse` 
-            TmMatch TmType ["x", "y", "z"] (TmAppl [TmVar "x", TmVar "y", TmVar "z"]) [Equation ["a"] TmType]
+          parse pmatch "" "match Type as t in x y z return x y z with |a => Type end" `shouldParse` 
+            TmMatch (-1) TmType "t" ["x", "y", "z"] (TmAppl [TmVar "x", TmVar "y", TmVar "z"]) [Equation ["a"] TmType]
+        it "underscore" $
+          parse pmatch "" "match e as e0 in eq _ _ y0 return P y0 e0 with | eqrefl _ _ => f end" `shouldParse`
+            TmMatch (-1) (TmVar "e") "e0" ["eq", "_", "_", "y0"]
+              (TmAppl [TmVar "P", TmVar "y0", TmVar "e0"])
+              [Equation ["eqrefl", "_", "_"] (TmVar "f")]
   describe "simple term" $ do
     describe "tmtype" $
       it "Type" $
@@ -235,21 +241,26 @@ spec = do
             TmAppl [TmType, TmType, TmType]
       describe "match" $ do
         it "empty" $
-          parse pterm "" "match Type in x return x with end" `shouldParse` 
-            TmMatch TmType ["x"] (TmVar "x") []
+          parse pterm "" "match Type as t in x return x with end" `shouldParse` 
+            TmMatch (-1) TmType "t" ["x"] (TmVar "x") []
         it "single" $
-          parse pterm "" "match Type in x return x with |a => Type end" `shouldParse` 
-            TmMatch TmType ["x"] (TmVar "x") [Equation ["a"] TmType]
+          parse pterm "" "match Type as t in x return x with |a => Type end" `shouldParse` 
+            TmMatch (-1) TmType "t" ["x"] (TmVar "x") [Equation ["a"] TmType]
         it "multiple" $
-          parse pterm "" "match Type in x return x with |a => Type |b c=>Type|c=>Type end" `shouldParse` 
-            TmMatch TmType ["x"] (TmVar "x") [
+          parse pterm "" "match Type as t in x return x with |a => Type |b c=>Type|c=>Type end" `shouldParse` 
+            TmMatch (-1) TmType "t" ["x"] (TmVar "x") [
                 Equation ["a"] TmType
               , Equation ["b", "c"] TmType
               , Equation ["c"] TmType
               ]
         it "long type" $
-          parse pterm "" "match Type in x y z return x y z with |a => Type end" `shouldParse` 
-            TmMatch TmType ["x", "y", "z"] (TmAppl [TmVar "x", TmVar "y", TmVar "z"]) [Equation ["a"] TmType]
+          parse pterm "" "match Type as t in x y z return x y z with |a => Type end" `shouldParse` 
+            TmMatch (-1) TmType "t" ["x", "y", "z"] (TmAppl [TmVar "x", TmVar "y", TmVar "z"]) [Equation ["a"] TmType]
+        it "underscore" $
+          parse pterm "" "match e as e0 in eq _ _ y0 return P y0 e0 with | eqrefl _ _ => f end" `shouldParse`
+            TmMatch (-1) (TmVar "e") "e0" ["eq", "_", "_", "y0"]
+              (TmAppl [TmVar "P", TmVar "y0", TmVar "e0"])
+              [Equation ["eqrefl", "_", "_"] (TmVar "f")]
   describe "complex term" $ do
     it "var" $
       parse pterm "" "a" `shouldParse` TmVar "a"
@@ -282,7 +293,7 @@ spec = do
     it "3" $
       parse pterm "" ("fun (a:forall (b:Type) (c:d->e->forall (p:q),p->q), c b) (b:forall (c:d),e) =>"
         ++ "let a (b:c) : d := e in "
-        ++ "match a Type in x return x with |b c => forall (c:d), e end")
+        ++ "match a Type as t in x return x with |b c => forall (c:d), e end")
         `shouldParse`
         TmLambda "a"
           (TmProd "b"
@@ -309,10 +320,11 @@ spec = do
               (TmLambda "b"
                 (TmVar "c")
                 (TmVar "e"))
-              (TmMatch
+              (TmMatch (-1)
                 (TmAppl
                   [ TmVar "a"
                   , TmType ])
+                "t"
                 [ "x" ]
                 (TmVar "x")
                 [ Equation ["b", "c"]
@@ -517,7 +529,7 @@ spec = do
       it "single" $
         parse pfixdefinition "" 
           ( "Fixpoint plus (x:nat) (y:nat):nat:="
-          ++ "match x in t return t with |O => y|S xx => plus xx (S y) end.")
+          ++ "match x as x0 in t return t with |O => y|S xx => plus xx (S y) end.")
           `shouldParse`
           Fix "plus"
           ( TmFix (-1)
@@ -531,8 +543,9 @@ spec = do
                 (TmVar "nat")
                 (TmLambda "y"
                   (TmVar "nat")
-                  (TmMatch
+                  (TmMatch (-1)
                     (TmVar "x")
+                    "x0"
                     [ "t" ]
                     (TmVar "t")
                     [ Equation ["O"]
@@ -742,7 +755,7 @@ spec = do
       it "single" $
         parse pcommand "" 
           ( "Fixpoint plus (x:nat) (y:nat):nat:="
-          ++ "match x in t return t with |O => y|S xx => plus xx (S y) end.")
+          ++ "match x as x0 in t return t with |O => y|S xx => plus xx (S y) end.")
           `shouldParse`
           Fix "plus"
           ( TmFix (-1)
@@ -756,8 +769,9 @@ spec = do
                 (TmVar "nat")
                 (TmLambda "y"
                   (TmVar "nat")
-                  (TmMatch
+                  (TmMatch (-1)
                     (TmVar "x")
+                    "x0"
                     [ "t" ]
                     (TmVar "t")
                     [ Equation ["O"]
