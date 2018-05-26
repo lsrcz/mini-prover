@@ -4,10 +4,12 @@ module MiniProver.PrettyPrint.PrettyPrint (
   , prettyPrint
   , prettyShowCommand
   , prettyPrintCommand
+  , addIndent
   ) where
 
 import MiniProver.Core.Syntax
 import MiniProver.Core.Context
+import MiniProver.PrettyPrint.Colorful
 import Data.String (unwords)
 
 isAtom :: Term -> Bool
@@ -47,7 +49,8 @@ prettyLambdaTail tm indent =
   " => " ++ indentNewline indent ++ prettyShow' tm indent
 
 prettyFix :: Term -> Int -> String
-prettyFix (TmFix _ (TmLambda name _ tm)) indent = "fix " ++ name ++ prettyLambdaTail tm (indent + 2)
+prettyFix (TmFix _ (TmLambda name _ tm)) indent =
+  frontGroundColor BWHITE (bright "fix ") ++ name ++ prettyLambdaTail tm (indent + 2)
 
 prettyShow' :: Term -> Int -> String
 prettyShow' (TmRel name _) _ = name
@@ -57,31 +60,34 @@ prettyShow' (TmAppl lst) indent =
 prettyShow' (TmProd name ty tm) indent =
   if head name == '_' 
     then addParens ty indent ++ " -> " ++ addParens tm indent
-    else "forall " ++ "(" ++ name ++ ":" ++ prettyShow' ty indent ++
+    else frontGroundColor BWHITE (bright "forall ") ++ "(" ++ name ++ ":" ++ prettyShow' ty indent ++
          ")" ++ prettyForallTail tm (indent + 2)
 prettyShow' (TmLambda name ty tm) indent =
-  "fun " ++ "(" ++ name ++ ":" ++ prettyShow' ty indent ++
+  frontGroundColor BWHITE (bright "fun ") ++ "(" ++ name ++ ":" ++ prettyShow' ty indent ++
   ")" ++ prettyLambdaTail tm (indent + 2)
 prettyShow' origtm@(TmFix _ TmLambda{}) indent = prettyFix origtm indent -- "fix " ++ prettyShow' tm indent
 prettyShow' (TmLetIn name ty tm bdy) indent = 
-  "let " ++ name ++ " : " ++ prettyShow' ty indent ++
-  " := " ++ prettyShow' tm indent ++ " in " ++
+  frontGroundColor BWHITE (bright "let ") ++ name ++ " : " ++ prettyShow' ty indent ++
+  " := " ++ prettyShow' tm indent ++ frontGroundColor BWHITE (bright " in ") ++
   prettyShow' bdy indent
 prettyShow' (TmIndType name tmlst) indent = 
-  unwords $ name : map (`addParens` indent) tmlst
+  unwords $ frontGroundColor BGREEN name : map (`addParens` indent) tmlst
 prettyShow' (TmConstr name tmlst) indent = 
-  unwords $ name : map (`addParens` indent) tmlst
-prettyShow' TmType _ = "Type"
-prettyShow' TmTypeHigher _ = "TypeH"
+  unwords $ frontGroundColor BGREEN name : map (`addParens` indent) tmlst
+prettyShow' TmType _ = frontGroundColor YELLOW (bright "Type")
+prettyShow' TmTypeHigher _ = frontGroundColor YELLOW (bright "TypeH")
 prettyShow' (TmMatch _ tm name names ty equlst) indent = 
-  "match " ++ prettyShow' tm indent ++ " as " ++ name ++ " in " ++ unwords names ++
-  " return " ++ prettyShow' ty indent ++ " with " ++ 
+  frontGroundColor BWHITE (bright "match ") ++ prettyShow' tm indent ++
+  frontGroundColor BWHITE (bright " as ") ++ name ++
+  frontGroundColor BWHITE (bright " in ") ++ unwords names ++
+  frontGroundColor BWHITE (bright " return ") ++ prettyShow' ty indent ++
+  frontGroundColor BWHITE (bright " with ") ++ 
   concatMap 
     (\case 
       Equation names' tm' -> 
         indentNewline (indent + 2) ++ "| " ++ unwords names' ++
         " => " ++ prettyShow' tm' (indent + 4))
-    equlst ++ indentNewline (indent + 2) ++ "end"
+    equlst ++ indentNewline (indent + 2) ++ frontGroundColor BWHITE (bright "end")
 
 prettyDefinitionTail :: Term -> Term -> String
 prettyDefinitionTail ty@(TmProd namety tyty tmty) tm@(TmLambda nametm tytm tmtm)
@@ -105,10 +111,13 @@ prettyConstrLst _ [] = ""
 prettyConstrLst n ((name,ty,_):xs) = indentNewline 2 ++ "| " ++ name ++ " : " ++ prettyConstrTyTail (length name) n ty ++ prettyConstrLst n xs
 
 prettyShowCommand :: Command -> String
-prettyShowCommand (Ax name ty) = "Axiom " ++ name ++ " : " ++ prettyShow ty
-prettyShowCommand (Def name ty tm) = "Definition " ++ name ++ prettyDefinitionTail ty tm
-prettyShowCommand (Ind name n ty _ constrlst) = "Inductive " ++ name ++ prettyInductiveTyTail n ty ++ prettyConstrLst n constrlst
-prettyShowCommand (Fix name (TmFix _ (TmLambda _ ty tm))) = "Fixpoint " ++ name ++ prettyDefinitionTail ty tm
+prettyShowCommand (Ax name ty) = frontGroundColor RED (bright "Axiom ") ++ name ++ " : " ++ prettyShow ty
+prettyShowCommand (Def name ty tm) = frontGroundColor RED (bright "Definition ") ++ name ++ prettyDefinitionTail ty tm
+prettyShowCommand (Ind name n ty _ constrlst) = frontGroundColor RED (bright "Inductive ") ++ name ++ prettyInductiveTyTail n ty ++ prettyConstrLst n constrlst
+prettyShowCommand (Fix name (TmFix _ (TmLambda _ ty tm))) = frontGroundColor RED (bright "Fixpoint ") ++ name ++ prettyDefinitionTail ty tm
 
 prettyPrintCommand :: Command -> IO ()
 prettyPrintCommand cmd = putStrLn $ prettyShowCommand cmd
+
+addIndent :: Int -> String -> String
+addIndent i = unlines . map (\x -> replicate i ' ' ++ x) . lines

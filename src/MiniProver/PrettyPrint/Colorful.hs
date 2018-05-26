@@ -2,6 +2,8 @@ module MiniProver.PrettyPrint.Colorful (
     Color(..)
   , frontGroundColor
   , backGroundColor
+  , bright
+  , underline
   ) where
 
 data Color =
@@ -53,4 +55,8 @@ frontGroundColor = addAttribute . colorToFrontGroundCode
 backGroundColor :: Color -> String -> String
 backGroundColor = addAttribute . (+10) . colorToFrontGroundCode
 
+bright :: String -> String
+bright = addAttribute 1
 
+underline :: String -> String
+underline = addAttribute 4
