@@ -91,10 +91,12 @@ iotaReduction (TmMatch i (TmConstr name lst) _ _ _ equlist) = go equlist
 
 -- should only be applied to global definitions
 deltaReduction :: Context -> Term -> Term
-deltaReduction ctx (TmRel _ idx) =
+deltaReduction ctx tmold@(TmRel _ idx) =
   case getBinding ctx idx of
     Right (TmAbbBind _ (Just tm)) -> tm
     Right (TmAbbBind _ Nothing) -> error "delta reduction can not be applied to axioms"
+    Right (VarBind _) -> tmold
+    Right NameBind -> tmold
     Left _ -> error "This should not happen in well-typed term"
     _ -> error "delta reduction can only be applied to definitions"
 deltaReduction _ _ = error "delta reduction can only be applied to variables"
@@ -281,41 +283,41 @@ fullIotaStrategy = strategyListToSet $ enumFrom IotaInAppl
 fullDeltaStrategy :: DeltaStrategySet
 fullDeltaStrategy = strategyListToSet $ enumFrom DeltaRel
 
-reductionWithStrategy :: StrategySet -> Context -> Int -> Term -> Term
+reductionWithStrategy :: StrategySet -> Context -> Term -> Term
 reductionWithStrategy strategy = go
   where
-    goIfUnequal :: Context -> Int -> Term -> Term -> Term
-    goIfUnequal ctx n tmold tmnew =
+    goIfUnequal :: Context -> Term -> Term -> Term
+    goIfUnequal ctx tmold tmnew =
       if tmold == tmnew
         then tmold
-        else go ctx n tmnew
-    go :: Context -> Int -> Term -> Term
+        else go ctx tmnew
+    go :: Context -> Term -> Term
     -- can evaluate
-    go ctx n tmold@(TmRel _ idx)
-      | idx >= n && hasStrategyInSet strategy DeltaRel =
-          go ctx n $ deltaReduction ctx tmold
-    go ctx n (TmAppl [t]) = go ctx n t
-    go ctx n tmold@(TmAppl (TmProd{}:_))
-      | hasStrategyInSet strategy BetaProd = go ctx n $ betaReduction tmold
-    go ctx n tmold@(TmAppl (TmLambda{}:_))
-      | hasStrategyInSet strategy BetaLambda = go ctx n $ betaReduction tmold
-    go ctx n tmold@(TmAppl (TmFix{}:_))
-      | hasStrategyInSet strategy BetaFix = go ctx n $ betaReduction tmold
-    go ctx n tmold@TmLetIn{}
-      | hasStrategyInSet strategy ZetaLetIn = go ctx n $ zetaReduction tmold
-    go ctx n tmold@(TmMatch _ TmConstr{} _ _ _ _)
-      | hasStrategyInSet strategy IotaMatch = go ctx n $ iotaReduction tmold
+    go ctx tmold@TmRel{}
+      | hasStrategyInSet strategy DeltaRel =
+          goIfUnequal ctx tmold $ deltaReduction ctx tmold
+    go ctx (TmAppl [t]) = go ctx t
+    go ctx tmold@(TmAppl (TmProd{}:_))
+      | hasStrategyInSet strategy BetaProd = goIfUnequal ctx tmold $ betaReduction tmold
+    go ctx tmold@(TmAppl (TmLambda{}:_))
+      | hasStrategyInSet strategy BetaLambda = goIfUnequal ctx tmold $ betaReduction tmold
+    go ctx tmold@(TmAppl (TmFix{}:_))
+      | hasStrategyInSet strategy BetaFix = goIfUnequal ctx tmold $ betaReduction tmold
+    go ctx tmold@TmLetIn{}
+      | hasStrategyInSet strategy ZetaLetIn = goIfUnequal ctx tmold $ zetaReduction tmold
+    go ctx tmold@(TmMatch _ TmConstr{} _ _ _ _)
+      | hasStrategyInSet strategy IotaMatch = goIfUnequal ctx tmold $ iotaReduction tmold
     -- no evaluation rule, go into the subterm
-    go ctx n tmold@(TmAppl tmlst) =
+    go ctx tmold@(TmAppl tmlst) =
       let
         maskedStrategySet =
           clearIfUnSet BetaInAppl ZetaInAppl
             IotaInAppl DeltaInAppl strategy
         reducedTm = TmAppl 
-          (map (reductionWithStrategy maskedStrategySet ctx n) tmlst)
+          (map (reductionWithStrategy maskedStrategySet ctx) tmlst)
       in
-        goIfUnequal ctx n tmold reducedTm
-    go ctx n tmold@(TmProd name ty tm) =
+        goIfUnequal ctx tmold reducedTm
+    go ctx tmold@(TmProd name ty tm) =
       let
         maskedStrategySetTy =
           clearIfUnSet BetaInProdTy ZetaInProdTy
@@ -325,11 +327,11 @@ reductionWithStrategy strategy = go
             IotaInProdTm DeltaInProdTm strategy
         reducedTm = 
           TmProd name 
-            (reductionWithStrategy maskedStrategySetTy ctx n ty)
-            (reductionWithStrategy maskedStrategySetTm (addName ctx name) (n + 1) tm)
+            (reductionWithStrategy maskedStrategySetTy ctx ty)
+            (reductionWithStrategy maskedStrategySetTm (addName ctx name) tm)
       in
-        goIfUnequal ctx n tmold reducedTm
-    go ctx n tmold@(TmLambda name ty tm) =
+        goIfUnequal ctx tmold reducedTm
+    go ctx tmold@(TmLambda name ty tm) =
       let
         maskedStrategySetTy =
           clearIfUnSet BetaInLambdaTy ZetaInLambdaTy
@@ -339,19 +341,19 @@ reductionWithStrategy strategy = go
             IotaInLambdaTm DeltaInLambdaTm strategy
         reducedTm = 
           TmLambda name 
-            (reductionWithStrategy maskedStrategySetTy ctx n ty)
-            (reductionWithStrategy maskedStrategySetTm (addName ctx name) (n + 1) tm)
+            (reductionWithStrategy maskedStrategySetTy ctx ty)
+            (reductionWithStrategy maskedStrategySetTm (addName ctx name) tm)
       in
-        goIfUnequal ctx n tmold reducedTm
-    go ctx n tmold@(TmFix decpos tm) =
+        goIfUnequal ctx tmold reducedTm
+    go ctx tmold@(TmFix decpos tm) =
       let
         maskedStrategySet =
           clearIfUnSet BetaInFix ZetaInFix
             IotaInFix DeltaInFix strategy
-        reducedTm = TmFix decpos $ reductionWithStrategy maskedStrategySet ctx n tm
+        reducedTm = TmFix decpos $ reductionWithStrategy maskedStrategySet ctx tm
       in
-        goIfUnequal ctx n tmold reducedTm
-    go ctx n tmold@(TmLetIn name tm ty bdy) =
+        goIfUnequal ctx tmold reducedTm
+    go ctx tmold@(TmLetIn name tm ty bdy) =
       let
         maskedStrategySetTy =
           clearIfUnSet BetaInLetInTy ZetaLetIn
@@ -363,30 +365,30 @@ reductionWithStrategy strategy = go
           clearIfUnSet BetaInLetInBdy ZetaLetIn
             IotaInLetInBdy DeltaInLetInBdy strategy
         reducedTm = TmLetIn name
-          (reductionWithStrategy maskedStrategySetTy ctx n ty)
-          (reductionWithStrategy maskedStrategySetTm ctx n tm)
-          (reductionWithStrategy maskedStrategySetBdy (addName ctx name) (n + 1) bdy)
+          (reductionWithStrategy maskedStrategySetTy ctx ty)
+          (reductionWithStrategy maskedStrategySetTm ctx tm)
+          (reductionWithStrategy maskedStrategySetBdy (addName ctx name) bdy)
       in
-        goIfUnequal ctx n tmold reducedTm
-    go ctx n tmold@(TmIndType name tmlst) =
+        goIfUnequal ctx tmold reducedTm
+    go ctx tmold@(TmIndType name tmlst) =
       let
         maskedStrategySet =
           clearIfUnSet BetaInIndType ZetaInIndType
             IotaInIndType DeltaInIndType strategy
         reducedTm = TmIndType name $
-          map (reductionWithStrategy maskedStrategySet ctx n) tmlst
+          map (reductionWithStrategy maskedStrategySet ctx) tmlst
       in
-        goIfUnequal ctx n tmold reducedTm
-    go ctx n tmold@(TmConstr name tmlst) =
+        goIfUnequal ctx tmold reducedTm
+    go ctx tmold@(TmConstr name tmlst) =
       let
         maskedStrategySet =
           clearIfUnSet BetaInConstr ZetaInConstr
             IotaInConstr DeltaInConstr strategy
         reducedTm = TmConstr name $
-          map (reductionWithStrategy maskedStrategySet ctx n) tmlst
+          map (reductionWithStrategy maskedStrategySet ctx) tmlst
       in
-        goIfUnequal ctx n tmold reducedTm
-    go ctx n tmold@(TmMatch i tm name namelst ty equlst) =
+        goIfUnequal ctx tmold reducedTm
+    go ctx tmold@(TmMatch i tm name namelst ty equlst) =
       let
         maskedStrategySetTm =
           clearIfUnSet BetaInMatchTm ZetaInMatchTm
@@ -398,7 +400,7 @@ reductionWithStrategy strategy = go
               IotaInMatchBranch DeltaInMatchBranch strategy )
             BetaFix
         reducedTm = TmMatch i
-          (reductionWithStrategy maskedStrategySetTm ctx n tm)
+          (reductionWithStrategy maskedStrategySetTm ctx tm)
           name
           namelst
           ty
@@ -409,102 +411,101 @@ reductionWithStrategy strategy = go
                   (reductionWithStrategy
                     maskedStrategySetBranch
                     (foldl addName ctx (tail namelsteq))
-                    (n + length namelsteq - 1)
                     term
                   ))
             equlst)
       in
-        goIfUnequal ctx n tmold reducedTm
-    go _ _ tmold = tmold
+        goIfUnequal ctx tmold reducedTm
+    go _ tmold = tmold
  
 fullBZIDStrategySet :: StrategySet
 fullBZIDStrategySet = StrategySet fullBetaStrategy fullZetaStrategy fullIotaStrategy fullDeltaStrategy
 
-fullBZIDReduction :: Context -> Int -> Term -> Term
+fullBZIDReduction :: Context -> Term -> Term
 fullBZIDReduction = reductionWithStrategy fullBZIDStrategySet
 
 fullBZIStrategySet :: StrategySet
 fullBZIStrategySet = StrategySet fullBetaStrategy fullZetaStrategy fullIotaStrategy 0
 
-fullBZIReduction :: Context -> Int -> Term -> Term
+fullBZIReduction :: Context -> Term -> Term
 fullBZIReduction = reductionWithStrategy fullBZIStrategySet
 
 fullBZDStrategySet :: StrategySet
 fullBZDStrategySet = StrategySet fullBetaStrategy fullZetaStrategy 0 fullDeltaStrategy
 
-fullBZDReduction :: Context -> Int -> Term -> Term
+fullBZDReduction :: Context -> Term -> Term
 fullBZDReduction = reductionWithStrategy fullBZDStrategySet
 
 fullBZStrategySet :: StrategySet
 fullBZStrategySet = StrategySet fullBetaStrategy fullZetaStrategy 0 0
 
-fullBZReduction :: Context -> Int -> Term -> Term
+fullBZReduction :: Context -> Term -> Term
 fullBZReduction = reductionWithStrategy fullBZStrategySet
 
 fullBIDStrategySet :: StrategySet
 fullBIDStrategySet = StrategySet fullBetaStrategy 0 fullIotaStrategy fullDeltaStrategy
 
-fullBIDReduction :: Context -> Int -> Term -> Term
+fullBIDReduction :: Context -> Term -> Term
 fullBIDReduction = reductionWithStrategy fullBIDStrategySet
 
 fullBIStrategySet :: StrategySet
 fullBIStrategySet = StrategySet fullBetaStrategy 0 fullIotaStrategy 0
 
-fullBIReduction :: Context -> Int -> Term -> Term
+fullBIReduction :: Context -> Term -> Term
 fullBIReduction = reductionWithStrategy fullBIStrategySet
 
 fullBDStrategySet :: StrategySet
 fullBDStrategySet = StrategySet fullBetaStrategy 0 0 fullDeltaStrategy
 
-fullBDReduction :: Context -> Int -> Term -> Term
+fullBDReduction :: Context -> Term -> Term
 fullBDReduction = reductionWithStrategy fullBDStrategySet
 
 fullBStrategySet :: StrategySet
 fullBStrategySet = StrategySet fullBetaStrategy 0 0 0
 
-fullBReduction :: Context -> Int -> Term -> Term
+fullBReduction :: Context -> Term -> Term
 fullBReduction = reductionWithStrategy fullBStrategySet
 
 fullZIDStrategySet :: StrategySet
 fullZIDStrategySet = StrategySet 0 fullZetaStrategy fullIotaStrategy fullDeltaStrategy
 
-fullZIDReduction :: Context -> Int -> Term -> Term
+fullZIDReduction :: Context -> Term -> Term
 fullZIDReduction = reductionWithStrategy fullZIDStrategySet
 
 fullZIStrategySet :: StrategySet
 fullZIStrategySet = StrategySet 0 fullZetaStrategy fullIotaStrategy 0
 
-fullZIReduction :: Context -> Int -> Term -> Term
+fullZIReduction :: Context -> Term -> Term
 fullZIReduction = reductionWithStrategy fullZIStrategySet
 
 fullZDStrategySet :: StrategySet
 fullZDStrategySet = StrategySet 0 fullZetaStrategy 0 fullDeltaStrategy
 
-fullZDReduction :: Context -> Int -> Term -> Term
+fullZDReduction :: Context -> Term -> Term
 fullZDReduction = reductionWithStrategy fullZDStrategySet
 
 fullZStrategySet :: StrategySet
 fullZStrategySet = StrategySet 0 fullZetaStrategy 0 0
 
-fullZReduction :: Context -> Int -> Term -> Term
+fullZReduction :: Context -> Term -> Term
 fullZReduction = reductionWithStrategy fullZStrategySet
 
 fullIDStrategySet :: StrategySet
 fullIDStrategySet = StrategySet 0 0 fullIotaStrategy fullDeltaStrategy
 
-fullIDReduction :: Context -> Int -> Term -> Term
+fullIDReduction :: Context -> Term -> Term
 fullIDReduction = reductionWithStrategy fullIDStrategySet
 
 fullIStrategySet :: StrategySet
 fullIStrategySet = StrategySet 0 0 fullIotaStrategy 0
 
-fullIReduction :: Context -> Int -> Term -> Term
+fullIReduction :: Context -> Term -> Term
 fullIReduction = reductionWithStrategy fullIStrategySet
 
 fullDStrategySet :: StrategySet
 fullDStrategySet = StrategySet 0 0 0 fullDeltaStrategy
 
-fullDReduction :: Context -> Int -> Term -> Term
+fullDReduction :: Context -> Term -> Term
 fullDReduction = reductionWithStrategy fullDStrategySet
 
 

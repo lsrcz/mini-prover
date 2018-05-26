@@ -626,7 +626,7 @@ spec = do
           fullDeltaStrategy
       let 
         fullReductionForTest =
-          reductionWithStrategy strategySet natContextWithPredefinedFunctions 0
+          reductionWithStrategy strategySet natContextWithPredefinedFunctions
       describe "simple terms" $ do
         it "plus" $
           fullReductionForTest (TmRel "plus" 9)
