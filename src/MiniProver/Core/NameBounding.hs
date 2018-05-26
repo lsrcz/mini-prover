@@ -7,6 +7,7 @@ module MiniProver.Core.NameBounding (
 
 import MiniProver.Core.Syntax
 import MiniProver.Core.Context
+import MiniProver.PrettyPrint.PrettyPrint
 import Data.List (group, sort, concatMap, find, (\\), sortBy)
 import Data.Maybe (fromMaybe)
 
@@ -24,7 +25,45 @@ data NameBoundStatus =
   | DuplicateNameInConstrMatching Term [Name] [Name]
   | UnboundNameInTerm [Name]
   | AllNameBounded
-  deriving (Show, Eq)
+  deriving (Eq)
+
+instance Show NameBoundStatus where
+  show (NoIndTypeProvided term) =
+    "No inductive type provided in the term:\n" ++ addIndent 2 (prettyShow term)
+  show (UnknownIndType term name) =
+    "Unknown inductive type " ++ name ++ " in the term:\n" ++ addIndent 2 (prettyShow term)
+  show (WrongNumParamsInTypeMatching term namelst) =
+    "Wrong number of params in the type matching in the term:\n" ++
+    addIndent 2 (prettyShow term) ++ "\nin the matching list " ++
+    unwords namelst
+  show (UnusedNameInTypeMatching term name) =
+    "Unused name " ++ unwords name ++ " in the pattern matching in the type should be \"_\", in the term:\n" ++
+    addIndent 2 (prettyShow term)
+  show (DuplicateNameInTypeMatching term name) =
+    "Duplicate occurence of the names " ++ unwords name ++ " in the type, in the term:\n" ++
+    addIndent 2 (prettyShow term)
+  show (UnknownConstr term name) =
+    "Unknown constructor(s) " ++ unwords name ++ " in the term:\n" ++
+    addIndent 2 (prettyShow term)
+  show (DuplicateConstr term name) =
+    "Duplicate occurence of constructor(s) " ++ unwords name ++ " in the term:\n" ++
+    addIndent 2 (prettyShow term)
+  show (InsufficientConstrs term name) =
+    "Insufficient constructors in the term:\n" ++
+    addIndent 2 (prettyShow term) ++ "\nThe missing constructor(s) are " ++ unwords name
+  show (WrongNumParamsInConstrMatching term namelst) =
+    "Wrong number of params in the pattern matching in the term:\n" ++
+    addIndent 2 (prettyShow term) ++ "\nin the matching list " ++
+    unwords namelst
+  show (UnusedNameInConstrMatching term matchlst namelst) =
+    "Unused name " ++ unwords namelst ++ " in the pattern matching in the branch "  ++ unwords matchlst ++ " should be \"_\", in the term:\n" ++
+    addIndent 2 (prettyShow term)
+  show (DuplicateNameInConstrMatching term matchlst namelst) =
+    "Duplicate occurence of the names " ++ unwords namelst ++ " in the branch "  ++ unwords matchlst ++ " in the term:\n" ++
+    addIndent 2 (prettyShow term)
+  show (UnboundNameInTerm namelst) =
+    "Unbound names " ++ unwords namelst
+  show AllNameBounded = "All name bounded"
 
 unique :: (Eq a) => [a] -> [a]
 unique = map head . group
