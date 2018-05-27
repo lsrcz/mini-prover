@@ -15,16 +15,17 @@ isTerminating (TmFix _ (TmLambda nm ty tm)) =
     let (d, term) = capArg 0 tm in
         forCheck d d term
 
+-- nameless function -> nameless origin -> k-th argument -> term -> nameless derivatives
 haltCheck :: Int -> Int -> Int -> Term -> [Int] -> Bool
 haltCheck deg d s term lst =
     case term of
-      TmMatch (TmRel _ ind) [_] _ eqlst
+      TmMatch k (TmRel _ ind) _ _ _ eqlst
         | (ind `elem` lst) || (ind == d) ->
-            extMatchCheck deg d s eqlst lst
-        | otherwise -> matchCheck deg d s eqlst lst
-      TmMatch tm [_] _ eqlst ->
+            extMatchCheck (deg - k) (d - k) s eqlst lst
+        | otherwise -> matchCheck (deg - k) (d - k) s eqlst lst
+      TmMatch k tm _ _ _ eqlst ->
         (haltCheck deg d s tm lst) &&
-        (matchCheck deg d s eqlst lst)
+        (matchCheck (deg - k) (d - k) s eqlst lst)
       TmAppl tmlst -> appCheck deg d s tmlst lst
       TmProd _ ty tm ->
         (haltCheck deg d s ty lst) &&
@@ -127,8 +128,8 @@ computeDecParam (TmConstr name tmlst) =
     (x:_, _) -> Left x
 computeDecParam TmType = Right TmType
 computeDecParam TmTypeHigher = Right TmTypeHigher
-computeDecParam (TmMatch tm namelst ty equlst) =
-  TmMatch <$> computeDecParam tm <*> Right namelst <*> computeDecParam ty
+computeDecParam (TmMatch k tm name namelst ty equlst) =
+  TmMatch <$> Right k <*> computeDecParam tm <*> Right name <*> Right namelst <*> computeDecParam ty
           <*> computeDecParamEqulst equlst
 
 computeDecParamEqulst :: [Equation] -> Either Term [Equation]

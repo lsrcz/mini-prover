@@ -96,7 +96,7 @@ dontOccurFree name term =
         (all (\x -> dontOccurFree name x) tmlst)
       TmConstr nm tmlst ->
         all (\x -> dontOccurFree name x) tmlst
-      TmMatch tm1 _ tm2 eqlst ->
+      TmMatch _ tm1 _ _ tm2 eqlst ->
         (dontOccurFree name tm1) && 
         (dontOccurFree name tm2) && 
         (all (\case 
