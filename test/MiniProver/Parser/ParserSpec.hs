@@ -797,6 +797,239 @@ spec = do
                   [ TmVar "A"
                   , TmVar ".0"
                   , TmVar ".1" ]))))]
+      it "not positive 1" $
+        parse pcommand "" ("Inductive a (T:Type) : Type :=" ++
+          "| aa : a (a T) -> a T.")
+        `shouldParse`
+        Ind "a" 1
+        ( TmProd "T"
+            TmType
+            TmType )
+        ( TmLambda "T"
+            TmType
+          ( TmIndType "a"
+            [ TmVar "T" ]))
+        [ ( "aa"
+          , TmProd "T"
+              TmType
+            ( TmProd "_"
+              ( TmIndType "a"
+                [ TmIndType "a"
+                  [ TmVar "T" ]])
+              ( TmIndType "a"
+                [ TmVar "T" ]))
+          , TmLambda "T"
+              TmType
+            ( TmLambda ".0"
+              ( TmIndType "a"
+                [ TmIndType "a"
+                  [ TmVar "T" ]])
+              ( TmConstr "aa"
+                [ TmVar "T"
+                , TmVar ".0" ])))]
+      it "not positive 2" $
+        parse pcommand "" "Inductive a (T:Type):Type:= |aa:a (a T)."
+        `shouldParse`
+        Ind "a" 1
+        ( TmProd "T"
+            TmType
+            TmType )
+        ( TmLambda "T"
+            TmType
+          ( TmIndType "a"
+            [ TmVar "T" ]))
+        [ ( "aa"
+          , TmProd "T"
+              TmType
+            ( TmIndType "a"
+              [ TmIndType "a"
+                [ TmVar "T" ]])
+          , TmLambda "T"
+              TmType
+            ( TmConstr "aa"
+              [ TmVar "T" ]))]
+      it "positive 1" $
+        parse pcommand "" ("Inductive a (T:Type) : Type :=" ++
+          " | aa : (T -> a T) -> a T.")
+        `shouldParse`
+        Ind "a" 1
+        ( TmProd "T"
+            TmType
+            TmType )
+        ( TmLambda "T"
+            TmType
+          ( TmIndType "a"
+            [ TmVar "T" ]))
+        [ ( "aa"
+          , TmProd "T"
+              TmType
+            ( TmProd "_"
+              ( TmProd "_"
+                ( TmVar "T" )
+                ( TmIndType "a"
+                  [ TmVar "T" ]))
+              ( TmIndType "a"
+                [ TmVar "T" ]))
+          , TmLambda "T"
+              TmType
+            ( TmLambda ".0"
+              ( TmProd "_"
+                ( TmVar "T" )
+                ( TmIndType "a"
+                  [ TmVar "T" ]))
+              ( TmConstr "aa"
+                [ TmVar "T"
+                , TmVar ".0" ])))]
+      it "positive 2" $
+        parse pcommand "" ("Inductive a (T:Type) : Type :=" ++
+          "| aa : (T -> T -> a T) -> a T.")
+        `shouldParse`
+        Ind "a" 1
+        ( TmProd "T"
+            TmType
+            TmType )
+        ( TmLambda "T"
+            TmType
+          ( TmIndType "a"
+            [ TmVar "T" ]))
+        [ ( "aa"
+          , TmProd "T"
+              TmType
+            ( TmProd "_"
+              ( TmProd "_"
+                ( TmVar "T" )
+                ( TmProd "_"
+                  ( TmVar "T" )
+                  ( TmIndType "a"
+                    [ TmVar "T" ])))
+              ( TmIndType "a"
+                [ TmVar "T" ]))
+          , TmLambda "T"
+              TmType
+            ( TmLambda ".0"
+              ( TmProd "_"
+                ( TmVar "T" )
+                ( TmProd "_"
+                  ( TmVar "T" )
+                  ( TmIndType "a"
+                    [ TmVar "T" ])))
+              ( TmConstr "aa"
+                [ TmVar "T"
+                , TmVar ".0" ])))]
+      it "not positive 3" $
+        parse pcommand "" ("Inductive a (T:Type) : Type :=" ++
+          "| aa : (T -> a T -> a T) -> a T.")
+        `shouldParse`
+        Ind "a" 1
+        ( TmProd "T"
+            TmType
+            TmType )
+        ( TmLambda "T"
+            TmType
+          ( TmIndType "a"
+            [ TmVar "T" ]))
+        [ ( "aa"
+          , TmProd "T"
+              TmType
+            ( TmProd "_"
+              ( TmProd "_"
+                ( TmVar "T" )
+                ( TmProd "_"
+                  ( TmIndType "a"
+                    [ TmVar "T" ])
+                  ( TmIndType "a"
+                    [ TmVar "T" ])))
+              ( TmIndType "a"
+                [ TmVar "T" ]))
+          , TmLambda "T"
+              TmType
+            ( TmLambda ".0"
+              ( TmProd "_"
+                ( TmVar "T" )
+                ( TmProd "_"
+                  ( TmIndType "a"
+                    [ TmVar "T" ])
+                  ( TmIndType "a"
+                    [ TmVar "T" ])))
+              ( TmConstr "aa"
+                [ TmVar "T"
+                , TmVar ".0" ])))]
+      it "positive 3" $
+        parse pcommand "" ("Inductive a (T:Type) : Type :=" ++
+          "| aa : (ilist (a T) O) -> a T.")
+        `shouldParse`
+        Ind "a" 1
+        ( TmProd "T"
+            TmType
+            TmType )
+        ( TmLambda "T"
+            TmType
+          ( TmIndType "a"
+            [ TmVar "T" ]))
+        [ ( "aa"
+        , TmProd "T"
+            TmType
+          ( TmProd "_"
+            ( TmAppl
+              [ TmVar "ilist"
+              , TmIndType "a"
+                [ TmVar "T" ]
+              , TmVar "O" ])
+            ( TmIndType "a"
+              [ TmVar "T" ]))
+        , TmLambda "T"
+            TmType
+          ( TmLambda ".0"
+            ( TmAppl
+              [ TmVar "ilist"
+              , TmIndType "a"
+                [ TmVar "T" ]
+              , TmVar "O" ])
+            ( TmConstr "aa"
+              [ TmVar "T"
+              , TmVar ".0" ])))]
+      it "nested-OK" $
+        parse pcommand "" ("Inductive tok : Type :=" ++
+          "| tok1 : t2 tok nat -> tok.")
+        `shouldParse`
+        Ind "tok" 0
+          TmType
+        ( TmIndType "tok" [])
+        [ ( "tok1"
+          , TmProd "_"
+            ( TmAppl
+              [ TmVar "t2"
+              , TmIndType "tok" []
+              , TmVar "nat" ])
+            ( TmIndType "tok" [])
+          , TmLambda ".0"
+            ( TmAppl
+              [ TmVar "t2"
+              , TmIndType "tok" []
+              , TmVar "nat" ])
+            ( TmConstr "tok1"
+              [ TmVar ".0" ]))]
+      it "nested-FAIL" $
+        parse pcommand "" ("Inductive tfail : Type :=" ++
+          "| tfail1 : t1 tfail nat -> tfail.")
+        `shouldParse`
+        Ind "tfail" 0
+          TmType
+        ( TmIndType "tfail" [])
+        [ ( "tfail1"
+          , TmProd "_"
+            ( TmAppl
+              [ TmVar "t1"
+              , TmIndType "tfail" []
+              , TmVar "nat" ])
+            ( TmIndType "tfail" [])
+          , TmLambda ".0"
+            ( TmAppl
+              [ TmVar "t1"
+              , TmIndType "tfail" []
+              , TmVar "nat" ])
+            ( TmConstr "tfail1"
+              [ TmVar ".0" ]))]
     describe "fixpoint" $
       it "single" $
         parse pcommand "" 

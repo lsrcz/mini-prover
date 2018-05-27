@@ -359,3 +359,59 @@ dependentContext =
            ( Just $ TmRel "E" 1 ))
   , ( "D", NameBind )
   , ( "E", NameBind )]
+
+nestedPosContext :: Context
+nestedPosContext =
+  [ ( "t1"
+    , IndTypeBind 1
+      ( TmProd "T"
+          TmType
+        ( TmProd "_"
+            TmType
+            TmType ))
+      ( TmLambda "T"
+          TmType
+        ( TmLambda ".0"
+            TmType
+          ( TmIndType "t1"
+            [ TmRel "T" 1
+            , TmRel ".0" 0 ])))
+      [ Constructor "t11"
+        ( TmProd "T"
+            TmType
+          ( TmIndType "t1"
+            [ TmRel "T" 0
+            , TmRel "T" 0 ]))
+        ( TmLambda "T"
+            TmType
+          ( TmConstr "t11"
+            [ TmRel "T" 0 ]))])
+  , ( "t2"
+    , IndTypeBind 1
+      ( TmProd "T"
+          TmType
+        ( TmProd "_"
+            TmType
+            TmType ))
+      ( TmLambda "T"
+          TmType
+        ( TmLambda ".0"
+            TmType
+          ( TmIndType "t2"
+            [ TmRel "T" 1
+            , TmRel ".0" 0 ])))
+      [ Constructor "t21"
+        ( TmProd "T"
+            TmType
+          ( TmProd "x"
+              TmType
+            ( TmIndType "t2"
+              [ TmRel "T" 1
+              , TmRel "x" 0 ])))
+        ( TmLambda "T"
+            TmType
+          ( TmLambda "x"
+              TmType
+            ( TmConstr "t21"
+              [ TmRel "T" 1
+              , TmRel "x" 0 ])))])] ++ natContext
