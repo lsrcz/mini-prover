@@ -207,9 +207,9 @@ singleTypeToIndType _ tm = tm
 
 typesToIndType :: Name -> Term -> Term
 typesToIndType namet (TmProd name ty tm) =
-  TmProd name (singleTypeToIndType namet ty) $ typesToIndType namet tm
+  TmProd name (typesToIndType namet (singleTypeToIndType namet ty)) $ typesToIndType namet tm
 typesToIndType namet (TmLambda name ty tm) =
-  TmLambda name (singleTypeToIndType namet ty) $ typesToIndType namet tm
+  TmLambda name (typesToIndType namet (singleTypeToIndType namet ty)) $ typesToIndType namet tm
 typesToIndType namet tm = singleTypeToIndType namet tm
 
 pconstr :: Parser (Name, Term)
