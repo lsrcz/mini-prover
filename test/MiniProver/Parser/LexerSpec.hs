@@ -31,4 +31,6 @@ spec =
       parse ident "" "abcd" `shouldParse` "abcd"
     it "ident rws" $
       parse ident "" `shouldFailOn` "Abort"
+    it "ident underline" $
+      parse ident "" "Abort_" `shouldParse` "Abort_"
       
