@@ -751,6 +751,52 @@ spec = do
                     ( TmLambda ".2"
                       ( TmIndType "btree" [TmVar "x"] )
                       ( TmConstr "node" [TmVar "x", TmVar ".0", TmVar ".1", TmVar ".2"])))))]
+      it "nattree" $
+        parse pcommand "" ("Inductive nattree (A:Type) : Type :=" ++
+          "| leaf : nattree A | node : A -> ((nat -> (nattree A)) -> (nattree A)).")
+        `shouldParse`
+        Ind "nattree" 1
+        ( TmProd "A"
+            TmType
+            TmType )
+        ( TmLambda "A"
+            TmType
+          ( TmIndType "nattree"
+            [ TmVar "A" ]))
+        [ ( "leaf"
+          , TmProd "A"
+              TmType
+            ( TmIndType "nattree"
+              [ TmVar "A" ])
+          , TmLambda "A"
+              TmType
+            ( TmConstr "leaf"
+              [ TmVar "A" ]))
+        , ( "node"
+          , TmProd "A"
+              TmType
+            ( TmProd "_"
+              ( TmVar "A" )
+              ( TmProd "_"
+                ( TmProd "_"
+                  ( TmVar "nat" )
+                  ( TmIndType "nattree"
+                    [ TmVar "A" ]))
+                ( TmIndType "nattree"
+                  [ TmVar "A" ])))
+          , TmLambda "A"
+              TmType
+            ( TmLambda ".0"
+              ( TmVar "A" )
+              ( TmLambda ".1"
+                ( TmProd "_"
+                  ( TmVar "nat" )
+                  ( TmIndType "nattree"
+                    [ TmVar "A" ]))
+                ( TmConstr "node"
+                  [ TmVar "A"
+                  , TmVar ".0"
+                  , TmVar ".1" ]))))]
     describe "fixpoint" $
       it "single" $
         parse pcommand "" 

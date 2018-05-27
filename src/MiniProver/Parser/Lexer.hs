@@ -1,3 +1,4 @@
+{-# LANGUAGE GADTs #-}
 module MiniProver.Parser.Lexer (
     Parser
   , symbol
@@ -79,7 +80,7 @@ rws = [
 ident :: Parser String
 ident = (lexeme . try) (p >>= check)
   where
-    p       = (:) <$> letterChar <*> many alphaNumChar
+    p       = (:) <$> letterChar <*> many (alphaNumChar <|> char '_')
     check x = if x `elem` rws
                 then fail $ "keyword " ++ show x ++ " cannot be an identifier"
                 else return x
