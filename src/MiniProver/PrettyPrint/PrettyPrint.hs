@@ -87,7 +87,7 @@ prettyShow' (TmMatch _ tm name names ty equlst) indent =
       Equation names' tm' -> 
         indentNewline (indent + 2) ++ "| " ++ unwords names' ++
         " => " ++ prettyShow' tm' (indent + 4))
-    equlst ++ indentNewline (indent + 2) ++ frontGroundColor BWHITE (bright "end")
+    equlst ++ indentNewline indent ++ frontGroundColor BWHITE (bright "end")
 
 prettyDefinitionTail :: Term -> Term -> String
 prettyDefinitionTail ty@(TmProd namety tyty tmty) tm@(TmLambda nametm tytm tmtm)
