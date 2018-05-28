@@ -13,7 +13,7 @@ addEnvCommand ctx (Def nm ty tm) =
     addBinding ctx nm (TmAbbBind ty (Just tm))
 addEnvCommand ctx (Fix nm tm) = 
     case tm of 
-      TmLambda _ ty _ -> 
+      TmFix _ (TmLambda _ ty _) -> 
         addBinding ctx nm (TmAbbBind ty (Just tm))
       _ -> error "This should not happen"
 addEnvCommand ctx (Ind nm d ty tm eqlst) = undefined
