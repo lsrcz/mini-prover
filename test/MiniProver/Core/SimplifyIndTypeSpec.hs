@@ -9,7 +9,7 @@ main :: IO ()
 main = hspec spec
 
 spec :: Spec
-spec =
+spec = do
   describe "simplifyIndType" $ do
     it "ty eq_ind" $
       simplifyIndType
@@ -760,3 +760,312 @@ spec =
                                 [ TmRel "F" 5
                                 , TmRel "n0" 2
                                 , TmRel "i0" 0 ]])]))))))))
+  describe "simplifyIndCmd" $ do
+    it "Ax" $
+      simplifyIndCmd
+      ( Ax "S_Sn"
+        ( TmProd "n"
+          ( TmIndType "nat" [])
+          ( TmAppl
+            [ TmLambda "T"
+                TmType
+              ( TmLambda "x"
+                ( TmRel "T" 0 )
+                ( TmLambda ".0"
+                  ( TmRel "T" 1 )
+                  ( TmIndType "eq"
+                    [ TmRel "T" 2
+                    , TmRel "x" 1
+                    , TmRel ".0" 0 ])))
+            , TmIndType "nat" []
+            , TmRel "n" 0
+            , TmAppl
+              [ TmLambda ".0"
+                ( TmIndType "nat" [])
+                ( TmConstr "S"
+                  [ TmRel ".0" 0 ])
+              , TmRel "n" 0 ]])))
+      `shouldBe`
+      Ax "S_Sn"
+        ( TmProd "n"
+          ( TmIndType "nat" [])
+          ( TmIndType "eq"
+            [ TmIndType "nat" []
+            , TmRel "n" 0
+            , TmConstr "S"
+              [ TmRel "n" 0 ]]))
+    it "Def" $
+      simplifyIndCmd
+      ( Def "S_inj"
+        ( TmProd "n"
+          ( TmIndType "nat" [])
+          ( TmProd "m"
+            ( TmIndType "nat" [])
+            ( TmProd "H"
+              ( TmAppl
+                [ TmLambda "T"
+                    TmType
+                  ( TmLambda "x"
+                    ( TmRel "T" 0 )
+                    ( TmLambda ".0"
+                      ( TmRel "T" 1 )
+                      ( TmIndType "eq"
+                        [ TmRel "T" 2
+                        , TmRel "x" 1
+                        , TmRel ".0" 0 ])))
+                , TmIndType "nat" []
+                , TmRel "n" 1
+                , TmRel "m" 0 ])
+              ( TmAppl
+                [ TmLambda "T"
+                    TmType
+                  ( TmLambda "x"
+                    ( TmRel "T" 0 )
+                    ( TmLambda ".0"
+                      ( TmRel "T" 1 )
+                      ( TmIndType "eq"
+                        [ TmRel "T" 2
+                        , TmRel "x" 1
+                        , TmRel ".0" 0 ])))
+                , TmIndType "nat" []
+                , TmAppl
+                  [ TmLambda ".0"
+                    ( TmIndType "nat" [])
+                    ( TmConstr "S"
+                      [ TmRel ".0" 0 ])
+                  , TmRel "n" 2 ]
+                , TmAppl
+                  [ TmLambda ".0"
+                    ( TmIndType "nat" [])
+                    ( TmConstr "S"
+                      [ TmRel ".0" 0 ])
+                  , TmRel "m" 1 ]]))))
+        ( TmLambda "n"
+          ( TmIndType "nat" [])
+          ( TmLambda "m"
+            ( TmIndType "nat" [])
+            ( TmLambda "H"
+              ( TmAppl
+                [ TmLambda "T"
+                    TmType
+                  ( TmLambda "x"
+                    ( TmRel "T" 0 )
+                    ( TmLambda ".0"
+                      ( TmRel "T" 1 )
+                      ( TmIndType "eq"
+                        [ TmRel "T" 2
+                        , TmRel "x" 1
+                        , TmRel ".0" 0 ])))
+                , TmIndType "nat" []
+                , TmRel "n" 1
+                , TmRel "m" 0 ])
+              ( TmMatch 2
+                ( TmRel "H" 0 )
+                  "H0"
+                [ "eq"
+                , "_"
+                , "_"
+                , "m0" ]
+                ( TmAppl
+                  [ TmLambda "T"
+                      TmType
+                    ( TmLambda "x"
+                      ( TmRel "T" 0 )
+                      ( TmLambda ".0"
+                        ( TmRel "T" 1 )
+                        ( TmIndType "eq"
+                          [ TmRel "T" 2
+                          , TmRel "x" 1
+                          , TmRel ".0" 0 ])))
+                  , TmIndType "nat" []
+                  , TmAppl
+                    [ TmLambda ".0"
+                      ( TmIndType "nat" [])
+                      ( TmConstr "S"
+                        [ TmRel ".0" 0 ])
+                    , TmRel "n" 4 ]
+                  , TmAppl
+                    [ TmLambda ".0"
+                      ( TmIndType "nat" [])
+                      ( TmConstr "S"
+                        [ TmRel ".0" 0 ])
+                    , TmRel "m0" 1 ]])
+                [ Equation
+                  [ "eq_refl"
+                  , "_"
+                  , "_" ]
+                  ( TmAppl
+                    [ TmLambda "T"
+                        TmType
+                      ( TmLambda "x"
+                        ( TmRel "T" 0 )
+                        ( TmConstr "eq_refl"
+                          [ TmRel "T" 1
+                          , TmRel "x" 0 ]))
+                    , TmIndType "nat" []
+                    , TmAppl
+                      [ TmLambda ".0"
+                        ( TmIndType "nat" [])
+                        ( TmConstr "S"
+                          [ TmRel ".0" 0 ])
+                      , TmRel "n" 2 ]])])))))
+      `shouldBe`
+      Def "S_inj"
+        ( TmProd "n"
+          ( TmIndType "nat" [])
+          ( TmProd "m"
+            ( TmIndType "nat" [])
+            ( TmProd "H"
+              ( TmIndType "eq"
+                [ TmIndType "nat" []
+                , TmRel "n" 1
+                , TmRel "m" 0 ])
+              ( TmIndType "eq"
+                [ TmIndType "nat" []
+                , TmConstr "S"
+                  [ TmRel "n" 2 ]
+                , TmConstr "S"
+                  [ TmRel "m" 1 ]]))))
+        ( TmLambda "n"
+          ( TmIndType "nat" [])
+          ( TmLambda "m"
+            ( TmIndType "nat" [])
+            ( TmLambda "H"
+              ( TmIndType "eq"
+                [ TmIndType "nat" []
+                , TmRel "n" 1
+                , TmRel "m" 0 ])
+              ( TmMatch 2
+                ( TmRel "H" 0 )
+                  "H0"
+                [ "eq"
+                , "_"
+                , "_"
+                , "m0" ]
+                ( TmIndType "eq"
+                  [ TmIndType "nat" []
+                  , TmConstr "S"
+                    [ TmRel "n" 4 ]
+                  , TmConstr "S"
+                    [ TmRel "m0" 1 ]])
+                [ Equation
+                  [ "eq_refl"
+                  , "_"
+                  , "_" ]
+                  ( TmConstr "eq_refl"
+                    [ TmIndType "nat" []
+                    , TmConstr "S"
+                      [ TmRel "n" 2 ]])]))))
+    it "Ind" $
+      simplifyIndCmd
+      ( Ind "ilist" 1
+        ( TmProd "T"
+            TmType
+          ( TmProd "_"
+            ( TmIndType "nat" [])
+              TmType ))
+        ( TmLambda "T"
+            TmType
+          ( TmLambda ".0"
+            ( TmIndType "nat" [])
+            ( TmIndType "ilist"
+              [ TmRel "T" 1
+              , TmRel ".0" 0 ])))
+        [ ( "inil"
+          , TmProd "T"
+              TmType
+            ( TmIndType "ilist"
+              [ TmRel "T" 0
+              , TmConstr "O" []])
+          , TmLambda "T"
+              TmType
+            ( TmConstr "inil"
+              [ TmRel "T" 0 ]))
+        , ( "icons"
+          , TmProd "T"
+              TmType
+            ( TmProd "n"
+              ( TmIndType "nat" [])
+              ( TmProd "_"
+                ( TmRel "T" 1 )
+                ( TmProd "_"
+                  ( TmIndType "ilist"
+                    [ TmRel "T" 2
+                    , TmRel "n" 1 ])
+                  ( TmIndType "ilist"
+                    [ TmRel "T" 3
+                    , TmAppl
+                      [ TmLambda ".0"
+                        ( TmIndType "nat" [])
+                        ( TmConstr "S"
+                          [ TmRel ".0" 0 ])
+                      , TmRel "n" 2 ]]))))
+          , TmLambda "T"
+              TmType
+            ( TmLambda "n"
+              ( TmIndType "nat" [])
+              ( TmLambda ".0"
+                ( TmRel "T" 1 )
+                ( TmLambda ".1"
+                  ( TmIndType "ilist"
+                    [ TmRel "T" 2
+                    , TmRel "n" 1 ])
+                  ( TmConstr "icons"
+                    [ TmRel "T" 3
+                    , TmRel "n" 2
+                    , TmRel ".0" 1
+                    , TmRel ".1" 0 ])))))])
+      `shouldBe`
+      Ind "ilist" 1
+        ( TmProd "T"
+            TmType
+          ( TmProd "_"
+            ( TmIndType "nat" [])
+              TmType ))
+        ( TmLambda "T"
+            TmType
+          ( TmLambda ".0"
+            ( TmIndType "nat" [])
+            ( TmIndType "ilist"
+              [ TmRel "T" 1
+              , TmRel ".0" 0 ])))
+        [ ( "inil"
+          , TmProd "T"
+              TmType
+            ( TmIndType "ilist"
+              [ TmRel "T" 0
+              , TmConstr "O" []])
+          , TmLambda "T"
+              TmType
+            ( TmConstr "inil"
+              [ TmRel "T" 0 ]))
+        , ( "icons"
+          , TmProd "T"
+              TmType
+            ( TmProd "n"
+              ( TmIndType "nat" [])
+              ( TmProd "_"
+                ( TmRel "T" 1 )
+                ( TmProd "_"
+                  ( TmIndType "ilist"
+                    [ TmRel "T" 2
+                    , TmRel "n" 1 ])
+                  ( TmIndType "ilist"
+                    [ TmRel "T" 3
+                    , TmConstr "S"
+                      [ TmRel "n" 2 ]]))))
+          , TmLambda "T"
+              TmType
+            ( TmLambda "n"
+              ( TmIndType "nat" [])
+              ( TmLambda ".0"
+                ( TmRel "T" 1 )
+                ( TmLambda ".1"
+                  ( TmIndType "ilist"
+                    [ TmRel "T" 2
+                    , TmRel "n" 1 ])
+                  ( TmConstr "icons"
+                    [ TmRel "T" 3
+                    , TmRel "n" 2
+                    , TmRel ".0" 1
+                    , TmRel ".1" 0 ])))))]

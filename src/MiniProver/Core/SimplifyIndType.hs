@@ -1,5 +1,6 @@
 module MiniProver.Core.SimplifyIndType (
     simplifyIndType
+  , simplifyIndCmd
   ) where
 
 import MiniProver.Core.Syntax
@@ -39,3 +40,11 @@ simplifyIndType tm = tm
 
 simplifyIndTypeEqu :: Equation -> Equation
 simplifyIndTypeEqu (Equation namelst tm) = Equation namelst (simplifyIndType tm)
+
+simplifyIndCmd :: Command -> Command
+simplifyIndCmd (Ind name i ty tm constrlst) =
+  Ind name i (simplifyIndType ty) (simplifyIndType tm)
+  (map (\(namec,tyc,tmc) -> (namec,simplifyIndType tyc,simplifyIndType tmc)) constrlst)
+simplifyIndCmd (Ax name tm) = Ax name (simplifyIndType tm)
+simplifyIndCmd (Def name ty tm) = Def name (simplifyIndType ty) (simplifyIndType tm)
+simplifyIndCmd (Fix name tm) = Fix name (simplifyIndType tm)
