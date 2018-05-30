@@ -74,12 +74,13 @@ prettyShowNameList namelst indent =
   map ((`addLeftParens` ',') . (spaces indent ++) .show) (tail namelst)
 
 prettyShowEquationList :: [Equation] -> Int -> [String]
-prettyShowEquationList equlst indent =
-  prettyShowEquation (head equlst) indent ++
+prettyShowEquationList [] indent = [spaces indent]
+prettyShowEquationList (x:xs) indent =
+  prettyShowEquation x indent ++
   concatMap
     (\eq ->
       case prettyShowEquation eq indent of
-        (h:t) -> addLeftParens h ',' : t) (tail equlst)
+        (h:t) -> addLeftParens h ',' : t) xs
 
 prettyShowEquation :: Equation -> Int -> [String]
 prettyShowEquation (Equation namelst tm) indent = (spaces indent ++ "Equation") :
@@ -157,9 +158,10 @@ prettyShowConstr (name, ty, tm) indent = (spaces indent ++ show name) :
         (h:t) -> addLeftParens h ',' : t))
 
 prettyShowConstrList :: [(Name, Term, Term)] -> Int -> [String]
-prettyShowConstrList constrlst indent =
-  addParens (prettyShowConstr (head constrlst) (indent + 2)) '(' ')' ++
+prettyShowConstrList [] indent = [spaces indent]
+prettyShowConstrList (x:xs) indent =
+  addParens (prettyShowConstr x (indent + 2)) '(' ')' ++
   concatMap
     (\constr ->
       case addParens (prettyShowConstr constr (indent + 2)) '(' ')' of
-        (h:t) -> addLeftParens h ',' : t) (tail constrlst)
+        (h:t) -> addLeftParens h ',' : t) xs

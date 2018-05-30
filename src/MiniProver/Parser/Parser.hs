@@ -196,21 +196,38 @@ prodToLambda :: Term -> Term
 prodToLambda (TmProd name ty tm) = TmLambda name ty $ prodToLambda tm
 prodToLambda tm = tm
 
-singleTypeToIndType :: Name -> Term -> Term
-singleTypeToIndType namet tm@(TmVar name)
-  | namet == name = TmIndType name []
-  | otherwise = tm
-singleTypeToIndType namet tm@(TmAppl (TmVar name : ls))
-  | namet == name = TmIndType name ls
-  | otherwise = tm
-singleTypeToIndType _ tm = tm
-
 typesToIndType :: Name -> Term -> Term
 typesToIndType namet (TmProd name ty tm) =
-  TmProd name (singleTypeToIndType namet ty) $ typesToIndType namet tm
+  TmProd name (typesToIndType namet ty) $ typesToIndType namet tm
 typesToIndType namet (TmLambda name ty tm) =
-  TmLambda name (singleTypeToIndType namet ty) $ typesToIndType namet tm
-typesToIndType namet tm = singleTypeToIndType namet tm
+  TmLambda name (typesToIndType namet ty) $ typesToIndType namet tm
+typesToIndType namet (TmIndType name tmlst) =
+  TmIndType name (map (typesToIndType namet) tmlst)
+typesToIndType namet (TmConstr name tmlst) =
+  TmConstr name (map (typesToIndType namet) tmlst)
+typesToIndType namet tm@(TmVar name)
+  | namet == name = TmIndType name []
+  | otherwise = tm
+typesToIndType namet (TmAppl tmlst) =
+  case tmlst of
+    TmVar name : ls
+      | namet == name -> typesToIndType namet $ TmIndType name ls
+    _ -> TmAppl (map (typesToIndType namet) tmlst)
+typesToIndType namet (TmFix i tm) =
+  TmFix i (typesToIndType namet tm)
+typesToIndType namet (TmLetIn name ty tm bdy) =
+  TmLetIn name
+    (typesToIndType namet ty)
+    (typesToIndType namet tm)
+    (typesToIndType namet bdy)
+typesToIndType namet (TmMatch i tm name namelst retty eqnlst) =
+  TmMatch i (typesToIndType namet tm) name namelst
+    (typesToIndType namet retty) (map (typeToIndTypeEqnlst namet) eqnlst)
+typesToIndType _ tm = tm
+
+typeToIndTypeEqnlst :: String -> Equation -> Equation
+typeToIndTypeEqnlst namet (Equation namelst tm) =
+  Equation namelst $ typesToIndType namet tm
 
 pconstr :: Parser (Name, Term)
 pconstr = do

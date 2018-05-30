@@ -7,6 +7,7 @@ module MiniProver.Core.Context (
   , addBinding
   , addName
   , isNameBound
+  , checkDuplicateGlobalName
   , pickFreshName
   , indexToName
   , nameToIndex
@@ -61,12 +62,31 @@ isNameBound ctx name =
           _ -> False
   in
     any nameBoundInBinding ctx
-  
+
+checkDuplicateGlobalName :: Context -> Command -> [Name]
+checkDuplicateGlobalName ctx (Ax name _) =
+  [ name | isNameBound ctx name ]
+checkDuplicateGlobalName ctx (Def name _ _) =
+  [ name | isNameBound ctx name ]
+checkDuplicateGlobalName ctx (Ind name _ _ _ constrlst) =
+  [ xname | xname <- name : map (\(n,_,_) -> n) constrlst, isNameBound ctx xname]
+checkDuplicateGlobalName ctx (Fix name _) =
+  [ name | isNameBound ctx name ]
+
 pickFreshName :: Context -> Name -> (Context, Name)
-pickFreshName ctx name =
+pickFreshName ctx name = 
   if isNameBound ctx name
-    then pickFreshName ctx (name ++ "'")
+    then pickFreshName' ctx name 0
     else ((name,NameBind) : ctx, name)
+  
+pickFreshName' :: Context -> Name -> Int -> (Context, Name)
+pickFreshName' ctx name i =
+  let
+    newname = name ++ show i
+  in
+    if isNameBound ctx newname
+      then pickFreshName' ctx name (i + 1)
+      else ((newname,NameBind) : ctx, newname)
 
 indexToName :: Context -> Index -> Either ContextError Name
 indexToName ctx idx =

@@ -51,12 +51,12 @@ spec =
       it "unbounded" $
         pickFreshName emptyContext "a" `shouldBe` ([("a", NameBind)], "a")
       it "bounded-0" $
-        pickFreshName [("a", NameBind)] "a" `shouldBe` 
-          ([("a'", NameBind), ("a", NameBind)], "a'")
+        pickFreshName [("a", NameBind)] "a" `shouldBe`
+          ([("a0", NameBind), ("a", NameBind)], "a0")
       it "bounded-2" $
-        pickFreshName [("a''", NameBind), ("a'", NameBind), ("a", NameBind)] 
+        pickFreshName [("a1", NameBind), ("a0", NameBind), ("a", NameBind)]
           "a" `shouldBe` 
-          ([("a'''", NameBind), ("a''", NameBind), ("a'", NameBind), ("a", NameBind)], "a'''")
+          ([("a2", NameBind), ("a1", NameBind), ("a0", NameBind), ("a", NameBind)], "a2")
     describe "indexToName" $ do
       it "bounded" $
         indexToName [("a", NameBind)] 0 `shouldBe` Right "a"
