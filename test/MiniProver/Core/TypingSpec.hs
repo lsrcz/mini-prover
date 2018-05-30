@@ -11,6 +11,253 @@ main = hspec spec
 
 spec :: Spec
 spec = do
+  describe "checkCommandType" $ do
+    it "Aximo False" $
+      checkCommandType
+        []
+        (Ax
+          "x"
+          (TmLambda
+            "x"
+            TmType
+            (TmRel "x" 0)))
+      `shouldBe`
+        Just
+          (TypingError
+            (TmLambda
+            "x"
+            TmType
+            (TmRel "x" 0))
+            "the type of it is not Type")
+    it "Aximo False" $
+      checkCommandType
+        natContext
+        (Ax
+          "x"
+          (TmConstr
+            "S"
+            [(TmConstr
+              "O"
+              [])]))
+      `shouldBe`
+        Just
+          (TypingError
+            (TmConstr
+            "S"
+            [(TmConstr
+              "O"
+              [])])
+            "the type of it is not Type")
+    it "Axiom True" $
+      checkCommandType
+        []
+        (Ax
+          "x"
+          (TmProd
+            "x"
+            TmType
+            (TmRel "x" 0))) 
+      `shouldBe`
+        Nothing
+    it "Aximo True" $
+      checkCommandType
+        natContext
+        (Ax
+          "x"
+          (TmIndType
+            "nat"
+            []))
+      `shouldBe`
+        Nothing
+
+      
+    it "Definition False" $
+      checkCommandType
+        natContext
+        (Def
+          "x"
+          TmType
+          (TmAppl
+            [
+              (TmConstr 
+                "O"
+                [])
+            ]))
+      `shouldBe`
+        Just
+          (TypingError
+            (TmAppl
+            [
+              (TmConstr 
+                "O"
+                [])
+            ])
+            "the type of it not match the given type")   
+    it "Definition True" $
+      checkCommandType
+        natContext
+        (Def
+          "x"
+          (TmIndType "nat" [])
+          (TmAppl
+            [
+              (TmLambda
+                ".0"
+                (TmIndType
+                  "nat"
+                  [])
+                (TmConstr
+                  "S"
+                  [TmRel ".0" 0]))
+              ,(TmConstr
+                "O"
+                [])
+            ]))
+      `shouldBe`
+        Nothing 
+    it "Fix True" $
+      checkCommandType
+        natContext
+        (Fix
+          "plus"  
+          (TmFix
+            (-1)
+            ( TmLambda "plus"
+              ( TmProd "a"
+                ( TmIndType "nat" [] )
+                ( TmProd "b"
+                  ( TmIndType "nat" [] )
+                  ( TmIndType "nat" [] )))
+              ( TmLambda "a"
+                ( TmIndType "nat" [] )
+                ( TmLambda "b"
+                  ( TmIndType "nat" [] )
+                  ( TmMatch 0
+                    ( TmRel "a" 1 )
+                    "a0"
+                    [ "nat" ]
+                    ( TmIndType "nat" [] )
+                    [ Equation
+                      [ "O" ]
+                      ( TmRel "b" 0 )
+                    , Equation
+                      [ "S", "n" ]
+                      ( TmAppl
+                        [ TmLambda ".0"
+                            ( TmIndType "nat" [] )
+                            ( TmConstr "S" [ TmRel ".0" 0 ])
+                        , TmAppl
+                          [ TmRel "plus" 3
+                          , TmRel "n" 0
+                          , TmRel "b" 1 ]])]))))))
+      `shouldBe`
+        Nothing
+    it "Ind True" $
+      checkCommandType
+        []
+        ( Ind "r1" 2
+          ( TmProd "A"
+              TmType
+            ( TmProd "B"
+                TmType
+              ( TmProd "_"
+                ( TmRel "A" 1 )
+                ( TmProd "_"
+                  ( TmRel "A" 2 )
+                  ( TmProd "_"
+                    ( TmRel "B" 2 )
+                    ( TmProd "_"
+                      ( TmRel "B" 3 )
+                        TmType ))))))
+          ( TmLambda "A"
+              TmType
+            ( TmLambda "B"
+                TmType
+              ( TmLambda ".0"
+                ( TmRel "A" 1 )
+                ( TmLambda ".1"
+                  ( TmRel "A" 2 )
+                  ( TmLambda ".2"
+                    ( TmRel "B" 2 )
+                    ( TmLambda ".3"
+                      ( TmRel "B" 3 )
+                      ( TmIndType "r1"
+                        [ TmRel "A" 5
+                        , TmRel "B" 4
+                        , TmRel ".0" 3
+                        , TmRel ".1" 2
+                        , TmRel ".2" 1
+                        , TmRel ".3" 0 ])))))))
+          [ ( "p"
+            , TmProd "A"
+                TmType
+              ( TmProd "B"
+                  TmType
+                ( TmProd "x"
+                  ( TmRel "A" 1 )
+                  ( TmProd "y"
+                    ( TmRel "B" 1 )
+                    ( TmProd "z"
+                      ( TmRel "B" 2 )
+                      ( TmIndType "r1"
+                        [ TmRel "A" 4
+                        , TmRel "B" 3
+                        , TmRel "x" 2
+                        , TmRel "x" 2
+                        , TmRel "y" 1
+                        , TmRel "z" 0 ])))))
+            , TmLambda "A"
+                TmType
+              ( TmLambda "B"
+                  TmType
+                ( TmLambda "x"
+                  ( TmRel "A" 1 )
+                  ( TmLambda "y"
+                    ( TmRel "B" 1 )
+                    ( TmLambda "z"
+                      ( TmRel "B" 2 )
+                      ( TmConstr "p"
+                        [ TmRel "A" 4
+                        , TmRel "B" 3
+                        , TmRel "x" 2
+                        , TmRel "y" 1
+                        , TmRel "z" 0 ]))))))
+          , ( "q"
+            , TmProd "A"
+                TmType
+              ( TmProd "B"
+                  TmType
+                ( TmProd "x"
+                  ( TmRel "A" 1 )
+                  ( TmProd "y"
+                    ( TmRel "A" 2 )
+                    ( TmProd "z"
+                      ( TmRel "B" 2 )
+                      ( TmIndType "r1"
+                        [ TmRel "A" 4
+                        , TmRel "B" 3
+                        , TmRel "x" 2
+                        , TmRel "y" 1
+                        , TmRel "z" 0
+                        , TmRel "z" 0 ])))))
+            , TmLambda "A"
+                TmType
+              ( TmLambda "B"
+                  TmType
+                ( TmLambda "x"
+                  ( TmRel "A" 1 )
+                  ( TmLambda "y"
+                    ( TmRel "A" 2 )
+                    ( TmLambda "z"
+                      ( TmRel "B" 2 )
+                      ( TmConstr "q"
+                        [ TmRel "A" 4
+                        , TmRel "B" 3
+                        , TmRel "x" 2
+                        , TmRel "y" 1
+                        , TmRel "z" 0 ]))))))])
+      `shouldBe`
+        Nothing             
   describe "simplifyType" $ do
     it "simple" $
       simplifyType
@@ -167,7 +414,218 @@ spec = do
                         [ TmRel "T" 0 ])
                     , TmRel "T" 2 ])
                   ( TmIndType "list"
-                    [ TmRel "T" 3 ])))))
+                    [ TmRel "T" 3 ])))))   
+    describe "TmMatch" $ do
+      it "plus" $ 
+        typeof 
+          natContext   
+          ( TmFix (-1)
+            ( TmLambda "plus"
+              ( TmProd "x"
+                ( TmIndType "nat" [])
+                ( TmProd "y"
+                  ( TmIndType "nat" [])
+                  ( TmIndType "nat" [])))
+              ( TmLambda "x"
+                ( TmIndType "nat" [])
+                ( TmLambda "y"
+                  ( TmIndType "nat" [])
+                  ( TmMatch 0
+                    ( TmRel "x" 1 )
+                      "x0"
+                    [ "nat" ]
+                    ( TmIndType "nat" [])
+                    [ Equation
+                      [ "O" ]
+                      ( TmRel "y" 0 )
+                    , Equation
+                      [ "S"
+                      , "xx" ]
+                      ( TmAppl
+                        [ TmRel "plus" 3
+                        , TmRel "xx" 0
+                        , TmAppl
+                          [ TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmConstr "S"
+                              [ TmRel ".0" 0 ])
+                          , TmRel "y" 1 ]])])))))
+        `shouldBe`
+        Right
+          ( TmProd "x"
+            ( TmIndType "nat" [])
+              ( TmProd "y"
+                ( TmIndType "nat" [])
+                  ( TmIndType "nat" [])))
+      it "app" $
+        typeof 
+          ilistContext
+          ( TmFix (-1)
+            ( TmLambda "app"
+              ( TmProd "n1"
+                ( TmIndType "nat" [])
+                ( TmProd "ls1"
+                  ( TmAppl
+                    [ TmLambda "T"
+                        TmType
+                      ( TmLambda ".0"
+                        ( TmIndType "nat" [])
+                        ( TmIndType "ilist"
+                          [ TmRel "T" 1
+                          , TmRel ".0" 0 ]))
+                    , TmIndType "nat" []
+                    , TmRel "n1" 0 ])
+                  ( TmProd "n2"
+                    ( TmIndType "nat" [])
+                    ( TmProd "ls2"
+                      ( TmAppl
+                        [ TmLambda "T"
+                            TmType
+                          ( TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmIndType "ilist"
+                              [ TmRel "T" 1
+                              , TmRel ".0" 0 ]))
+                        , TmIndType "nat" []
+                        , TmRel "n2" 0 ])
+                      ( TmAppl
+                        [ TmLambda "T"
+                            TmType
+                          ( TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmIndType "ilist"
+                              [ TmRel "T" 1
+                              , TmRel ".0" 0 ]))
+                        , TmIndType "nat" []
+                        , TmAppl
+                          [ TmRel "plus" 5
+                          , TmRel "n1" 3
+                          , TmRel "n2" 1 ]])))))
+              ( TmLambda "n1"
+                ( TmIndType "nat" [])
+                ( TmLambda "ls1"
+                  ( TmAppl
+                    [ TmLambda "T"
+                        TmType
+                      ( TmLambda ".0"
+                        ( TmIndType "nat" [])
+                        ( TmIndType "ilist"
+                          [ TmRel "T" 1
+                          , TmRel ".0" 0 ]))
+                    , TmIndType "nat" []
+                    , TmRel "n1" 0 ])
+                  ( TmLambda "n2"
+                    ( TmIndType "nat" [])
+                    ( TmLambda "ls2"
+                      ( TmAppl
+                        [ TmLambda "T"
+                            TmType
+                          ( TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmIndType "ilist"
+                              [ TmRel "T" 1
+                              , TmRel ".0" 0 ]))
+                        , TmIndType "nat" []
+                        , TmRel "n2" 0 ])
+                      ( TmMatch 1
+                        ( TmRel "ls1" 2 )
+                          "ls11"
+                        [ "ilist"
+                        , "_"
+                        , "n3" ]
+                        ( TmAppl
+                          [ TmLambda "T"
+                              TmType
+                            ( TmLambda ".0"
+                              ( TmIndType "nat" [])
+                              ( TmIndType "ilist"
+                                [ TmRel "T" 1
+                                , TmRel ".0" 0 ]))
+                          , TmIndType "nat" []
+                          , TmAppl
+                            [ TmRel "plus" 8
+                            , TmRel "n3" 1
+                            , TmRel "n2" 3 ]])
+                        [ Equation
+                          [ "inil"
+                          , "_" ]
+                          ( TmRel "ls2" 0 )
+                        , Equation
+                          [ "icons"
+                          , "_"
+                          , "n"
+                          , "hd"
+                          , "tl" ]
+                          ( TmAppl
+                            [ TmLambda "T"
+                                TmType
+                              ( TmLambda "n"
+                                ( TmIndType "nat" [])
+                                ( TmLambda ".0"
+                                  ( TmRel "T" 1 )
+                                  ( TmLambda ".1"
+                                    ( TmIndType "ilist"
+                                      [ TmRel "T" 2
+                                      , TmRel "n" 1 ])
+                                    ( TmConstr "icons"
+                                      [ TmRel "T" 3
+                                      , TmRel "n" 2
+                                      , TmRel ".0" 1
+                                      , TmRel ".1" 0 ]))))
+                            , TmIndType "nat" []
+                            , TmAppl
+                              [ TmRel "plus" 9
+                              , TmRel "n" 2
+                              , TmRel "n2" 4 ]
+                            , TmRel "hd" 1
+                            , TmAppl
+                              [ TmRel "app" 7
+                              , TmRel "n" 2
+                              , TmRel "tl" 0
+                              , TmRel "n2" 4
+                              , TmRel "ls2" 3 ]])])))))))     
+          `shouldBe`
+          Right
+            ( TmProd "n1"
+              ( TmIndType "nat" [])
+              ( TmProd "ls1"
+                ( TmAppl
+                  [ TmLambda "T"
+                      TmType
+                    ( TmLambda ".0"
+                      ( TmIndType "nat" [])
+                      ( TmIndType "ilist"
+                        [ TmRel "T" 1
+                        , TmRel ".0" 0 ]))
+                  , TmIndType "nat" []
+                  , TmRel "n1" 0 ])
+                ( TmProd "n2"
+                  ( TmIndType "nat" [])
+                  ( TmProd "ls2"
+                    ( TmAppl
+                      [ TmLambda "T"
+                          TmType
+                        ( TmLambda ".0"
+                          ( TmIndType "nat" [])
+                          ( TmIndType "ilist"
+                            [ TmRel "T" 1
+                            , TmRel ".0" 0 ]))
+                      , TmIndType "nat" []
+                      , TmRel "n2" 0 ])
+                    ( TmAppl
+                      [ TmLambda "T"
+                          TmType
+                        ( TmLambda ".0"
+                          ( TmIndType "nat" [])
+                          ( TmIndType "ilist"
+                            [ TmRel "T" 1
+                            , TmRel ".0" 0 ]))
+                      , TmIndType "nat" []
+                      , TmAppl
+                        [ TmRel "plus" 5
+                        , TmRel "n1" 3
+                        , TmRel "n2" 1 ]])))))     
+{-
     describe "TmFix" $
       it "fix plus" $
       -- fix plus (x:nat) (y:nat):nat:=
@@ -188,7 +646,9 @@ spec = do
                 (TmLambda "y"
                   ( TmIndType "nat" [] )
                   (TmMatch
+                    0
                     ( TmRel "x" 1 )
+                    ()
                     [ "nat" ]
                     ( TmIndType "nat" [] )
                     [ Equation ["O"]
@@ -206,6 +666,7 @@ spec = do
             ( TmProd "y"
               ( TmIndType "nat" [] )
               ( TmIndType "nat" [] )))
+
     describe "TmLetIn" $
       it "simple" $
         typeof natContextWithPredefinedNumbers
@@ -533,7 +994,7 @@ spec = do
              ])
 
 
-
+-}
 
 
 {-
