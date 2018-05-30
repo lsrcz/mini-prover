@@ -372,7 +372,7 @@ Definition not_eq_sym (A:Type) (x:A) (y:A) (H:noteq A x y) : noteq A y x :=
 
 Definition eq_rect_r (A:Type) (x:A) (P:forall (a: A), eq A x a -> Type)
   (H:P x (eq_refl A x)) (y:A) (H0:eq A y x) : P y (eq_sym A y x H0) :=
-  eq_rect A x (fun y0 : A => P y0) H y (eq_sym A y x H0).
+  eq_rect A x (fun (y0 : A) => P y0) H y (eq_sym A y x H0).
 
 Definition f_equal2 (A1:Type) (A2:Type) (B:Type) (f:A1 -> A2 -> B) (x1:A1) (y1:A1)
   (x2:A2) (y2:A2) (H1:eq A1 x1 y1) (H2:eq A2 x2 y2) : eq B (f x1 x2) (f y1 y2) :=

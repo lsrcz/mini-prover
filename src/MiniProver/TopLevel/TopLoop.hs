@@ -209,28 +209,28 @@ processOneCommand verboseLevel inputStr ctx = do
                               putStrLnV 1 $ okColor "[ OK ] adding to context"
                               case cmdWithDec of
                                 Ax name _ -> do
-                                  putStrLnV 1 $ infoColor "**** type declared ****"
-                                  pPrintV 1 $ fromRight (error "this should not happen") $ getBindingType newctx 0
+                                  putStrLnV 2 $ infoColor "**** type declared ****"
+                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingType newctx 0
                                   putStrLn $ name ++ " is declared"
                                 Def name _ _ -> do
-                                  putStrLnV 1 $ infoColor "**** term defined ****"
-                                  pPrintV 1 $ fromRight (error "this should not happen") $ getBindingTerm newctx 0
-                                  putStrLnV 1 $ infoColor "**** type defined ****"
-                                  pPrintV 1 $ fromRight (error "this should not happen") $ getBindingType newctx 0
+                                  putStrLnV 2 $ infoColor "**** term defined ****"
+                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingTerm newctx 0
+                                  putStrLnV 2 $ infoColor "**** type defined ****"
+                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingType newctx 0
                                   putStrLn $ name ++ " is defined"
                                 Fix name (TmFix i _) -> do
-                                  putStrLnV 1 $ infoColor "**** term defined ****"
-                                  pPrintV 1 $ fromRight (error "this should not happen") $ getBindingTerm newctx 0
-                                  putStrLnV 1 $ infoColor "**** type defined ****"
-                                  pPrintV 1 $ fromRight (error "this should not happen") $ getBindingType newctx 0
+                                  putStrLnV 2 $ infoColor "**** term defined ****"
+                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingTerm newctx 0
+                                  putStrLnV 2 $ infoColor "**** type defined ****"
+                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingType newctx 0
                                   putStrLn $ name ++ " is defined"
                                   putStrLn $ name ++ " is recursively defined (decreasing on " ++
                                     showOrdinal i ++ " argument)"
                                 Ind name _ _ _ _ -> do
-                                  putStrLnV 1 $ infoColor "**** inductive principle term defined ****"
-                                  pPrintV 1 $ fromRight (error "this should not happen") $ getBindingTerm newctx 0
-                                  putStrLnV 1 $ infoColor "**** inductive principle type defined ****"
-                                  pPrintV 1 $ fromRight (error "this should not happen") $ getBindingType newctx 0
+                                  putStrLnV 2 $ infoColor "**** inductive principle term defined ****"
+                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingTerm newctx 0
+                                  putStrLnV 2 $ infoColor "**** inductive principle type defined ****"
+                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingType newctx 0
                                   putStrLn $ name ++ " is defined"
                                   putStrLn $ name ++ "_rect is defined"
                               return newctx
