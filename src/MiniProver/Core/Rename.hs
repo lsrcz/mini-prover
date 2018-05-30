@@ -1,6 +1,7 @@
 module MiniProver.Core.Rename (
     renameInd
   , getOrigNameFromTy
+  , renameTerm
   ) where
 
 import MiniProver.Core.Syntax
