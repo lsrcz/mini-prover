@@ -126,7 +126,7 @@ typeof' ctx t@(TmMatch n t1 name nameLs retType consLs) =
       Left er ->Left er
       Right complexindty ->
         let 
-          indty = simplifyType complexindty
+          indty = fullBZIDReduction ctx complexindty
         in
           case indty of
             TmIndType indName ls

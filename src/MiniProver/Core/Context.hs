@@ -13,6 +13,7 @@ module MiniProver.Core.Context (
   , nameToIndex
   , getBinding
   , getBindingType
+  , getBindingTerm
   , getIndType
   , getIndTypeTerm
   , getIndTypeType
@@ -36,6 +37,7 @@ data ContextError =
   | IsConstructor
   | NotATypeConstructor
   | NotAConstructor
+  | NotADefinition
   deriving (Eq, Show)
 
 emptyContext :: Context
@@ -119,6 +121,14 @@ getBindingType ctx idx =
     Left err -> Left err
     Right (VarBind ty) -> Right ty
     Right (TmAbbBind ty _) -> Right ty
+    _ -> error "This should not happen"
+
+getBindingTerm :: Context -> Index -> Either ContextError Term
+getBindingTerm ctx idx =
+  case getBinding ctx idx of
+    Left err -> Left err
+    Right (TmAbbBind _ (Just tm)) -> Right tm
+    Right (TmAbbBind _ Nothing) -> Left NotADefinition
     _ -> error "This should not happen"
 
 getIndType :: Context -> Name -> Either ContextError (Int, Term, Term, [Constructor])

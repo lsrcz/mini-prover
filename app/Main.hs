@@ -2,10 +2,13 @@ module Main where
 
 import MiniProver.TopLevel.TopLoop
 import MiniProver.Utils.ContextForTesting
+import System.IO
 
 main :: IO ()
 main = do
-  ctx <- processOneCommand 3 ilistContext
+  handle <- openFile "./libs/Init/Prelude.v" ReadMode
+  p <- processFile handle 1 []
+  ctx <- topLoop 3 realNatContext --ilistContext
   print ctx
 
 {-
