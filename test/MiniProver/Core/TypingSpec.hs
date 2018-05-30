@@ -407,12 +407,8 @@ spec = do
               ( TmProd "b"
                 ( TmRel "T" 1 )
                 ( TmProd "ls"
-                  ( TmAppl 
-                    [ TmLambda "T" 
-                        TmType 
-                      ( TmIndType "list" 
-                        [ TmRel "T" 0 ])
-                    , TmRel "T" 2 ])
+                  ( TmIndType "list" 
+                    [ TmRel "T" 2 ])
                   ( TmIndType "list"
                     [ TmRel "T" 3 ])))))   
     describe "TmMatch" $ do
@@ -589,38 +585,17 @@ spec = do
             ( TmProd "n1"
               ( TmIndType "nat" [])
               ( TmProd "ls1"
-                ( TmAppl
-                  [ TmLambda "T"
-                      TmType
-                    ( TmLambda ".0"
-                      ( TmIndType "nat" [])
-                      ( TmIndType "ilist"
-                        [ TmRel "T" 1
-                        , TmRel ".0" 0 ]))
-                  , TmIndType "nat" []
+                ( TmIndType "ilist"
+                  [ TmIndType "nat" []
                   , TmRel "n1" 0 ])
                 ( TmProd "n2"
                   ( TmIndType "nat" [])
                   ( TmProd "ls2"
-                    ( TmAppl
-                      [ TmLambda "T"
-                          TmType
-                        ( TmLambda ".0"
-                          ( TmIndType "nat" [])
-                          ( TmIndType "ilist"
-                            [ TmRel "T" 1
-                            , TmRel ".0" 0 ]))
-                      , TmIndType "nat" []
+                    ( TmIndType "ilist"
+                      [ TmIndType "nat" []
                       , TmRel "n2" 0 ])
-                    ( TmAppl
-                      [ TmLambda "T"
-                          TmType
-                        ( TmLambda ".0"
-                          ( TmIndType "nat" [])
-                          ( TmIndType "ilist"
-                            [ TmRel "T" 1
-                            , TmRel ".0" 0 ]))
-                      , TmIndType "nat" []
+                    ( TmIndType "ilist"
+                      [ TmIndType "nat" []
                       , TmAppl
                         [ TmRel "plus" 5
                         , TmRel "n1" 3

@@ -9,6 +9,7 @@ import MiniProver.Core.Syntax
 import MiniProver.Core.Subst
 import MiniProver.Core.Context
 import MiniProver.Core.Reduction
+import MiniProver.Core.SimplifyIndType
 import MiniProver.PrettyPrint.PrettyPrint
 import Debug.Trace
 
@@ -33,18 +34,21 @@ simplifyType (TmProd name ty tm) =
   TmProd name (simplifyType ty) (simplifyType tm)
 simplifyType tm = tm
 
-typeof :: Context -> Term -> Either TypingError Term 
-typeof ctx (TmProd name t1 t2) = 
+typeof :: Context -> Term -> Either TypingError Term
+typeof ctx tm = simplifyIndType <$> typeof' ctx tm
+
+typeof' :: Context -> Term -> Either TypingError Term 
+typeof' ctx (TmProd name t1 t2) = 
   let
-    type1 = typeof ctx t1 
-    type2 = typeof (addBinding ctx name (VarBind t1)) t2 
+    type1 = typeof' ctx t1 
+    type2 = typeof' (addBinding ctx name (VarBind t1)) t2 
   in
     case (type1, type2) of
       (Left err1, _) -> Left err1
       (_, Left err2) -> Left err2
       (Right _, Right _) -> Right TmType
 
-typeof ctx (TmRel name index) =
+typeof' ctx (TmRel name index) =
   let 
     bind = getBinding ctx index 
   in
@@ -55,14 +59,14 @@ typeof ctx (TmRel name index) =
       Right NameBind -> error "This should not happen" -- Left (TypingError t "NameBind is not a type.")
       _ -> error "This should not happen" -- Left (TypingError t "There is no such bind")
  
-typeof ctx (TmAppl ls) =
+typeof' ctx (TmAppl ls) =
   let
     hd = head ls
   in
     case hd of
       TmLambda{} ->
         let
-          ty = typeof ctx hd 
+          ty = typeof' ctx hd 
         in
           case ty of
             Left er -> Left er
@@ -86,20 +90,20 @@ typeof ctx (TmAppl ls) =
             Right _ -> Right TmType
       _ -> Left (TypingError hd "this should't be applied")
 
-typeof ctx (TmLambda name t1 t2) =
+typeof' ctx (TmLambda name t1 t2) =
   let 
-    type1 = typeof ctx t1 
+    type1 = typeof' ctx t1 
   in
     case type1 of
       Left er -> Left er
       Right _ ->
-        case typeof (addBinding ctx name (VarBind t1)) t2 of
+        case typeof' (addBinding ctx name (VarBind t1)) t2 of
           Left er -> Left er
           Right tm2 -> Right (TmProd name t1 tm2) 
  
-typeof ctx (TmFix _ tm) =
+typeof' ctx (TmFix _ tm) =
   let 
-    tmpty = typeof ctx tm 
+    tmpty = typeof' ctx tm 
   in
     case tmpty of
       Left er -> Left er
@@ -114,36 +118,36 @@ typeof ctx (TmFix _ tm) =
                 else Left (TypingError tm "can't be fixed")
             _ -> Left (TypingError tm "can not be fixed")
 
-typeof ctx (TmLetIn name t1 t2 t3) =
+typeof' ctx (TmLetIn name t1 t2 t3) =
   let 
-    type1 = typeof ctx t1 
+    type1 = typeof' ctx t1 
   in
     case type1 of 
       Left er -> Left er
       Right _ ->
-        if typeeq ctx (Right t1) (typeof ctx t2 )
+        if typeeq ctx (Right t1) (typeof' ctx t2 )
           then 
-            typeof ctx (betaReduction (TmAppl [TmLambda name t1 t3,t2])) 
+            typeof' ctx (betaReduction (TmAppl [TmLambda name t1 t3,t2])) 
           else 
             Left (TypingError t2 "type not match!") 
 
-typeof ctx TmType = Right TmTypeHigher
+typeof' ctx TmType = Right TmTypeHigher
 
-typeof ctx t@(TmIndType name ls) =
+typeof' ctx t@(TmIndType name ls) =
   case getIndTypeType ctx name of 
     Left er -> Left (TypingError t "This is not a inductive type")
     Right (_,ty) -> recCheck ctx ls ty 
 
-typeof ctx t@(TmConstr name ls) =
+typeof' ctx t@(TmConstr name ls) =
   case getConstrType ctx name of
     Left er -> Left (TypingError t "This is not a constructor")
     Right ty -> recCheck ctx ls ty 
 
 
   
-typeof ctx t@(TmMatch n t1 name nameLs retType consLs) =
+typeof' ctx t@(TmMatch n t1 name nameLs retType consLs) =
   let 
-    tmpindty = typeof ctx t1
+    tmpindty = typeof' ctx t1
   in
     case  tmpindty of
       Left er ->Left er
@@ -190,7 +194,7 @@ buildTy ctx _ [] t name ty =
     else TmLambda name ty t
 buildTy ctx (tm:ls1) (name:ls2) t na ty= 
   let 
-    Right tmTy = (typeof ctx tm)
+    Right tmTy = (typeof' ctx tm)
   in
     TmLambda name tmTy (buildTy ctx ls1 ls2 t na ty) 
 --the order is equal to ls
@@ -218,7 +222,7 @@ checkEquation ctx ((Equation nameLs tm):eqLs) ls p n =
                 n)
         in
           let 
-            realTy =typeof ctx $ addLambda argumentTerm tm
+            realTy =typeof' ctx $ addLambda argumentTerm tm
               {- buildTy 
                 ctx 
                 (deleteN n ls) 
@@ -349,7 +353,7 @@ recCheck ctx ls complextyls =
       x:xs -> 
         case tyls of
           TmProd _ ty _ -> 
-            if typeeq ctx (typeof ctx x) (Right ty) 
+            if typeeq ctx (typeof' ctx x) (Right ty) 
               then  recCheck ctx xs (betaReduction (TmAppl [tyls,x])) 
             else
               Left (TypingError x "not match")
@@ -358,27 +362,27 @@ recCheck ctx ls complextyls =
 checkCommandType::Context->Command->Maybe TypingError
 checkCommandType ctx (Ax name term) =
   let
-    ty = typeof ctx term
+    ty = typeof' ctx term
   in
     if typeeq ctx ty (Right TmType)
       then Nothing
       else Just (TypingError term "the type of it is not Type")
 checkCommandType ctx (Def name ty tm) =
   let
-    tyty = typeof ctx ty
+    tyty = typeof' ctx ty
   in
     case tyty of
       Left er -> Just er
       Right _ -> 
         let
-          tmty = typeof ctx tm
+          tmty = typeof' ctx tm
         in
           if typeeq ctx tmty (Right ty)
             then Nothing
             else Just (TypingError tm "the type of it not match the given type")
 checkCommandType ctx (Fix name term) = 
   let 
-    ty = typeof ctx term
+    ty = typeof' ctx term
   in
     case ty of
       Left er -> Just er
@@ -396,7 +400,7 @@ checkCommandType ctx (Ind name n t1 t2 ls) =
           (listToConstr ls))
   in
     let
-      ty = typeof newctx (tmShift 1 t1) 
+      ty = typeof' newctx (tmShift 1 t1) 
     in
       case ty of
         Left er -> Just er
@@ -409,7 +413,7 @@ checkConstr::Context->[(Name, Term, Term)]->Maybe TypingError
 checkConstr ctx [] = Nothing
 checkConstr ctx ((name,t1,t2):ls) =
   let 
-    ty = typeof ctx (tmShift 1 t1) 
+    ty = typeof' ctx (tmShift 1 t1) 
   in 
     case ty of
       Left er -> Just er
