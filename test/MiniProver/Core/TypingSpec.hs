@@ -12,7 +12,7 @@ main = hspec spec
 spec :: Spec
 spec = do
   describe "checkCommandType" $ do
-    it "Aximo False" $
+    it "Axiom False" $
       checkCommandType
         []
         (Ax
@@ -29,7 +29,7 @@ spec = do
             TmType
             (TmRel "x" 0))
             "the type of it is not Type")
-    it "Aximo False" $
+    it "Axiom False" $
       checkCommandType
         natContext
         (Ax
@@ -59,7 +59,7 @@ spec = do
             (TmRel "x" 0))) 
       `shouldBe`
         Nothing
-    it "Aximo True" $
+    it "Axiom True" $
       checkCommandType
         natContext
         (Ax
