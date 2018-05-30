@@ -48,7 +48,7 @@ typeof' ctx (TmProd name t1 t2) =
       (_, Left err2) -> Left err2
       (Right _, Right _) -> Right TmType
 
-typeof' ctx (TmRel name index) =
+typeof' ctx (TmRel _ index) =
   let 
     bind = getBinding ctx index 
   in
@@ -59,79 +59,55 @@ typeof' ctx (TmRel name index) =
       Right NameBind -> error "This should not happen" -- Left (TypingError t "NameBind is not a type.")
       _ -> error "This should not happen" -- Left (TypingError t "There is no such bind")
  
-typeof' ctx (TmAppl ls) =
-  let
-    hd = head ls
-  in
-    case hd of
-      TmLambda{} ->
-        let
-          ty = typeof' ctx hd 
-        in
-          case ty of
-            Left er -> Left er
-            Right tytm -> recCheck ctx (tail ls) tytm
-      TmRel name index ->
-        let
-          bind = getBinding ctx index
-        in
-          case bind of
-            Right (TmAbbBind ty _)-> recCheck ctx (tail ls) ty 
-            Right (VarBind ty) -> recCheck ctx (tail ls) ty 
-            Right (IndTypeBind _ ty _ _) -> error "This should not happen" -- recCheck ctx (tail ls) ty
-            Right NameBind -> error "This should not happen" -- Left (TypingError hd "It is not a func")
-            _ -> error "This should not happen" -- Left (TypingError hd "don't exist this func/inductiveType")
-      TmProd{} ->  --  ??????????????
-        let
-          ty = recCheck ctx (tail ls) hd 
-        in
-          case ty of
-            Left er -> Left er
-            Right _ -> Right TmType
-      _ -> Left (TypingError hd "this should't be applied")
+typeof' ctx (TmAppl ls) = let hd = head ls in
+  case hd of
+    TmLambda{} ->
+      case typeof' ctx hd  of
+        Left er -> Left er
+        Right tytm -> recCheck ctx (tail ls) tytm
+    TmRel _ index ->
+      case getBinding ctx index of
+        Right (TmAbbBind ty _)-> recCheck ctx (tail ls) ty 
+        Right (VarBind ty) -> recCheck ctx (tail ls) ty 
+        Right (IndTypeBind _ ty _ _) -> error "This should not happen" -- recCheck ctx (tail ls) ty
+        Right NameBind -> error "This should not happen" -- Left (TypingError hd "It is not a func")
+        _ -> error "This should not happen" -- Left (TypingError hd "don't exist this func/inductiveType")
+    TmProd{} ->  --  ??????????????
+      case recCheck ctx (tail ls) hd  of
+        Left er -> Left er
+        Right _ -> Right TmType
+    _ -> Left (TypingError hd "this should't be applied")
 
 typeof' ctx (TmLambda name t1 t2) =
-  let 
-    type1 = typeof' ctx t1 
-  in
-    case type1 of
-      Left er -> Left er
-      Right _ ->
-        case typeof' (addBinding ctx name (VarBind t1)) t2 of
-          Left er -> Left er
-          Right tm2 -> Right (TmProd name t1 tm2) 
+  case typeof' ctx t1  of
+    Left er -> Left er
+    Right _ ->
+      case typeof' (addBinding ctx name (VarBind t1)) t2 of
+        Left er -> Left er
+        Right tm2 -> Right (TmProd name t1 tm2) 
  
 typeof' ctx (TmFix _ tm) =
-  let 
-    tmpty = typeof' ctx tm 
-  in
-    case tmpty of
-      Left er -> Left er
-      Right complexty -> 
-        let 
-          ty = simplifyType complexty
-        in
-          case ty of
-            (TmProd _ t1 t2) ->
-              if typeeq ctx (Right t1) (Right (tmShift (-1) t2))  
-                then Right t1 
-                else Left (TypingError tm "can't be fixed")
-            _ -> Left (TypingError tm "can not be fixed")
+  case typeof' ctx tm  of
+    Left er -> Left er
+    Right complexty -> 
+      case simplifyType complexty of
+        (TmProd _ t1 t2) ->
+          if typeeq ctx (Right t1) (Right (tmShift (-1) t2))  
+            then Right t1 
+            else Left (TypingError tm "can't be fixed")
+        _ -> Left (TypingError tm "can not be fixed")
 
 typeof' ctx (TmLetIn name t1 t2 t3) =
-  let 
-    type1 = typeof' ctx t1 
-  in
-    case type1 of 
-      Left er -> Left er
-      Right _ ->
-        if typeeq ctx (Right t1) (typeof' ctx t2 )
-          then 
-            typeof' ctx (betaReduction (TmAppl [TmLambda name t1 t3,t2])) 
-          else 
-            Left (TypingError t2 "type not match!") 
+  case typeof' ctx t1  of 
+    Left er -> Left er
+    Right _ ->
+      if typeeq ctx (Right t1) (typeof' ctx t2 )
+        then 
+          typeof' ctx (betaReduction (TmAppl [TmLambda name t1 t3,t2])) 
+        else 
+          Left (TypingError t2 "type not match!") 
 
-typeof' ctx TmType = Right TmTypeHigher
+typeof' _ TmType = Right TmTypeHigher
 
 typeof' ctx t@(TmIndType name ls) =
   case getIndTypeType ctx name of 
@@ -146,21 +122,17 @@ typeof' ctx t@(TmConstr name ls) =
 
   
 typeof' ctx t@(TmMatch n t1 name nameLs retType consLs) =
-  let 
-    tmpindty = typeof' ctx t1
-  in
-    case  tmpindty of
+    case typeof' ctx t1 of
       Left er ->Left er
       Right complexindty ->
         let 
           indty = simplifyType complexindty
         in
           case indty of
-            TmIndType indName ls ->
-              if indName /= (head nameLs) 
-                then 
+            TmIndType indName ls
+              | indName /= head nameLs ->
                   Left (TypingError t "this inductive type not match the name")
-                else
+              | otherwise ->
                   let
                     p = 
                       buildTy 
@@ -170,72 +142,58 @@ typeof' ctx t@(TmMatch n t1 name nameLs retType consLs) =
                         retType 
                         name 
                         indty
-                  in
-                    let 
-                      check = checkEquation ctx consLs ls p n
-                    in 
-                      case check of
-                        Left er -> Left er
-                        Right _ -> 
-                          Right $
-                            subsN 
-                            ((length ls) - n + 1)
-                            p 
-                            ((deleteN n ls) ++ [t1])
+                    check = checkEquation ctx consLs ls p n
+                  in 
+                    case check of
+                      Left er -> Left er
+                      Right _ -> 
+                        Right $
+                          subsN 
+                          (length ls - n + 1)
+                          p 
+                          (deleteN n ls ++ [t1])
+
+deleteN :: Int -> [a] -> [a]
 deleteN n ls =
   if n == 0 
     then ls
   else 
     deleteN (n-1) (tail ls)
+
 buildTy::Context->[Term]->[Name]->Term->Name->Term->Term
 buildTy ctx _ [] t name ty = 
   if name == ""
     then t
     else TmLambda name ty t
-buildTy ctx (tm:ls1) (name:ls2) t na ty= 
+buildTy ctx (tm:ls1) (name:ls2) t na ty = 
   let 
-    Right tmTy = (typeof' ctx tm)
+    Right tmTy = typeof' ctx tm
   in
     TmLambda name tmTy (buildTy ctx ls1 ls2 t na ty) 
 --the order is equal to ls
 
 checkEquation::Context->[Equation]->[Term]->Term->Int->Either TypingError Bool
 checkEquation _ [] _ _ _ = Right True
-checkEquation ctx ((Equation nameLs tm):eqLs) ls p n =
+checkEquation ctx (Equation nameLs tm:eqLs) ls p n =
   let 
     Right (constrTy,constrTm) = getConstr ctx (head nameLs)
+    argumentTerm = subsN n constrTm ls
+    argumentType = subsN n constrTy ls 
+    trueTy =
+      addForall 
+        argumentType 
+        (subP 
+          argumentTerm 
+          argumentType 
+          (tmShift (length nameLs -1 -n) p) 
+          n)
+    realTy = typeof' ctx $ addLambda argumentTerm tm
   in
-    let 
-      argumentTerm = subsN n constrTm ls
-    in
-      let
-        argumentType = subsN n constrTy ls
-      in 
-        let 
-          trueTy =
-            addForall 
-              argumentType 
-              (subP 
-                argumentTerm 
-                argumentType 
-                (tmShift (length nameLs -1 -n) p) 
-                n)
-        in
-          let 
-            realTy =typeof' ctx $ addLambda argumentTerm tm
-              {- buildTy 
-                ctx 
-                (deleteN n ls) 
-                (deleteN n (tail nameLs)) 
-                tm 
-                "" 
-                TmType -}
-          in
-            if typeeq ctx realTy {-(trace (show trueTy)-} (Right trueTy) -- )
-              then checkEquation ctx eqLs ls p n
-              else 
-                Left 
-                (TypingError tm "the type of this term not match return type")
+    if typeeq ctx realTy  (Right trueTy)
+      then checkEquation ctx eqLs ls p n
+      else 
+        Left 
+        (TypingError tm "the type of this term not match return type")
 
 
 addLambda::Term->Term->Term
@@ -252,14 +210,14 @@ subsN::Int->Term->[Term]->Term
 subsN n tm ls = 
   if n == 0
     then tm
-    else subsN (n-1) (betaReduction (TmAppl [tm,(head ls)])) (tail ls) 
+    else subsN (n-1) (betaReduction (TmAppl [tm,head ls])) (tail ls) 
 subP::Term->Term->Term->Int->Term
 subP (TmLambda _ _ t1) (TmProd _ _ t2) p n = subP t1 t2 p n
 subP t@(TmConstr name1 ls1) (TmIndType name2 ls2) p n =
   subsN
-    ((length ls2) - n + 1) 
+    (length ls2 - n + 1) 
     p
-    ((deleteN n ls2) ++ [t])
+    (deleteN n ls2 ++ [t])
 --subP (TmLambda _ _ )
    
 
@@ -271,77 +229,9 @@ typeeq ctx ty1 ty2 =
         simpleType1 = fullBZIDReduction ctx  tm1
         simpleType2 = fullBZIDReduction ctx  tm2
       in
-        namelessTypeEq simpleType1 simpleType2
+        termEqNameless simpleType1 simpleType2
           --This should consider that name will be ignored.
     _ -> False
-namelessTypeEq::Term->Term->Bool
-namelessTypeEq t1 t2 =
-{-
-  case (t1,t2) of
-    (TmLambda name1 ty1 tm1,TmLambda name2 ty2 tm2) ->
-      (namelessTypeEq ty1 ty2) && (namelessTypeEq tm1 tm2)
-    (TmProd name1 ty1 tm1,TmProd name2 ty2 tm2) ->
-      (namelessTypeEq ty1 ty2) && (namelessTypeEq tm1 tm2)
-    (TmRel _ num1,TmRel _ num2) -> num1 == num2
-    (TmFix num1 tm1,TmFix num2 tm2) ->
-      (num1 == num2) && (namelessTypeEq tm1 tm2)
-    (TmIndType name1 ls1,TmIndType name2 ls2) ->
-      name1 == name2 
-      && 
-      namelessTypelsEq ls1 ls2
-    (TmConstr name1 ls1,TmConstr name2 ls2) ->
-      name1 == name2
-      &&
-      namelessTypelsEq ls1 ls2
-    _ -> False  --without apply and var and letin and match
--}
-    
-  case t1 of
-    TmLambda name1 ty1 tm1 ->
-      case t2 of 
-        TmLambda name2 ty2 tm2 ->
-          (namelessTypeEq ty1 ty2) && (namelessTypeEq tm1 tm2)
-        _ -> False
-    TmProd name1 ty1 tm1 ->
-      case t2 of
-        TmProd name2 ty2 tm2 ->
-          (namelessTypeEq ty1 ty2) && (namelessTypeEq tm1 tm2)
-        _ -> False
-    TmRel _ num1 ->
-      case t2 of
-        TmRel _ num2 -> num1 == num2
-        _ -> False
-    TmFix num1 tm1 ->
-      case t2 of 
-        TmFix num2 tm2 -> (num1 == num2) && (namelessTypeEq tm1 tm2)
-        _ -> False
-    TmIndType name1 ls1 ->
-      case t2 of 
-        TmIndType name2 ls2 -> 
-          name1 == name2 
-          && 
-          namelessTypelsEq ls1 ls2
-        _ -> False
-    TmConstr name1 ls1 ->
-      case t2 of
-        TmConstr name2 ls2 ->
-          name1 == name2
-          &&
-          namelessTypelsEq ls1 ls2
-        _ -> False
-
-    _ -> t1 == t2 --without apply and var and letin and match 
-namelessTypelsEq::[Term]->[Term]->Bool
-namelessTypelsEq ls1 ls2 =
-  (length ls1) == (length ls2)
-  && 
-  (foldl
-    (\c (tm1,tm2) ->
-      if c
-        then namelessTypeEq tm1 tm2
-        else False)
-    True
-    (zip ls1 ls2))
 
 recCheck :: Context -> [Term] -> Term -> Either TypingError Term
 recCheck ctx ls complextyls =
@@ -360,54 +250,37 @@ recCheck ctx ls complextyls =
           _ -> Left (TypingError x "too many params")
 
 checkCommandType::Context->Command->Maybe TypingError
-checkCommandType ctx (Ax name term) =
-  let
-    ty = typeof' ctx term
-  in
-    if typeeq ctx ty (Right TmType)
-      then Nothing
-      else Just (TypingError term "the type of it is not Type")
-checkCommandType ctx (Def name ty tm) =
-  let
-    tyty = typeof' ctx ty
-  in
-    case tyty of
-      Left er -> Just er
-      Right _ -> 
-        let
-          tmty = typeof' ctx tm
-        in
-          if typeeq ctx tmty (Right ty)
-            then Nothing
-            else Just (TypingError tm "the type of it not match the given type")
+checkCommandType ctx (Ax _ term) =
+  if typeeq ctx (typeof' ctx term) (Right TmType)
+    then Nothing
+    else Just (TypingError term "the type of it is not Type")
+checkCommandType ctx (Def _ ty tm) =
+  case typeof' ctx ty of
+    Left er -> Just er
+    Right _ -> 
+      let
+        tmty = typeof' ctx tm
+      in
+        if typeeq ctx tmty (Right ty)
+          then Nothing
+          else Just (TypingError tm "the type of it not match the given type")
 checkCommandType ctx (Fix name term) = 
-  let 
-    ty = typeof' ctx term
-  in
-    case ty of
-      Left er -> Just er
-      Right _ -> Nothing
+  case typeof' ctx term of
+    Left er -> Just er
+    Right _ -> Nothing
 checkCommandType ctx (Ind name n t1 t2 ls) = 
   let
     newctx = 
-      addBinding 
-        ctx 
-        name 
-        (IndTypeBind
-          n
-          t1
-          t2
-          (listToConstr ls))
+      addBinding ctx name 
+        (IndTypeBind n t1 t2 (listToConstr ls))
   in
-    let
-      ty = typeof' newctx (tmShift 1 t1) 
-    in
-      case ty of
-        Left er -> Just er
-        Right _ -> checkConstr newctx ls
+    case typeof' newctx (tmShift 1 t1)  of
+      Left er -> Just er
+      Right _ -> checkConstr newctx ls
+
 listToConstr::[(Name, Term, Term)]->[Constructor]
 listToConstr [] = []
-listToConstr ((name,t1,t2):ls) = (Constructor name t1 t2):(listToConstr ls)
+listToConstr ((name,t1,t2):ls) = Constructor name t1 t2:listToConstr ls
 
 checkConstr::Context->[(Name, Term, Term)]->Maybe TypingError
 checkConstr ctx [] = Nothing
