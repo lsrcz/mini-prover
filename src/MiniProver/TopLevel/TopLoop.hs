@@ -137,6 +137,11 @@ processOneCommand verboseLevel inputStr ctx = do
     pPrintASTV = prettyPrintASTIfNoLessThan verboseLevel
     pPrintCmdASTV = prettyPrintCommandASTIfNoLessThan verboseLevel
 
+    pPrintTopTy ctx = pPrintV 2 $ fromRight (error "this should not happen") $ getBindingType ctx 0
+    pPrintTopTm ctx = pPrintV 2 $ fromRight (error "this should not happen") $ getBindingTerm ctx 0
+    pPrintTopTyAST ctx = pPrintASTV 3 $ fromRight (error "this should not happen") $ getBindingType ctx 0
+    pPrintTopTmAST ctx = pPrintASTV 3 $ fromRight (error "this should not happen") $ getBindingTerm ctx 0
+
   -- parsing
   let rawcmd = parse pcommand "" inputStr
   case rawcmd of
@@ -210,27 +215,41 @@ processOneCommand verboseLevel inputStr ctx = do
                               case cmdWithDec of
                                 Ax name _ -> do
                                   putStrLnV 2 $ infoColor "**** type declared ****"
-                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingType newctx 0
+                                  pPrintTopTy newctx
+                                  putStrLnV 3 $ infoColor "**** type declared (AST) ****"
+                                  pPrintTopTyAST newctx
                                   putStrLn $ name ++ " is declared"
                                 Def name _ _ -> do
                                   putStrLnV 2 $ infoColor "**** term defined ****"
-                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingTerm newctx 0
+                                  pPrintTopTm newctx
+                                  putStrLnV 3 $ infoColor "**** term defined (AST) ****"
+                                  pPrintTopTmAST newctx
                                   putStrLnV 2 $ infoColor "**** type defined ****"
-                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingType newctx 0
+                                  pPrintTopTy newctx
+                                  putStrLnV 3 $ infoColor "**** type defined (AST) ****"
+                                  pPrintTopTyAST newctx
                                   putStrLn $ name ++ " is defined"
                                 Fix name (TmFix i _) -> do
                                   putStrLnV 2 $ infoColor "**** term defined ****"
-                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingTerm newctx 0
+                                  pPrintTopTm newctx
+                                  putStrLnV 3 $ infoColor "**** term defined (AST) ****"
+                                  pPrintTopTmAST newctx
                                   putStrLnV 2 $ infoColor "**** type defined ****"
-                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingType newctx 0
+                                  pPrintTopTy newctx
+                                  putStrLnV 3 $ infoColor "**** type defined (AST) ****"
+                                  pPrintTopTyAST newctx
                                   putStrLn $ name ++ " is defined"
                                   putStrLn $ name ++ " is recursively defined (decreasing on " ++
                                     showOrdinal i ++ " argument)"
                                 Ind name _ _ _ _ -> do
                                   putStrLnV 2 $ infoColor "**** inductive principle term defined ****"
-                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingTerm newctx 0
+                                  pPrintTopTm newctx
+                                  putStrLnV 3 $ infoColor "**** inductive principle term defined (AST) ****"
+                                  pPrintTopTmAST newctx
                                   putStrLnV 2 $ infoColor "**** inductive principle type defined ****"
-                                  pPrintV 2 $ fromRight (error "this should not happen") $ getBindingType newctx 0
+                                  pPrintTopTy newctx
+                                  putStrLnV 3 $ infoColor "**** inductive principle type defined (AST) ****"
+                                  pPrintTopTyAST newctx
                                   putStrLn $ name ++ " is defined"
                                   putStrLn $ name ++ "_rect is defined"
                               return newctx

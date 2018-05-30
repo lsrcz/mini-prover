@@ -1417,3 +1417,337 @@ realIlistContext =
                   , TmRel "n" 2
                   , TmRel "t" 1
                   , TmRel "i" 0 ])))))])] ++ realListContext
+
+realExContext :: Context
+realExContext =
+  [ ( "ex_rect"
+    , TmAbbBind
+      ( TmProd "A"
+        TmType
+      ( TmProd "P"
+        ( TmProd "_"
+          ( TmRel "A" 0 )
+            TmType )
+        ( TmProd "P0"
+          ( TmProd "_"
+            ( TmIndType "ex"
+              [ TmRel "A" 1
+              , TmRel "P" 0 ])
+              TmType )
+          ( TmProd "f"
+            ( TmProd "x"
+              ( TmRel "A" 2 )
+              ( TmProd "p"
+                ( TmAppl
+                  [ TmRel "P" 2
+                  , TmRel "x" 0 ])
+                ( TmAppl
+                  [ TmRel "P0" 2
+                  , TmConstr "ex_intro"
+                    [ TmRel "A" 4
+                    , TmRel "P" 3
+                    , TmRel "x" 1
+                    , TmRel "p" 0 ]])))
+            ( TmProd "e"
+              ( TmIndType "ex"
+                [ TmRel "A" 3
+                , TmRel "P" 2 ])
+              ( TmAppl
+                [ TmRel "P0" 2
+                , TmRel "e" 0 ]))))))
+      ( Just
+        ( TmLambda "A"
+          TmType
+        ( TmLambda "P"
+          ( TmProd "_"
+            ( TmRel "A" 0 )
+              TmType )
+          ( TmLambda "P0"
+            ( TmProd "_"
+              ( TmIndType "ex"
+                [ TmRel "A" 1
+                , TmRel "P" 0 ])
+                TmType )
+            ( TmLambda "f"
+              ( TmProd "x"
+                ( TmRel "A" 2 )
+                ( TmProd "p"
+                  ( TmAppl
+                    [ TmRel "P" 2
+                    , TmRel "x" 0 ])
+                  ( TmAppl
+                    [ TmRel "P0" 2
+                    , TmConstr "ex_intro"
+                      [ TmRel "A" 4
+                      , TmRel "P" 3
+                      , TmRel "x" 1
+                      , TmRel "p" 0 ]])))
+              ( TmLambda "e"
+                ( TmIndType "ex"
+                  [ TmRel "A" 3
+                  , TmRel "P" 2 ])
+                ( TmMatch 2
+                  ( TmRel "e" 0 )
+                    "e0"
+                  [ "ex"
+                  , "_"
+                  , "_" ]
+                  ( TmAppl
+                    [ TmRel "P0" 3
+                    , TmRel "e0" 0 ])
+                  [ Equation
+                    [ "ex_intro"
+                    , "_"
+                    , "_"
+                    , "x"
+                    , "x0" ]
+                    ( TmAppl
+                      [ TmRel "f" 3
+                      , TmRel "x" 1
+                      , TmRel "x0" 0 ])]))))))))
+  , ( "ex"
+    , IndTypeBind 2
+      ( TmProd "A"
+          TmType
+        ( TmProd "P"
+          ( TmProd "_"
+            ( TmRel "A" 0 )
+              TmType )
+            TmType ))
+      ( TmLambda "A"
+          TmType
+        ( TmLambda "P"
+          ( TmProd "_"
+            ( TmRel "A" 0 )
+              TmType )
+          ( TmIndType "ex"
+            [ TmRel "A" 1
+            , TmRel "P" 0 ])))
+      [ Constructor "ex_intro"
+        ( TmProd "A"
+            TmType
+          ( TmProd "P"
+            ( TmProd "_"
+              ( TmRel "A" 0 )
+                TmType )
+            ( TmProd "x"
+              ( TmRel "A" 1 )
+              ( TmProd "_"
+                ( TmAppl
+                  [ TmRel "P" 1
+                  , TmRel "x" 0 ])
+                ( TmIndType "ex"
+                  [ TmRel "A" 3
+                  , TmRel "P" 2 ])))))
+        ( TmLambda "A"
+            TmType
+          ( TmLambda "P"
+            ( TmProd "_"
+              ( TmRel "A" 0 )
+                TmType )
+            ( TmLambda "x"
+              ( TmRel "A" 1 )
+              ( TmLambda "f"
+                ( TmAppl
+                  [ TmRel "P" 1
+                  , TmRel "x" 0 ])
+                ( TmConstr "ex_intro"
+                  [ TmRel "A" 3
+                  , TmRel "P" 2
+                  , TmRel "x" 1
+                  , TmRel "f" 0 ])))))])] ++ realIlistContext
+
+realEx2Context :: Context
+realEx2Context =
+  [ ( "ex2_rect"
+    , TmAbbBind
+      ( TmProd "A"
+        TmType
+      ( TmProd "P"
+        ( TmProd "_"
+          ( TmRel "A" 0 )
+            TmType )
+        ( TmProd "Q"
+          ( TmProd "_"
+            ( TmRel "A" 1 )
+              TmType )
+          ( TmProd "P0"
+            ( TmProd "_"
+              ( TmIndType "ex2"
+                [ TmRel "A" 2
+                , TmRel "P" 1
+                , TmRel "Q" 0 ])
+                TmType )
+            ( TmProd "f"
+              ( TmProd "x"
+                ( TmRel "A" 3 )
+                ( TmProd "p"
+                  ( TmAppl
+                    [ TmRel "P" 3
+                    , TmRel "x" 0 ])
+                  ( TmProd "q"
+                    ( TmAppl
+                      [ TmRel "Q" 3
+                      , TmRel "x" 1 ])
+                    ( TmAppl
+                      [ TmRel "P0" 3
+                      , TmConstr "ex_intro2"
+                        [ TmRel "A" 6
+                        , TmRel "P" 5
+                        , TmRel "Q" 4
+                        , TmRel "x" 2
+                        , TmRel "p" 1
+                        , TmRel "q" 0 ]]))))
+              ( TmProd "e"
+                ( TmIndType "ex2"
+                  [ TmRel "A" 4
+                  , TmRel "P" 3
+                  , TmRel "Q" 2 ])
+                ( TmAppl
+                  [ TmRel "P0" 2
+                  , TmRel "e" 0 ])))))))
+      ( Just
+        ( TmLambda "A"
+          TmType
+        ( TmLambda "P"
+          ( TmProd "_"
+            ( TmRel "A" 0 )
+              TmType )
+          ( TmLambda "Q"
+            ( TmProd "_"
+              ( TmRel "A" 1 )
+                TmType )
+            ( TmLambda "P0"
+              ( TmProd "_"
+                ( TmIndType "ex2"
+                  [ TmRel "A" 2
+                  , TmRel "P" 1
+                  , TmRel "Q" 0 ])
+                  TmType )
+              ( TmLambda "f"
+                ( TmProd "x"
+                  ( TmRel "A" 3 )
+                  ( TmProd "p"
+                    ( TmAppl
+                      [ TmRel "P" 3
+                      , TmRel "x" 0 ])
+                    ( TmProd "q"
+                      ( TmAppl
+                        [ TmRel "Q" 3
+                        , TmRel "x" 1 ])
+                      ( TmAppl
+                        [ TmRel "P0" 3
+                        , TmConstr "ex_intro2"
+                          [ TmRel "A" 6
+                          , TmRel "P" 5
+                          , TmRel "Q" 4
+                          , TmRel "x" 2
+                          , TmRel "p" 1
+                          , TmRel "q" 0 ]]))))
+                ( TmLambda "e"
+                  ( TmIndType "ex2"
+                    [ TmRel "A" 4
+                    , TmRel "P" 3
+                    , TmRel "Q" 2 ])
+                  ( TmMatch 3
+                    ( TmRel "e" 0 )
+                      "e0"
+                    [ "ex2"
+                    , "_"
+                    , "_"
+                    , "_" ]
+                    ( TmAppl
+                      [ TmRel "P0" 3
+                      , TmRel "e0" 0 ])
+                    [ Equation
+                      [ "ex_intro2"
+                      , "_"
+                      , "_"
+                      , "_"
+                      , "x"
+                      , "x0"
+                      , "x1" ]
+                      ( TmAppl
+                        [ TmRel "f" 4
+                        , TmRel "x" 2
+                        , TmRel "x0" 1
+                        , TmRel "x1" 0 ])])))))))))
+  , ( "ex2"
+    , IndTypeBind 3
+    ( TmProd "A"
+        TmType
+      ( TmProd "P"
+        ( TmProd "_"
+          ( TmRel "A" 0 )
+            TmType )
+        ( TmProd "Q"
+          ( TmProd "_"
+            ( TmRel "A" 1 )
+              TmType )
+            TmType )))
+    ( TmLambda "A"
+        TmType
+      ( TmLambda "P"
+        ( TmProd "_"
+          ( TmRel "A" 0 )
+            TmType )
+        ( TmLambda "Q"
+          ( TmProd "_"
+            ( TmRel "A" 1 )
+              TmType )
+          ( TmIndType "ex2"
+            [ TmRel "A" 2
+            , TmRel "P" 1
+            , TmRel "Q" 0 ]))))
+    [ Constructor "ex_intro2"
+      ( TmProd "A"
+          TmType
+        ( TmProd "P"
+          ( TmProd "_"
+            ( TmRel "A" 0 )
+              TmType )
+          ( TmProd "Q"
+            ( TmProd "_"
+              ( TmRel "A" 1 )
+                TmType )
+            ( TmProd "x"
+              ( TmRel "A" 2 )
+              ( TmProd "_"
+                ( TmAppl
+                  [ TmRel "P" 2
+                  , TmRel "x" 0 ])
+                ( TmProd "_"
+                  ( TmAppl
+                    [ TmRel "Q" 2
+                    , TmRel "x" 1 ])
+                  ( TmIndType "ex2"
+                    [ TmRel "A" 5
+                    , TmRel "P" 4
+                    , TmRel "Q" 3 ])))))))
+      ( TmLambda "A"
+          TmType
+        ( TmLambda "P"
+          ( TmProd "_"
+            ( TmRel "A" 0 )
+              TmType )
+          ( TmLambda "Q"
+            ( TmProd "_"
+              ( TmRel "A" 1 )
+                TmType )
+            ( TmLambda "x"
+              ( TmRel "A" 2 )
+              ( TmLambda "f"
+                ( TmAppl
+                  [ TmRel "P" 2
+                  , TmRel "x" 0 ])
+                ( TmLambda "f0"
+                  ( TmAppl
+                    [ TmRel "Q" 2
+                    , TmRel "x" 1 ])
+                  ( TmConstr "ex_intro2"
+                    [ TmRel "A" 5
+                    , TmRel "P" 4
+                    , TmRel "Q" 3
+                    , TmRel "x" 2
+                    , TmRel "f" 1
+                    , TmRel "f0" 0 ])))))))])] ++ realExContext

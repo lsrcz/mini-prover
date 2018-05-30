@@ -417,3 +417,137 @@ spec =
                       , TmRel ".0" 1
                       , TmRel ".1" 0 ])))))])
         `shouldBe` realIlistContext
+      it "ex" $
+        addEnvCommand realIlistContext
+        ( Ind "ex" 2
+          ( TmProd "A"
+              TmType
+            ( TmProd "P"
+              ( TmProd "_"
+                ( TmRel "A" 0 )
+                  TmType )
+                TmType ))
+          ( TmLambda "A"
+              TmType
+            ( TmLambda "P"
+              ( TmProd "_"
+                ( TmRel "A" 0 )
+                  TmType )
+              ( TmIndType "ex"
+                [ TmRel "A" 1
+                , TmRel "P" 0 ])))
+          [ ( "ex_intro"
+            , TmProd "A"
+                TmType
+              ( TmProd "P"
+                ( TmProd "_"
+                  ( TmRel "A" 0 )
+                    TmType )
+                ( TmProd "x"
+                  ( TmRel "A" 1 )
+                  ( TmProd "_"
+                    ( TmAppl
+                      [ TmRel "P" 1
+                      , TmRel "x" 0 ])
+                    ( TmIndType "ex"
+                      [ TmRel "A" 3
+                      , TmRel "P" 2 ]))))
+            , TmLambda "A"
+                TmType
+              ( TmLambda "P"
+                ( TmProd "_"
+                  ( TmRel "A" 0 )
+                    TmType )
+                ( TmLambda "x"
+                  ( TmRel "A" 1 )
+                  ( TmLambda ".0"
+                    ( TmAppl
+                      [ TmRel "P" 1
+                      , TmRel "x" 0 ])
+                    ( TmConstr "ex_intro"
+                      [ TmRel "A" 3
+                      , TmRel "P" 2
+                      , TmRel "x" 1
+                      , TmRel ".0" 0 ])))))])
+        `shouldBe` realExContext
+      it "ex2" $
+        addEnvCommand realExContext
+        ( Ind "ex2" 3
+          ( TmProd "A"
+              TmType
+            ( TmProd "P"
+              ( TmProd "_"
+                ( TmVar "A" )
+                  TmType )
+              ( TmProd "Q"
+                ( TmProd "_"
+                  ( TmVar "A" )
+                    TmType )
+                  TmType )))
+          ( TmLambda "A"
+              TmType
+            ( TmLambda "P"
+              ( TmProd "_"
+                ( TmVar "A" )
+                  TmType )
+              ( TmLambda "Q"
+                ( TmProd "_"
+                  ( TmVar "A" )
+                    TmType )
+                ( TmIndType "ex2"
+                  [ TmVar "A"
+                  , TmVar "P"
+                  , TmVar "Q" ]))))
+          [ ( "ex_intro2"
+            , TmProd "A"
+                TmType
+              ( TmProd "P"
+                ( TmProd "_"
+                  ( TmVar "A" )
+                    TmType )
+                ( TmProd "Q"
+                  ( TmProd "_"
+                    ( TmVar "A" )
+                      TmType )
+                  ( TmProd "x"
+                    ( TmVar "A" )
+                    ( TmProd "_"
+                      ( TmAppl
+                        [ TmVar "P"
+                        , TmVar "x" ])
+                      ( TmProd "_"
+                        ( TmAppl
+                          [ TmVar "Q"
+                          , TmVar "x" ])
+                        ( TmIndType "ex2"
+                          [ TmVar "A"
+                          , TmVar "P"
+                          , TmVar "Q" ]))))))
+            , TmLambda "A"
+                TmType
+              ( TmLambda "P"
+                ( TmProd "_"
+                  ( TmVar "A" )
+                    TmType )
+                ( TmLambda "Q"
+                  ( TmProd "_"
+                    ( TmVar "A" )
+                      TmType )
+                  ( TmLambda "x"
+                    ( TmVar "A" )
+                    ( TmLambda ".0"
+                      ( TmAppl
+                        [ TmVar "P"
+                        , TmVar "x" ])
+                      ( TmLambda ".1"
+                        ( TmAppl
+                          [ TmVar "Q"
+                          , TmVar "x" ])
+                        ( TmConstr "ex_intro2"
+                          [ TmVar "A"
+                          , TmVar "P"
+                          , TmVar "Q"
+                          , TmVar "x"
+                          , TmVar ".0"
+                          , TmVar ".1" ])))))))])
+        `shouldBe` realEx2Context
