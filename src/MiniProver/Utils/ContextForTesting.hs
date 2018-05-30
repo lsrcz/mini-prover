@@ -420,7 +420,7 @@ nestedPosContext =
 -- real world context
 realTrueContext :: Context
 realTrueContext =
-  [ ( "True_ind"
+  [ ( "True_rect"
     , TmAbbBind
       ( TmProd "P"
         ( TmProd "_"
@@ -448,11 +448,11 @@ realTrueContext =
               ( TmIndType "True" [])
               ( TmMatch 0
                 ( TmRel "t" 0 )
-                  "t0"
+                  "T"
                 [ "True" ]
                 ( TmAppl
                   [ TmRel "P" 3
-                  , TmRel "t0" 0 ])
+                  , TmRel "T" 0 ])
                 [ Equation
                   [ "I" ]
                   ( TmRel "f" 1 )]))))))
@@ -466,7 +466,7 @@ realTrueContext =
 
 realFalseContext :: Context
 realFalseContext =
-  [ ( "False_ind"
+  [ ( "False_rect"
     , TmAbbBind
       ( TmProd "P"
         ( TmProd "_"
@@ -486,11 +486,11 @@ realFalseContext =
             ( TmIndType "False" [])
             ( TmMatch 0
               ( TmRel "f" 0 )
-                "f0"
+                "F"
               [ "False" ]
               ( TmAppl
                 [ TmRel "P" 2
-                , TmRel "f0" 0 ])
+                , TmRel "F" 0 ])
               [  ])))))
   , ( "False"
     , IndTypeBind 0
@@ -500,7 +500,7 @@ realFalseContext =
 
 realEqContext :: Context
 realEqContext =
-  [ ( "eq_ind"
+  [ ( "eq_rect"
     , TmAbbBind
       ( TmProd "T"
           TmType
@@ -522,16 +522,16 @@ realEqContext =
                 , TmConstr "eq_refl"
                   [ TmRel "T" 2
                   , TmRel "x" 1 ]])
-              ( TmProd "y"
+              ( TmProd "t"
                 ( TmRel "T" 3 )
                 ( TmProd "e"
                   ( TmIndType "eq"
                     [ TmRel "T" 4
                     , TmRel "x" 3
-                    , TmRel "y" 0 ])
+                    , TmRel "t" 0 ])
                   ( TmAppl
                     [ TmRel "P" 3
-                    , TmRel "y" 1
+                    , TmRel "t" 1
                     , TmRel "e" 0 ])))))))
         ( Just
           ( TmLambda "T"
@@ -554,23 +554,23 @@ realEqContext =
                     , TmConstr "eq_refl"
                       [ TmRel "T" 2
                       , TmRel "x" 1 ]])
-                  ( TmLambda "y"
+                  ( TmLambda "t"
                     ( TmRel "T" 3 )
                     ( TmLambda "e"
                       ( TmIndType "eq"
                         [ TmRel "T" 4
                         , TmRel "x" 3
-                        , TmRel "y" 0 ])
+                        , TmRel "t" 0 ])
                       ( TmMatch 2
                         ( TmRel "e" 0 )
                           "e0"
                         [ "eq"
                         , "_"
                         , "_"
-                        , "y0" ]
+                        , "t0" ]
                         ( TmAppl
                           [ TmRel "P" 5
-                          , TmRel "y0" 1
+                          , TmRel "t0" 1
                           , TmRel "e0" 0 ])
                         [ Equation
                           [ "eq_refl"
@@ -590,12 +590,12 @@ realEqContext =
           TmType
         ( TmLambda "x"
           ( TmRel "T" 0 )
-          ( TmLambda ".0"
+          ( TmLambda "t"
             ( TmRel "T" 1 )
             ( TmIndType "eq"
               [ TmRel "T" 2
               , TmRel "x" 1
-              , TmRel ".0" 0 ]))))
+              , TmRel "t" 0 ]))))
       [ Constructor "eq_refl"
         ( TmProd "T"
             TmType
@@ -615,7 +615,7 @@ realEqContext =
 
 realAndContext :: Context
 realAndContext =
-  [ ( "and_ind"
+  [ ( "and_rect"
     , TmAbbBind
       ( TmProd "A"
           TmType
@@ -686,12 +686,12 @@ realAndContext =
                       [ "conj"
                       , "_"
                       , "_"
-                      , "x"
-                      , "x0" ]
+                      , "a0"
+                      , "b" ]
                       ( TmAppl
                         [ TmRel "f" 3
-                        , TmRel "x" 1
-                        , TmRel "x0" 0 ])]))))))))
+                        , TmRel "a0" 1
+                        , TmRel "b" 0 ])]))))))))
   , ( "and"
     , IndTypeBind 2
       ( TmProd "A"
@@ -734,7 +734,7 @@ realAndContext =
 
 realOrContext :: Context
 realOrContext =
-  [ ( "or_ind"
+  [ ( "or_rect"
     , TmAbbBind
       ( TmProd "A"
           TmType
@@ -817,18 +817,18 @@ realOrContext =
                         [ "or_introl"
                         , "_"
                         , "_"
-                        , "x" ]
+                        , "a" ]
                         ( TmAppl
                           [ TmRel "f" 3
-                          , TmRel "x" 0 ])
+                          , TmRel "a" 0 ])
                       , Equation
                         [ "or_intror"
                         , "_"
                         , "_"
-                        , "x" ]
+                        , "b" ]
                         ( TmAppl
                           [ TmRel "f0" 2
-                          , TmRel "x" 0 ])])))))))))
+                          , TmRel "b" 0 ])])))))))))
   , ( "or"
     , IndTypeBind 2
       ( TmProd "A"
@@ -886,7 +886,7 @@ realOrContext =
 
 realNatContext :: Context
 realNatContext =
-  [ ( "nat_ind"
+  [ ( "nat_rect"
     , TmAbbBind
       ( TmProd "P"
         ( TmProd "_"
@@ -978,7 +978,7 @@ realNatContext =
 
 realNatlistContext :: Context
 realNatlistContext =
-  [ ( "natlist_ind"
+  [ ( "natlist_rect"
     , TmAbbBind
       ( TmProd "P"
         ( TmProd "_"
@@ -1083,7 +1083,7 @@ realNatlistContext =
 
 realListContext :: Context
 realListContext =
-  [ ( "list_ind"
+  [ ( "list_rect"
     , TmAbbBind
       ( TmProd "T"
           TmType
@@ -1174,11 +1174,11 @@ realListContext =
                         , Equation
                           [ "cons"
                           , "_"
-                          , "y"
+                          , "t"
                           , "l0" ]
                           ( TmAppl
                             [ TmRel "f0" 4
-                            , TmRel "y" 1
+                            , TmRel "t" 1
                             , TmRel "l0" 0
                             , TmAppl
                               [ TmRel "F" 3
@@ -1225,7 +1225,7 @@ realListContext =
 
 realIlistContext :: Context
 realIlistContext =
-  [ ( "ilist_ind"
+  [ ( "ilist_rect"
     , TmAbbBind
       ( TmProd "T"
           TmType
@@ -1352,12 +1352,12 @@ realIlistContext =
                             [ "icons"
                             , "_"
                             , "n0"
-                            , "y"
+                            , "t"
                             , "i0" ]
                             ( TmAppl
                               [ TmRel "f0" 6
                               , TmRel "n0" 2
-                              , TmRel "y" 1
+                              , TmRel "t" 1
                               , TmRel "i0" 0
                               , TmAppl
                                 [ TmRel "F" 5
