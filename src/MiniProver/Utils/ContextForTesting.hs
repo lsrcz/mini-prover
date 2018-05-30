@@ -38,12 +38,12 @@ natContext =
                   , Equation
                     [ "S", "n" ]
                     ( TmAppl
-                      [ TmRel "plus" 3
-                      , TmRel "n" 0
-                      , TmAppl
-                        [ TmLambda ".0"
+                      [ TmLambda ".0"
                           ( TmIndType "nat" [] )
                           ( TmConstr "S" [ TmRel ".0" 0 ])
+                      , TmAppl
+                        [ TmRel "plus" 3
+                        , TmRel "n" 0
                         , TmRel "b" 1 ]])])))))))
   , ( "nat"
     , IndTypeBind 0

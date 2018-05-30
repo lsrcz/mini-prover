@@ -17,6 +17,7 @@ module MiniProver.Core.Context (
   , getIndTypeTerm
   , getIndTypeType
   , getIndTypeConstrlst
+  , getConstr
   , getConstrTerm
   , getConstrType
   ) where
