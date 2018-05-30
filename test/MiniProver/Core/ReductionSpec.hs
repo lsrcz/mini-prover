@@ -652,10 +652,11 @@ spec = do
                     ( TmRel "b" 0 )
                   , Equation
                     [ "S", "n" ]
-                    ( TmAppl
-                      [ TmRel "plus" 3
-                      , TmRel "n" 0
-                      , TmConstr "S" [ TmRel "b" 1 ]])]))))
+                    ( TmConstr "S"
+                      [ TmAppl
+                        [ TmRel "plus" 3
+                        , TmRel "n" 0
+                        , TmRel "b" 1 ]])]))))
         it "two" $
           fullReductionForTest ( TmRel "two" 6 )
           `shouldBe`
@@ -729,71 +730,71 @@ spec = do
                     , Equation
                       [ "S"
                       , "n" ]
-                      ( TmAppl
-                        [ TmFix 1
-                          ( TmLambda "plus"
-                            ( TmProd "a"
-                              ( TmIndType "nat" [])
-                              ( TmProd "b"
+                      ( TmConstr "S"
+                        [ TmAppl
+                          [ TmFix 1
+                            ( TmLambda "plus"
+                              ( TmProd "a"
                                 ( TmIndType "nat" [])
-                                ( TmIndType "nat" [])))
-                            ( TmLambda "a"
-                              ( TmIndType "nat" [])
-                              ( TmLambda "b"
-                                ( TmIndType "nat" [])
-                                ( TmMatch 0
-                                  ( TmRel "a" 1 )
-                                  "a0"
-                                  [ "nat" ]
+                                ( TmProd "b"
                                   ( TmIndType "nat" [])
-                                  [ Equation
-                                    [ "O" ]
-                                    ( TmRel "b" 0 )
-                                  , Equation
-                                    [ "S"
-                                    , "n" ]
-                                    ( TmAppl
-                                      [ TmRel "plus" 3
-                                      , TmRel "n" 0
-                                      , TmConstr "S"
-                                        [ TmRel "b" 1 ]])]))))
-                        , TmRel "n" 0
-                        , TmConstr "S"
-                          [ TmRel "z" 1 ]])])
+                                  ( TmIndType "nat" [])))
+                              ( TmLambda "a"
+                                ( TmIndType "nat" [])
+                                ( TmLambda "b"
+                                  ( TmIndType "nat" [])
+                                  ( TmMatch 0
+                                    ( TmRel "a" 1 )
+                                    "a0"
+                                    [ "nat" ]
+                                    ( TmIndType "nat" [])
+                                    [ Equation
+                                      [ "O" ]
+                                      ( TmRel "b" 0 )
+                                    , Equation
+                                      [ "S"
+                                      , "n" ]
+                                      ( TmConstr "S"
+                                        [ TmAppl
+                                          [ TmRel "plus" 3
+                                          , TmRel "n" 0
+                                          , TmRel "b" 1 ]])]))))
+                          , TmRel "n" 0
+                          , TmRel "z" 1 ]])])
                 , Equation
                   [ "S"
                   , "n" ]
-                  ( TmAppl
-                    [ TmFix 1
-                      ( TmLambda "plus"
-                        ( TmProd "a"
-                          ( TmIndType "nat" [])
-                          ( TmProd "b"
+                  ( TmConstr "S"
+                    [ TmAppl
+                      [ TmFix 1
+                        ( TmLambda "plus"
+                          ( TmProd "a"
                             ( TmIndType "nat" [])
-                            ( TmIndType "nat" [])))
-                        ( TmLambda "a"
-                          ( TmIndType "nat" [])
-                          ( TmLambda "b"
-                            ( TmIndType "nat" [])
-                            ( TmMatch 0
-                              ( TmRel "a" 1 )
-                              "a0"
-                              [ "nat" ]
+                            ( TmProd "b"
                               ( TmIndType "nat" [])
-                              [ Equation
-                                [ "O" ]
-                                ( TmRel "b" 0 )
-                              , Equation
-                                [ "S"
-                                , "n" ]
-                                ( TmAppl
-                                  [ TmRel "plus" 3
-                                  , TmRel "n" 0
-                                  , TmConstr "S"
-                                    [ TmRel "b" 1 ]])]))))
-                    , TmRel "n" 0
-                    , TmConstr "S"
-                      [ TmMatch 0
+                              ( TmIndType "nat" [])))
+                          ( TmLambda "a"
+                            ( TmIndType "nat" [])
+                            ( TmLambda "b"
+                              ( TmIndType "nat" [])
+                              ( TmMatch 0
+                                ( TmRel "a" 1 )
+                                "a0"
+                                [ "nat" ]
+                                ( TmIndType "nat" [])
+                                [ Equation
+                                  [ "O" ]
+                                  ( TmRel "b" 0 )
+                                , Equation
+                                  [ "S"
+                                  , "n" ]
+                                  ( TmConstr "S"
+                                    [ TmAppl
+                                      [ TmRel "plus" 3
+                                      , TmRel "n" 0
+                                      , TmRel "b" 1 ]])]))))
+                      , TmRel "n" 0
+                      , TmMatch 0
                         ( TmRel "y" 2 )
                         "a0"
                         [ "nat" ]
@@ -804,37 +805,37 @@ spec = do
                         , Equation
                           [ "S"
                           , "n" ]
-                          ( TmAppl
-                            [ TmFix 1
-                              ( TmLambda "plus"
-                                ( TmProd "a"
-                                  ( TmIndType "nat" [])
-                                  ( TmProd "b"
+                          ( TmConstr "S"
+                            [ TmAppl
+                              [ TmFix 1
+                                ( TmLambda "plus"
+                                  ( TmProd "a"
                                     ( TmIndType "nat" [])
-                                    ( TmIndType "nat" [])))
-                                ( TmLambda "a"
-                                  ( TmIndType "nat" [])
-                                  ( TmLambda "b"
-                                    ( TmIndType "nat" [])
-                                    ( TmMatch 0
-                                      ( TmRel "a" 1 )
-                                      "a0"
-                                      [ "nat" ]
+                                    ( TmProd "b"
                                       ( TmIndType "nat" [])
-                                      [ Equation
-                                        [ "O" ]
-                                        ( TmRel "b" 0 )
-                                      , Equation
-                                        [ "S"
-                                        , "n" ]
-                                        ( TmAppl
-                                          [ TmRel "plus" 3
-                                          , TmRel "n" 0
-                                          , TmConstr "S"
-                                            [ TmRel "b" 1 ]])]))))
-                            , TmRel "n" 0
-                            , TmConstr "S"
-                              [ TmRel "z" 2 ]])]]])])))
+                                      ( TmIndType "nat" [])))
+                                  ( TmLambda "a"
+                                    ( TmIndType "nat" [])
+                                    ( TmLambda "b"
+                                      ( TmIndType "nat" [])
+                                      ( TmMatch 0
+                                        ( TmRel "a" 1 )
+                                        "a0"
+                                        [ "nat" ]
+                                        ( TmIndType "nat" [])
+                                        [ Equation
+                                          [ "O" ]
+                                          ( TmRel "b" 0 )
+                                        , Equation
+                                          [ "S"
+                                          , "n" ]
+                                          ( TmConstr "S"
+                                            [ TmAppl
+                                              [ TmRel "plus" 3
+                                              , TmRel "n" 0
+                                              , TmRel "b" 1 ]])]))))
+                              , TmRel "n" 0
+                              , TmRel "z" 2 ]])]]])])))
         it "pred two" $
           fullReductionForTest ( TmAppl [ TmRel "pred" 5, TmRel "two" 6 ])
           `shouldBe`
@@ -878,37 +879,37 @@ spec = do
                 , Equation
                   [ "S"
                   , "n" ]
-                  ( TmAppl
-                    [ TmFix 1
-                      ( TmLambda "plus"
-                        ( TmProd "a"
-                          ( TmIndType "nat" [])
-                          ( TmProd "b"
+                  ( TmConstr "S"
+                    [ TmAppl
+                      [ TmFix 1
+                        ( TmLambda "plus"
+                          ( TmProd "a"
                             ( TmIndType "nat" [])
-                            ( TmIndType "nat" [])))
-                        ( TmLambda "a"
-                          ( TmIndType "nat" [])
-                          ( TmLambda "b"
-                            ( TmIndType "nat" [])
-                            ( TmMatch 0
-                              ( TmRel "a" 1 )
-                              "a0"
-                              [ "nat" ]
+                            ( TmProd "b"
                               ( TmIndType "nat" [])
-                              [ Equation
-                                [ "O" ]
-                                ( TmRel "b" 0 )
-                              , Equation
-                                [ "S"
-                                , "n" ]
-                                ( TmAppl
-                                  [ TmRel "plus" 3
-                                  , TmRel "n" 0
-                                  , TmConstr "S"
-                                    [ TmRel "b" 1 ]])]))))
-                    , TmRel "n" 0
-                    , TmConstr "S"
-                      [ TmRel "z" 1 ]])]))
+                              ( TmIndType "nat" [])))
+                          ( TmLambda "a"
+                            ( TmIndType "nat" [])
+                            ( TmLambda "b"
+                              ( TmIndType "nat" [])
+                              ( TmMatch 0
+                                ( TmRel "a" 1 )
+                                "a0"
+                                [ "nat" ]
+                                ( TmIndType "nat" [])
+                                [ Equation
+                                  [ "O" ]
+                                  ( TmRel "b" 0 )
+                                , Equation
+                                  [ "S"
+                                  , "n" ]
+                                  ( TmConstr "S"
+                                    [ TmAppl
+                                      [ TmRel "plus" 3
+                                      , TmRel "n" 0
+                                      , TmRel "b" 1 ]])]))))
+                      , TmRel "n" 0
+                      , TmRel "z" 1 ]])]))
         it "plusThreeNumbers-partial-1-one" $
           fullReductionForTest ( TmAppl [ TmRel "plusThreeNumbers" 0, TmRel "one" 7 ])
           `shouldBe`
@@ -927,36 +928,36 @@ spec = do
                   ( TmRel "z" 0 )
                 , Equation
                   [ "S", "n" ]
-                  ( TmAppl
-                    [ TmFix 1
-                      ( TmLambda "plus"
-                        ( TmProd "a"
-                          ( TmIndType "nat" [] )
-                          ( TmProd "b"
+                  ( TmConstr "S"
+                    [ TmAppl
+                      [ TmFix 1
+                        ( TmLambda "plus"
+                          ( TmProd "a"
                             ( TmIndType "nat" [] )
-                            ( TmIndType "nat" [] )))
-                        ( TmLambda "a"
-                          ( TmIndType "nat" [] )
-                          ( TmLambda "b"
-                            ( TmIndType "nat" [] )
-                            ( TmMatch 0
-                              ( TmRel "a" 1 )
-                              "a0"
-                              [ "nat" ]
+                            ( TmProd "b"
                               ( TmIndType "nat" [] )
-                              [ Equation
-                                [ "O" ]
-                                ( TmRel "b" 0 )
-                              , Equation
-                                [ "S", "n" ]
-                                ( TmAppl
-                                  [ TmRel "plus" 3
-                                  , TmRel "n" 0
-                                  , TmConstr "S"
-                                    [ TmRel "b" 1 ]])]))))
-                    , TmRel "n" 0
-                    , TmConstr "S"
-                      [ TmRel "z" 1 ]])]]))
+                              ( TmIndType "nat" [] )))
+                          ( TmLambda "a"
+                            ( TmIndType "nat" [] )
+                            ( TmLambda "b"
+                              ( TmIndType "nat" [] )
+                              ( TmMatch 0
+                                ( TmRel "a" 1 )
+                                "a0"
+                                [ "nat" ]
+                                ( TmIndType "nat" [] )
+                                [ Equation
+                                  [ "O" ]
+                                  ( TmRel "b" 0 )
+                                , Equation
+                                  [ "S", "n" ]
+                                  ( TmConstr "S"
+                                    [ TmAppl
+                                      [ TmRel "plus" 3
+                                      , TmRel "n" 0
+                                      , TmRel "b" 1 ]])]))))
+                      , TmRel "n" 0
+                      , TmRel "z" 1 ]])]]))
         it "plusThreeNumbers-partial-2-two-two" $
           fullReductionForTest ( TmAppl [ TmRel "plusThreeNumbers" 0, TmRel "two" 6, TmRel "two" 6 ])
           `shouldBe`
