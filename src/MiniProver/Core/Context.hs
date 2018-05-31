@@ -87,7 +87,7 @@ pickFreshNameWithRejectList' ctx lst name i =
   let
     newname = name ++ show i
   in
-    if isNameBound ctx newname || name `elem` lst
+    if isNameBound ctx newname || newname `elem` lst
       then pickFreshNameWithRejectList' ctx lst name (i + 1)
       else ((newname,NameBind) : ctx, newname)
 
