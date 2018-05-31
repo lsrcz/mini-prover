@@ -1437,7 +1437,7 @@ realExContext =
           ( TmProd "f"
             ( TmProd "x"
               ( TmRel "A" 2 )
-              ( TmProd "p"
+              ( TmProd "f0"
                 ( TmAppl
                   [ TmRel "P" 2
                   , TmRel "x" 0 ])
@@ -1447,7 +1447,7 @@ realExContext =
                     [ TmRel "A" 4
                     , TmRel "P" 3
                     , TmRel "x" 1
-                    , TmRel "p" 0 ]])))
+                    , TmRel "f0" 0 ]])))
             ( TmProd "e"
               ( TmIndType "ex"
                 [ TmRel "A" 3
@@ -1471,7 +1471,7 @@ realExContext =
             ( TmLambda "f"
               ( TmProd "x"
                 ( TmRel "A" 2 )
-                ( TmProd "p"
+                ( TmProd "f0"
                   ( TmAppl
                     [ TmRel "P" 2
                     , TmRel "x" 0 ])
@@ -1481,7 +1481,7 @@ realExContext =
                       [ TmRel "A" 4
                       , TmRel "P" 3
                       , TmRel "x" 1
-                      , TmRel "p" 0 ]])))
+                      , TmRel "f0" 0 ]])))
               ( TmLambda "e"
                 ( TmIndType "ex"
                   [ TmRel "A" 3
@@ -1500,11 +1500,11 @@ realExContext =
                     , "_"
                     , "_"
                     , "x"
-                    , "x0" ]
+                    , "f0" ]
                     ( TmAppl
                       [ TmRel "f" 3
                       , TmRel "x" 1
-                      , TmRel "x0" 0 ])]))))))))
+                      , TmRel "f0" 0 ])]))))))))
   , ( "ex"
     , IndTypeBind 2
       ( TmProd "A"
@@ -1581,11 +1581,11 @@ realEx2Context =
             ( TmProd "f"
               ( TmProd "x"
                 ( TmRel "A" 3 )
-                ( TmProd "p"
+                ( TmProd "f0"
                   ( TmAppl
                     [ TmRel "P" 3
                     , TmRel "x" 0 ])
-                  ( TmProd "q"
+                  ( TmProd "f1"
                     ( TmAppl
                       [ TmRel "Q" 3
                       , TmRel "x" 1 ])
@@ -1596,8 +1596,8 @@ realEx2Context =
                         , TmRel "P" 5
                         , TmRel "Q" 4
                         , TmRel "x" 2
-                        , TmRel "p" 1
-                        , TmRel "q" 0 ]]))))
+                        , TmRel "f0" 1
+                        , TmRel "f1" 0 ]]))))
               ( TmProd "e"
                 ( TmIndType "ex2"
                   [ TmRel "A" 4
@@ -1627,11 +1627,11 @@ realEx2Context =
               ( TmLambda "f"
                 ( TmProd "x"
                   ( TmRel "A" 3 )
-                  ( TmProd "p"
+                  ( TmProd "f0"
                     ( TmAppl
                       [ TmRel "P" 3
                       , TmRel "x" 0 ])
-                    ( TmProd "q"
+                    ( TmProd "f1"
                       ( TmAppl
                         [ TmRel "Q" 3
                         , TmRel "x" 1 ])
@@ -1642,8 +1642,8 @@ realEx2Context =
                           , TmRel "P" 5
                           , TmRel "Q" 4
                           , TmRel "x" 2
-                          , TmRel "p" 1
-                          , TmRel "q" 0 ]]))))
+                          , TmRel "f0" 1
+                          , TmRel "f1" 0 ]]))))
                 ( TmLambda "e"
                   ( TmIndType "ex2"
                     [ TmRel "A" 4
@@ -1665,13 +1665,13 @@ realEx2Context =
                       , "_"
                       , "_"
                       , "x"
-                      , "x0"
-                      , "x1" ]
+                      , "f0"
+                      , "f1" ]
                       ( TmAppl
                         [ TmRel "f" 4
                         , TmRel "x" 2
-                        , TmRel "x0" 1
-                        , TmRel "x1" 0 ])])))))))))
+                        , TmRel "f0" 1
+                        , TmRel "f1" 0 ])])))))))))
   , ( "ex2"
     , IndTypeBind 3
     ( TmProd "A"

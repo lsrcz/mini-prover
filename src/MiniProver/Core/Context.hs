@@ -28,6 +28,7 @@ import MiniProver.Core.Syntax
 import MiniProver.Core.Subst
 import Data.List (group, sort, concatMap, find, (\\), sortBy)
 import Data.Maybe (fromMaybe)
+import Data.Char (isDigit)
 
 type Context = [(Name, Binding)]
 
@@ -76,11 +77,21 @@ checkDuplicateGlobalName ctx (Ind name _ _ _ constrlst) =
 checkDuplicateGlobalName ctx (Fix name _) =
   [ name | isNameBound ctx name ]
 
+removeTailDigits :: Name -> Name
+removeTailDigits [] = []
+removeTailDigits ls@(x:xs) =
+  case removeTailDigits xs of
+    [] -> if isDigit x then [] else [x]
+    _ -> ls
+
 pickFreshNameWithRejectList :: Context -> [Name] -> Name -> (Context, Name)
-pickFreshNameWithRejectList ctx lst name =
-  if isNameBound ctx name || name `elem` lst
-    then pickFreshNameWithRejectList' ctx lst name 0
-    else ((name,NameBind) : ctx, name)
+pickFreshNameWithRejectList ctx lst oldname =
+  let
+    name = removeTailDigits oldname
+  in
+    if isNameBound ctx name || name `elem` lst
+      then pickFreshNameWithRejectList' ctx lst name 0
+      else ((name,NameBind) : ctx, name)
 
 pickFreshNameWithRejectList' :: Context -> [Name] -> Name -> Int -> (Context, Name)
 pickFreshNameWithRejectList' ctx lst name i =
@@ -93,10 +104,13 @@ pickFreshNameWithRejectList' ctx lst name i =
 
 
 pickFreshName :: Context -> Name -> (Context, Name)
-pickFreshName ctx name = 
-  if isNameBound ctx name
-    then pickFreshName' ctx name 0
-    else ((name,NameBind) : ctx, name)
+pickFreshName ctx oldname =
+  let
+    name = removeTailDigits oldname
+  in
+    if isNameBound ctx name
+      then pickFreshName' ctx name 0
+      else ((name,NameBind) : ctx, name)
   
 pickFreshName' :: Context -> Name -> Int -> (Context, Name)
 pickFreshName' ctx name i =

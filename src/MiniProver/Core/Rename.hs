@@ -8,6 +8,7 @@ import MiniProver.Core.Syntax
 import MiniProver.Core.Context
 import Data.Char (toLower, isDigit)
 import Data.Either (fromRight)
+import Debug.Trace
 
 renameInd :: Context -> Command -> Command
 renameInd ctx (Ind name i ty tm constrlst) =
@@ -47,10 +48,8 @@ renameTerm :: Context -> Term -> Term
 renameTerm = renameTerm' []
 
 renameTerm' :: [Name] -> Context -> Term -> Term
-renameTerm' _ ctx tm@(TmRel name idx)
-  | head name == '.' =
-      TmRel (fromRight (error "This should not happen") (indexToName ctx idx)) idx
-  | otherwise = tm
+renameTerm' _ ctx tm@(TmRel name idx) =
+  TmRel (fromRight (error "This should not happen") (indexToName ctx idx)) idx
 renameTerm' lst ctx (TmAppl tmlst) =
   TmAppl $ map (renameTerm' lst ctx) tmlst
 renameTerm' lst ctx (TmProd name ty tm) =

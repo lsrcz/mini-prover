@@ -33,8 +33,6 @@ addEnvCmd ctx (Ind nm' d' ty' tm' lst') =
         let ctx' = addBinding ctx nm $ IndTypeBind d ty tm $
                 map (\case (a, b, c) -> (Constructor a b c)) lst in
             let indterm = buildIndTermOuterParam ctx' nm d (ty, tm) lst in
-                trace (prettyShowAST $ fromJust indterm) $
-                trace (prettyShowAST $ renameTerm ctx' $ fromJust indterm) $
                 case indterm of
                     Nothing -> ctx
                     Just term -> 
