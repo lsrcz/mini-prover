@@ -58,9 +58,21 @@ typeof' ctx (TmRel _ index) =
       Right IndTypeBind{} -> error "This should not happen" -- Right (TmIndType name [])  --emmmm.There is a small question.
       Right NameBind -> error "This should not happen" -- Left (TypingError t "NameBind is not a type.")
       _ -> error "This should not happen" -- Left (TypingError t "There is no such bind")
- 
+
+
+typeof' ctx (TmAppl ls) =
+  case typeof' ctx (head ls) of
+    Left er -> Left er
+    Right ty -> recCheck ctx (tail ls) ty
+      
+        
+ -- case (fullBZIDReduction ctx (typeof' ctx (head ls))) of
+    
+
+{-
+
 typeof' ctx (TmAppl ls) = let hd = head ls in
-  case hd of
+  case (fullBZIDReduction ctx hd) of
     TmLambda{} ->
       case typeof' ctx hd  of
         Left er -> Left er
@@ -73,10 +85,17 @@ typeof' ctx (TmAppl ls) = let hd = head ls in
         Right NameBind -> error "This should not happen" -- Left (TypingError hd "It is not a func")
         _ -> error "This should not happen" -- Left (TypingError hd "don't exist this func/inductiveType")
     TmProd{} ->  --  ??????????????
-      case recCheck ctx (tail ls) hd  of
+      -- typeof' ctx (recCheck ctx (tail ls) hd)
+      case (recCheck ctx (tail ls) hd) of
         Left er -> Left er
-        Right _ -> Right TmType
+        (Right ret) -> typeof' ctx ret 
+    {-  case recCheck ctx (tail ls) hd  of
+        Left er -> Left er
+        Right _ -> Right TmType -}
     _ -> Left (TypingError hd "this should't be applied")
+-}
+
+
 
 typeof' ctx (TmLambda name t1 t2) =
   case typeof' ctx t1  of
@@ -87,10 +106,10 @@ typeof' ctx (TmLambda name t1 t2) =
         Right tm2 -> Right (TmProd name t1 tm2) 
  
 typeof' ctx (TmFix _ tm) =
-  case typeof' ctx tm  of
+  case typeof' ctx tm of
     Left er -> Left er
     Right complexty -> 
-      case simplifyType complexty of
+      case fullBZIDReduction ctx complexty of
         (TmProd _ t1 t2) ->
           if typeeq ctx (Right t1) (Right (tmShift (-1) t2))  
             then Right t1 
@@ -236,7 +255,7 @@ typeeq ctx ty1 ty2 =
 recCheck :: Context -> [Term] -> Term -> Either TypingError Term
 recCheck ctx ls complextyls =
   let 
-    tyls = simplifyType complextyls
+    tyls = fullBZIDReduction ctx complextyls
   in
     case ls of
       [] -> Right tyls
@@ -261,7 +280,7 @@ checkCommandType ctx (Def _ ty tm) =
       let
         tmty = typeof' ctx tm
       in
-        if typeeq ctx tmty (Right ty)
+        if typeeq ctx  tmty (Right ty)
           then Nothing
           else Just (TypingError tm "the type of it not match the given type")
 checkCommandType ctx (Fix name term) = 

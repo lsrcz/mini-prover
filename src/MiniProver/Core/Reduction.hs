@@ -297,6 +297,7 @@ reductionWithStrategy strategy = go
       | hasStrategyInSet strategy DeltaRel =
           goIfUnequal ctx tmold $ deltaReduction ctx tmold
     go ctx (TmAppl [t]) = go ctx t
+    go ctx (TmAppl ((TmAppl lst):tl)) = go ctx (TmAppl (lst ++ tl))
     go ctx tmold@(TmAppl (TmProd{}:_))
       | hasStrategyInSet strategy BetaProd = goIfUnequal ctx tmold $ betaReduction tmold
     go ctx tmold@(TmAppl (TmLambda{}:_))

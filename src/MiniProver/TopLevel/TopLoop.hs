@@ -143,7 +143,9 @@ processOneCommand verboseLevel inputStr ctx = do
     pPrintTopTmAST ctx = pPrintASTV 3 $ fromRight (error "this should not happen") $ getBindingTerm ctx 0
 
   -- parsing
-  let rawcmd = parse pcommand "" inputStr
+  let
+    inputStrNoSpace = removeLeadingSpaces inputStr
+  let rawcmd = parse pcommand "" inputStrNoSpace
   case rawcmd of
     Left err -> do
       putStrLn $ errorColor "[ FAIL ] parsing"
