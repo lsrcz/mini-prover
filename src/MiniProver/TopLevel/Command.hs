@@ -33,6 +33,8 @@ addEnvCmd ctx (Ind nm' d' ty' tm' lst') =
         let ctx' = addBinding ctx nm $ IndTypeBind d ty tm $
                 map (\case (a, b, c) -> (Constructor a b c)) lst in
             let indterm = buildIndTermOuterParam ctx' nm d (ty, tm) lst in
+                trace (prettyShowAST $ fromJust indterm) $
+                trace (prettyShowAST $ renameTerm ctx' $ fromJust indterm) $
                 case indterm of
                     Nothing -> ctx
                     Just term -> 
@@ -42,7 +44,8 @@ addEnvCmd ctx (Ind nm' d' ty' tm' lst') =
                                     addBinding ctx' (nm++"_rect") $ 
                                         TmAbbBind (renameTerm ctx' tyterm) $ 
                                         Just $ renameTerm ctx' term
-                                _ -> error "This should not happen"
+                                Left str -> 
+                                        error "This should not happen"
 
 
 buildIndTermOuterParam :: Context -> Name -> Int -> (Term, Term) -> [(Name, Term, Term)] -> Maybe Term
@@ -152,6 +155,8 @@ buildIndMatchEqApp ctx nm (TmLambda nm1 ty tm) bigfd lst curid =
                                     (TmRel dotname curid): 
                                     (TmAppl $ (TmRel ".F" bigfd):
                                         applst++[(TmRel dotname 0)]):nxt 
+                    TmAppl _ ->
+                        (TmRel dotname curid):nxt
                     _ -> error "This should not happen"
 
 
@@ -253,6 +258,11 @@ buildIndConstrF ctx nm (ty, tm) d =
                                     let cnt = getIndTypeInt ctx nm in
                                         let pty = TmAppl $ (TmRel ".P" d):(listShift 1 $ drop cnt lst)++[(TmRel nm2 0)]  in
                                             (Just $ TmProd nm2 ty2 $ TmProd "_" pty term, True)
+                TmAppl applst -> 
+                    let inner = buildIndConstrF ctx nm (tm1, tm2) (d + 1) in
+                        case inner of
+                            (Nothing, _) -> (Nothing, False)
+                            (Just term, isfix) -> (Just $ TmProd nm2 ty2 term, isfix)
                 _ -> (Nothing, False)
         (TmIndType nm1 lst1, TmConstr nm2 lst2) ->
             let cnt = getIndTypeInt ctx nm in
