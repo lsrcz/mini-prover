@@ -582,24 +582,62 @@ spec = do
                               , TmRel "ls2" 3 ]])])))))))     
           `shouldBe`
           Right
-            ( TmProd "n1"
+          ( TmProd "n1"
+          ( TmIndType "nat" [])
+          ( TmProd "ls1"
+            ( TmIndType "ilist"
+              [ TmIndType "nat" []
+              , TmRel "n1" 0 ])
+            ( TmProd "n2"
               ( TmIndType "nat" [])
-              ( TmProd "ls1"
+              ( TmProd "ls2"
                 ( TmIndType "ilist"
                   [ TmIndType "nat" []
-                  , TmRel "n1" 0 ])
-                ( TmProd "n2"
-                  ( TmIndType "nat" [])
-                  ( TmProd "ls2"
-                    ( TmIndType "ilist"
-                      [ TmIndType "nat" []
-                      , TmRel "n2" 0 ])
-                    ( TmIndType "ilist"
-                      [ TmIndType "nat" []
-                      , TmAppl
-                        [ TmRel "plus" 5
-                        , TmRel "n1" 3
-                        , TmRel "n2" 1 ]])))))     
+                  , TmRel "n2" 0 ])
+                ( TmIndType "ilist"
+                  [ TmIndType "nat" []
+                  , TmMatch 0
+                    ( TmRel "n1" 3 )
+                      "a0"
+                    [ "nat" ]
+                    ( TmIndType "nat" [])
+                    [ Equation
+                      [ "O" ]
+                      ( TmRel "n2" 1 )
+                    , Equation
+                      [ "S"
+                      , "n" ]
+                      ( TmConstr "S"
+                        [ TmAppl
+                          [ TmFix 1
+                            ( TmLambda "plus"
+                              ( TmProd "a"
+                                ( TmIndType "nat" [])
+                                ( TmProd "b"
+                                  ( TmIndType "nat" [])
+                                  ( TmIndType "nat" [])))
+                              ( TmLambda "a"
+                                ( TmIndType "nat" [])
+                                ( TmLambda "b"
+                                  ( TmIndType "nat" [])
+                                  ( TmMatch 0
+                                    ( TmRel "a" 1 )
+                                      "a0"
+                                    [ "nat" ]
+                                    ( TmIndType "nat" [])
+                                    [ Equation
+                                      [ "O" ]
+                                      ( TmRel "b" 0 )
+                                    , Equation
+                                      [ "S"
+                                      , "n" ]
+                                      ( TmConstr "S"
+                                        [ TmAppl
+                                          [ TmRel "plus" 3
+                                          , TmRel "n" 0
+                                          , TmRel "b" 1 ]])]))))
+                          , TmRel "n" 0
+                          , TmRel "n2" 2 ]])]])))))
 {-
     describe "TmFix" $
       it "fix plus" $
