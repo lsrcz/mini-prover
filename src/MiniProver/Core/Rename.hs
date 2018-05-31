@@ -28,8 +28,8 @@ getOrigNameFromTyIn (TmProd _ _ tm) = getOrigNameFromTyIn tm
 getOrigNameFromTyIn TmType = "P"
 getOrigNameFromTyIn _ = "f"
 
-addAnonymousName :: Context -> Name -> Maybe Term -> (Context, Name)
-addAnonymousName ctx name mty
+addAnonymousName :: Context -> [Name] -> Name -> Maybe Term -> (Context, Name)
+addAnonymousName ctx lst name mty
   | head name == '.' =
       let
         origname =
@@ -39,52 +39,55 @@ addAnonymousName ctx name mty
               Just ty -> getOrigNameFromTy ty
             else [name !! 1]
       in
-        pickFreshName ctx origname
+        pickFreshNameWithRejectList ctx lst origname
   | otherwise = (addName ctx name, name)
 
 renameTerm :: Context -> Term -> Term
-renameTerm ctx tm@(TmRel name idx)
+renameTerm = renameTerm' []
+
+renameTerm' :: [Name] -> Context -> Term -> Term
+renameTerm' _ ctx tm@(TmRel name idx)
   | head name == '.' =
       TmRel (fromRight (error "This should not happen") (indexToName ctx idx)) idx
   | otherwise = tm
-renameTerm ctx (TmAppl tmlst) =
-  TmAppl $ map (renameTerm ctx) tmlst
-renameTerm ctx (TmProd name ty tm) =
+renameTerm' lst ctx (TmAppl tmlst) =
+  TmAppl $ map (renameTerm' lst ctx) tmlst
+renameTerm' lst ctx (TmProd name ty tm) =
   let
-    (newctx,newname) = addAnonymousName ctx name (Just ty)
+    (newctx,newname) = addAnonymousName ctx lst name (Just ty)
   in
-    TmProd newname (renameTerm ctx ty) (renameTerm newctx tm)
-renameTerm ctx (TmLambda name ty tm) =
+    TmProd newname (renameTerm' (newname:lst) ctx ty) (renameTerm' lst newctx tm)
+renameTerm' lst ctx (TmLambda name ty tm) =
   let
-    (newctx,newname) = addAnonymousName ctx name (Just ty)
+    (newctx,newname) = addAnonymousName ctx lst name (Just ty)
   in
-    TmLambda newname (renameTerm ctx ty) (renameTerm newctx tm)
-renameTerm ctx (TmFix i tm) = TmFix i (renameTerm ctx tm)
-renameTerm ctx (TmLetIn name ty tm bdy) =
+    TmLambda newname (renameTerm' (newname:lst) ctx ty) (renameTerm' lst newctx tm)
+renameTerm' lst ctx (TmFix i tm) = TmFix i (renameTerm' lst ctx tm)
+renameTerm' lst ctx (TmLetIn name ty tm bdy) =
   let
-    (newctx,newname) = addAnonymousName ctx name (Just ty)
+    (newctx,newname) = addAnonymousName ctx lst name (Just ty)
   in
-    TmLetIn newname (renameTerm ctx ty) (renameTerm ctx tm) (renameTerm newctx bdy)
-renameTerm ctx (TmIndType name tmlst) = TmIndType name $ map (renameTerm ctx) tmlst
-renameTerm ctx (TmConstr name tmlst) = TmConstr name $ map (renameTerm ctx) tmlst
-renameTerm ctx (TmMatch i tm name namelst retty equlst) =
+    TmLetIn newname (renameTerm' (newname:lst) ctx ty) (renameTerm' (newname:lst) ctx tm) (renameTerm' lst newctx bdy)
+renameTerm' lst ctx (TmIndType name tmlst) = TmIndType name $ map (renameTerm' lst ctx) tmlst
+renameTerm' lst ctx (TmConstr name tmlst) = TmConstr name $ map (renameTerm' lst ctx) tmlst
+renameTerm' lst ctx (TmMatch i tm name namelst retty equlst) =
   let
-    (newctx,newNameLst) = foldl addWithNameList (ctx,[]) (drop (i + 1) namelst)
-    (newctx1,newName) = addAnonymousName newctx ['.',head $ head namelst] Nothing
+    (newctx,newNameLst) = foldl (addWithNameList lst) (ctx,[]) (drop (i + 1) namelst)
+    (newctx1,newName) = addAnonymousName newctx lst ['.',head $ head namelst] Nothing
   in
-    TmMatch i (renameTerm ctx tm) newName (take (i + 1) namelst ++ newNameLst)
-    (renameTerm newctx1 retty)
-    (map (renameEqu i ctx) equlst)
-renameTerm _ tm = tm
+    TmMatch i (renameTerm' lst ctx tm) newName (take (i + 1) namelst ++ newNameLst)
+    (renameTerm' lst newctx1 retty)
+    (map (renameEqu lst i ctx) equlst)
+renameTerm' _ _ tm = tm
 
-addWithNameList :: (Context, [Name]) -> Name -> (Context, [Name])
-addWithNameList (ctx, lst) nameToAdd =
-  case addAnonymousName ctx nameToAdd Nothing of
+addWithNameList :: [Name] -> (Context, [Name]) -> Name -> (Context, [Name])
+addWithNameList rejlst (ctx, lst) nameToAdd =
+  case addAnonymousName ctx rejlst nameToAdd Nothing of
     (newctx,newname) -> (newctx,lst ++ [newname])
 
-renameEqu :: Int -> Context -> Equation -> Equation
-renameEqu i ctx (Equation namelst tm) =
+renameEqu :: [Name] -> Int -> Context -> Equation -> Equation
+renameEqu lst i ctx (Equation namelst tm) =
   let
-    (newctx,newNameLst) = foldl addWithNameList (ctx,[]) (drop (i + 1) namelst)
+    (newctx,newNameLst) = foldl (addWithNameList lst) (ctx,[]) (drop (i + 1) namelst)
   in
-    Equation (take (i + 1) namelst ++ newNameLst) (renameTerm newctx tm)
+    Equation (take (i + 1) namelst ++ newNameLst) (renameTerm' lst newctx tm)

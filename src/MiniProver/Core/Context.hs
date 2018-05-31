@@ -8,6 +8,7 @@ module MiniProver.Core.Context (
   , addName
   , isNameBound
   , checkDuplicateGlobalName
+  , pickFreshNameWithRejectList
   , pickFreshName
   , indexToName
   , nameToIndex
@@ -74,6 +75,22 @@ checkDuplicateGlobalName ctx (Ind name _ _ _ constrlst) =
   [ xname | xname <- name : map (\(n,_,_) -> n) constrlst, isNameBound ctx xname]
 checkDuplicateGlobalName ctx (Fix name _) =
   [ name | isNameBound ctx name ]
+
+pickFreshNameWithRejectList :: Context -> [Name] -> Name -> (Context, Name)
+pickFreshNameWithRejectList ctx lst name =
+  if isNameBound ctx name || name `elem` lst
+    then pickFreshNameWithRejectList' ctx lst name 0
+    else ((name,NameBind) : ctx, name)
+
+pickFreshNameWithRejectList' :: Context -> [Name] -> Name -> Int -> (Context, Name)
+pickFreshNameWithRejectList' ctx lst name i =
+  let
+    newname = name ++ show i
+  in
+    if isNameBound ctx newname || name `elem` lst
+      then pickFreshNameWithRejectList' ctx lst name (i + 1)
+      else ((newname,NameBind) : ctx, newname)
+
 
 pickFreshName :: Context -> Name -> (Context, Name)
 pickFreshName ctx name = 
