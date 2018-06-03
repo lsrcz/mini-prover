@@ -1,0 +1,136 @@
+% !TeX encoding = UTF-8
+% !TeX spellcheck = LaTeX
+% !TeX program = XeLaTeX
+%
+
+% Please compile by 'xelatex -shell-escape pre.tex' 
+
+\documentclass[UTF-8]{beamer}
+
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{extarrows}
+\usepackage{newtxtext}
+\usepackage{minted}
+\undef\checkmark
+\usepackage{dingbat}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{xcolor}
+
+\usetheme{CambridgeUS}
+\usecolortheme{crane}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{footjoline}[frame number]
+\useoutertheme{infolines}
+
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+\renewcommand{\listingscaption}[1]{\begin{center}CODE: #1\end{center}\vspace{-20pt}}
+\setminted{
+    fontsize=\small, 
+    bgcolor=bg, frame=lines,
+    mathescape, breaklines, breakanywhere,
+    breaksymbolleft=\raisebox{0.8ex}{\small\reflectbox{\carriagereturn}},
+    breaksymbolright=\small\carriagereturn
+}
+
+\usetikzlibrary{shapes.geometric, arrows}
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=2.5cm, minimum height=1cm, text centered, 
+draw=black, fill=red!30, font=\bf]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2.5cm, minimum height=1cm,
+text centered, draw=black, fill=blue!30, font=\bf]
+\tikzstyle{process} = [rectangle, minimum width=2.5cm, minimum height=1cm, text centered, 
+draw=black, fill=orange!30, font=\bf]
+\tikzstyle{decision} = [diamond, minimum width=2.5cm, minimum height=1cm, text centered, 
+draw=black, fill=green!30, font=\bf]
+\tikzstyle{arrow} = [thick, ->, >= stealth]
+\tikzstyle{line} = [thick]
+
+\title{MiniProver}
+\subtitle{A coq-like proof assistant}
+\institute{Peking University}
+\author{Zhenwen Li, Sirui Lu, Kewen Wu}
+\date{\today}
+
+\begin{document}
+\frame{\titlepage}
+
+\section{Syntax}
+\begin{frame}
+\end{frame}
+
+\section{Type System and Inference Rule}
+\begin{frame}
+\end{frame}
+
+\section{Implementation}
+\subsection{Termination}
+\begin{frame}[fragile]{Termination Check}
+\begin{minted}[escapeinside=<>]{coq}
+Fixpoint plus (<\colorbox{green}{n}> m:Type) : Type :=
+    match <\colorbox{green}{n}> with
+    | O => m
+    | S p => S (plus <\colorbox{green}{p}> m)
+
+Fixpoint plus' (<\colorbox{green}{n}> <\colorbox{red}{m}>:Type) : Type :=
+    match <\colorbox{green}{n}> with
+    | O => m
+    | S p => S (plus <\colorbox{red}{m}> <\colorbox{green}{p}>)
+\end{minted}
+\begin{alertblock}{Criterion}
+    Descending on at least one variable.
+\end{alertblock}
+\end{frame}
+
+\subsection{Inductive Positivity}
+\begin{frame}[fragile]{Positivity Check}
+\begin{minted}[escapeinside=<>]{coq}
+Inductive tlist (T:Type) : Type :=
+    | nil : tlist T
+    | cons : T -> tlist T -> tlist T
+
+Inductive ill (T:Type) : Type :=
+    | cons : ill (ill T) -> ill T
+\end{minted}
+\begin{alertblock}{Criterion}
+    Types of constructors satisfy \textbf{positivity condition} for name of inductive type.
+\end{alertblock}
+\end{frame}
+
+\subsection{Inductive Type and Term}
+\begin{frame}[fragile]{Build Term and Type for Inductive Definition}
+\begin{exampleblock}{Intuition}
+    View mathematical induction as building a term for inductive definition.
+\end{exampleblock}
+
+\begin{minted}[escapeinside=<>]{coq}
+Inductive nat : Type := O : nat | S : nat -> nat
+
+fun (P : nat -> Type) (f : P O) 
+        (f0 : forall n : nat, P n -> P (S n)) 
+    fix F (n : nat) : P n :=
+        match n as n0 in (nat) return (P n0) with
+        | O => f
+        | S n0 => f0 n0 (F n0)
+:
+forall P : nat -> Type, P O -> 
+    (forall n : nat, P n -> P (S n)) -> 
+        forall n: nat, P n
+\end{minted}
+\end{frame}
+
+\section{Demo}
+\begin{frame}
+\end{frame}
+
+
+\section*{Thanks}
+\begin{frame}
+\LARGE
+\begin{beamercolorbox}[center,ht=3em]{titlelike}
+\vspace{1em}
+Thanks!
+\end{beamercolorbox}
+\end{frame}\end{document}
