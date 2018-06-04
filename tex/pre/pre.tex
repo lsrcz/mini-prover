@@ -69,12 +69,12 @@ draw=black, fill=green!30, font=\bf]
 \subsection{Termination}
 \begin{frame}[fragile]{Termination Check}
 \begin{minted}[escapeinside=<>]{coq}
-Fixpoint plus (<\colorbox{green}{n}> m:Type) : Type :=
+Fixpoint plus (<\colorbox{green}{n}> m : nat) : nat :=
     match <\colorbox{green}{n}> with
     | O => m
     | S p => S (plus <\colorbox{green}{p}> m)
 
-Fixpoint plus' (<\colorbox{green}{n}> <\colorbox{red}{m}>:Type) : Type :=
+Fixpoint plus' (<\colorbox{green}{n}> <\colorbox{red}{m}> : nat) : nat :=
     match <\colorbox{green}{n}> with
     | O => m
     | S p => S (plus <\colorbox{red}{m}> <\colorbox{green}{p}>)
@@ -87,12 +87,14 @@ Fixpoint plus' (<\colorbox{green}{n}> <\colorbox{red}{m}>:Type) : Type :=
 \subsection{Inductive Positivity}
 \begin{frame}[fragile]{Positivity Check}
 \begin{minted}[escapeinside=<>]{coq}
-Inductive tlist (T:Type) : Type :=
-    | nil : tlist T
-    | cons : T -> tlist T -> tlist T
+Inductive ill : Type :=
+    | malf : (ill -> ill) -> ill 
 
-Inductive ill (T:Type) : Type :=
-    | cons : ill (ill T) -> ill T
+Definition extract (t : ill) : ill :=
+    match t with
+    | malf f => f t
+
+    extract (malf extract)  (* not terminating *)
 \end{minted}
 \begin{alertblock}{Criterion}
     Types of constructors satisfy \textbf{positivity condition} for name of inductive type.
