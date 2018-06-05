@@ -67,8 +67,6 @@ data Command =
   | Ind Name Int Term Term [(Name, Term, Term)] -- name int ty tm [(name, ty, tm)]
   | Fix Name Term
   | Theorem Name Term
-  | Proof
-  | Qed
   | Print Name
   | Check Term
   | DummyCmd                         -- Just for testing
