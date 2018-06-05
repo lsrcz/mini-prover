@@ -3,6 +3,8 @@ module MiniProver.Parser.Parser where
 import Text.Megaparsec
 import MiniProver.Core.Syntax
 import MiniProver.Parser.Lexer
+import MiniProver.Proof.ProofCommand
+import MiniProver.Proof.TacticDef
 
 addBinderAbbr :: (Name -> Term -> Term -> Term) -> Term -> [(Name, Term)] -> Term
 addBinderAbbr abbrty = foldr (\(name, ty) acc -> abbrty name ty acc)
@@ -258,3 +260,97 @@ pcommand = try paxiom
        <|> try pdefinition
        <|> try pinductive
        <|> try pfixdefinition
+
+pproofcmd :: Parser ProofCommand
+pproofcmd = do
+  pc <- pproofcmd'
+  _ <- dot
+  return pc
+
+pproofcmd' :: Parser ProofCommand
+pproofcmd' = try (Proof <$ rword "Proof")
+  <|> try (Undo <$ rword "Undo")
+  <|> try (Restart <$ rword "Restart")
+  <|> try (Admitted <$ rword "Admitted")
+  <|> try (Abort <$ rword "Abort")
+
+ptactic :: Parser Tactic
+ptactic = do
+  tactic <- ptactic'
+  _ <- dot
+  return tactic
+
+ptactic' :: Parser Tactic
+ptactic' = try pexact
+  <|> try papply
+  <|> try pintro
+  <|> try (Intros <$ rword "intros")
+  <|> try pdestruct
+  <|> try pinduction
+  <|> try prewrite
+  <|> try psimpl
+  <|> try (Reflexivity <$ rword "reflexivity")
+  <|> try (Symmetry <$ rword "symmetry")
+
+pexact :: Parser Tactic
+pexact = do
+  _ <- rword "exact"
+  tm <- pterm
+  return $ Exact tm
+
+papply :: Parser Tactic
+papply = do
+  _ <- rword "apply"
+  tm <- pterm
+  mbid <- pmaybeinident
+  return $ Apply tm mbid
+
+pmaybeinident :: Parser (Maybe Name)
+pmaybeinident = return <$> try pinidentok
+  <|> return Nothing
+
+pinidentok :: Parser Name
+pinidentok = do
+  _ <- rword "in"
+  ident
+
+pintro :: Parser Tactic
+pintro = do
+  _ <- rword "intro"
+  lst <- some ident
+  return $ Intro lst
+
+pdestruct :: Parser Tactic
+pdestruct = do
+  _ <- rword "destruct"
+  tm <- pterm
+  return $ Destruct tm
+
+pinduction :: Parser Tactic
+pinduction = do
+  _ <- rword "induction"
+  tm <- pterm
+  return $ Induction tm
+
+prewrite :: Parser Tactic
+prewrite = do
+  _ <- rword "rewrite"
+  isleftdir <- True <$ larrow <|> False <$ arrow <|> return False
+  tm <- pterm
+  mbtm <- pmaybeinterm
+  return $ Rewrite isleftdir tm mbtm
+
+pmaybeinterm :: Parser (Maybe Term)
+pmaybeinterm = return <$> try pintermok
+  <|> return Nothing
+
+pintermok :: Parser Term
+pintermok = do
+  _ <- rword "in"
+  pterm
+
+psimpl :: Parser Tactic
+psimpl = do
+  _ <- rword "simpl"
+  mbid <- pmaybeinident
+  return $ Simpl mbid

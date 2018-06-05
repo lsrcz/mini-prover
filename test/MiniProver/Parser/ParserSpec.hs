@@ -3,6 +3,8 @@ module MiniProver.Parser.ParserSpec (main, spec) where
 import Test.Hspec
 import Test.Hspec.Megaparsec
 import MiniProver.Core.Syntax
+import MiniProver.Proof.ProofCommand
+import MiniProver.Proof.TacticDef
 import MiniProver.Parser.Parser
 import Text.Megaparsec
 
@@ -1062,3 +1064,74 @@ spec = do
                           , TmAppl
                               [ TmVar "S"
                               , TmVar "y"]])])))))
+  describe "pproofcmd" $ do
+    it "Proof" $
+      parse pproofcmd "" "Proof."
+      `shouldParse` Proof
+    it "Undo" $
+      parse pproofcmd "" "Undo."
+      `shouldParse` Undo
+    it "Restart" $
+      parse pproofcmd "" "Restart."
+      `shouldParse` Restart
+    it "Admitted" $
+      parse pproofcmd "" "Admitted."
+      `shouldParse` Admitted
+    it "Abort" $
+      parse pproofcmd "" "Abort."
+      `shouldParse` Abort
+  describe "ptactic" $ do
+    it "exact" $
+      parse ptactic "" "exact eq_refl nat O."
+      `shouldParse` Exact (TmAppl [TmVar "eq_refl", TmVar "nat", TmVar "O"])
+    it "apply no in" $
+      parse ptactic "" "apply (fun (x : T) => y x)."
+      `shouldParse` Apply (TmLambda "x" (TmVar "T") (TmAppl [TmVar "y", TmVar "x"])) Nothing
+    it "apply in" $
+      parse ptactic "" "apply (fun (x : T) => y x) in H."
+      `shouldParse` Apply (TmLambda "x" (TmVar "T") (TmAppl [TmVar "y", TmVar "x"])) (Just "H")
+    it "intro" $
+      parse ptactic "" "intro a b c."
+      `shouldParse` Intro ["a","b","c"]
+    it "intros" $
+      parse ptactic "" "intros."
+      `shouldParse` Intros
+    it "destruct" $
+      parse ptactic "" "destruct a."
+      `shouldParse` Destruct (TmVar "a")
+    it "induction" $
+      parse ptactic "" "induction a."
+      `shouldParse` Induction (TmVar "a")
+    it "rewrite no arrow no in" $
+      parse ptactic "" "rewrite a."
+      `shouldParse` Rewrite False (TmVar "a") Nothing
+    it "rewrite right arrow no in" $
+      parse ptactic "" "rewrite -> a."
+        `shouldParse` Rewrite False (TmVar "a") Nothing
+    it "rewrite left arrow no in" $
+      parse ptactic "" "rewrite <- a."
+        `shouldParse` Rewrite True (TmVar "a") Nothing
+    it "rewrite no arrow in" $
+      parse ptactic "" "rewrite a in b."
+      `shouldParse` Rewrite False (TmVar "a") (Just (TmVar "b"))
+    it "rewrite right arrow in" $
+      parse ptactic "" "rewrite -> a in b."
+        `shouldParse` Rewrite False (TmVar "a") (Just (TmVar "b"))
+    it "rewrite left arrow in" $
+      parse ptactic "" "rewrite <- a in b."
+        `shouldParse` Rewrite True (TmVar "a") (Just (TmVar "b"))
+    it "simpl" $
+      parse ptactic "" "simpl."
+      `shouldParse` Simpl Nothing
+    it "simpl in" $
+      parse ptactic "" "simpl in H."
+      `shouldParse` Simpl (Just "H")
+    it "reflexivity" $
+      parse ptactic "" "reflexivity."
+      `shouldParse` Reflexivity
+    it "symmetry" $
+      parse ptactic "" "symmetry."
+      `shouldParse` Symmetry
+    
+    
+    
