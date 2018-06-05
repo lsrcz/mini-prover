@@ -318,7 +318,7 @@ Definition iff_to_and (A:Type) (B:Type) : iff (iff A B) (and (A -> B) (B -> A)) 
         conj (A -> B) (B -> A) (fun (H0 : A) => Hl H0) (fun (H0 : B) => Hr H0)
     end)
   (fun (H : and (A -> B) (B -> A)) =>
-    match H with
+    match H as H0 in and _ _ return iff A B with
     | conj _ _ Hl Hr =>
         conj (A -> B) (B -> A) (fun (H0 : A) => Hl H0) (fun (H0 : B) => Hr H0)
     end).
