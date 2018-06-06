@@ -1085,6 +1085,9 @@ spec = do
     it "Abort" $
       parse pproofcmd "" "Abort."
       `shouldParse` Abort
+    it "Qed" $
+      parse pproofcmd "" "Qed."
+      `shouldParse` Qed
   describe "ptactic" $ do
     it "exact" $
       parse ptactic "" "exact eq_refl nat O."

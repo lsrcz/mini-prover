@@ -283,6 +283,7 @@ pproofcmd' = try (Proof <$ rword "Proof")
   <|> try (Restart <$ rword "Restart")
   <|> try (Admitted <$ rword "Admitted")
   <|> try (Abort <$ rword "Abort")
+  <|> try (Qed <$ rword "Qed")
 
 ptactic :: Parser Tactic
 ptactic = do
