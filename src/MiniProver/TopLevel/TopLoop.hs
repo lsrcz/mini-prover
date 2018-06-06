@@ -14,6 +14,7 @@ import MiniProver.PrettyPrint.PrettyPrintAST
 import MiniProver.PrettyPrint.Colorful
 import MiniProver.TopLevel.Command
 import MiniProver.TopLevel.IO
+import MiniProver.TopLevel.ProofLoop
 import Data.Either (fromRight)
 import Control.Monad (forever,when)
 import System.IO
@@ -50,12 +51,10 @@ processFile handle verboseLevel ctx = do
       let
         putStrLnV = putStrLnIfNoLessThan verboseLevel
       inputStr <- hGetInputCommand handle
-      let
-        inputStrNoSpace = removeLeadingSpaces inputStr
       putStrLnV 1 $ okColor "[ OK ] reading in"
       putStrLnV 2 $ infoColor "**** input string ****"
-      putStrLnV 2 inputStrNoSpace
-      newCtx <- processOneCommand verboseLevel inputStrNoSpace ctx
+      putStrLnV 2 inputStr
+      newCtx <- processOneCommand verboseLevel inputStr ctx
       processFile handle verboseLevel newCtx
 
 processOneCommand :: Int -> String -> Context -> IO Context
@@ -77,9 +76,7 @@ processOneCommand verboseLevel inputStr ctx = do
     pPrintTopTmAST ctx = pPrintASTV 3 $ fromRight (error "this should not happen") $ getBindingTerm ctx 0
 
   -- parsing
-  let
-    inputStrNoSpace = removeLeadingSpaces inputStr
-  let rawcmd = parse pcommand "" inputStrNoSpace
+  let rawcmd = parse pcommand "" inputStr
   case rawcmd of
     Left err -> do
       putStrLn $ errorColor "[ FAIL ] parsing"
@@ -141,7 +138,20 @@ processOneCommand verboseLevel inputStr ctx = do
                         Nothing -> do
                           putStrLnV 1 $ okColor "[ OK ] type checking"
                           case cmdWithDec of
-                            Theorem name tm -> return ctx
+                            Theorem name ty -> do
+                              result <- proof ctx ty
+                              case result of
+                                Left AdmittedCmd -> do
+                                  putStrLn $ name ++ " is declared"
+                                  return $ addBinding ctx name $
+                                    TmAbbBind ty Nothing
+                                Left AbortCmd -> do
+                                  putStrLn "Aborted"
+                                  return ctx
+                                Right tm -> do
+                                  putStrLn $ name ++ " is defined"
+                                  return $ addBinding ctx name $
+                                    TmAbbBind ty $ Just tm
                             _ -> do
                               let newctx = addEnvCommand ctx cmdWithDec
                               if length newctx == length ctx

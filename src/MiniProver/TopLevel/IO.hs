@@ -5,6 +5,7 @@ import MiniProver.PrettyPrint.PrettyPrintAST
 import MiniProver.PrettyPrint.Colorful
 import MiniProver.Core.Context
 import MiniProver.Core.Syntax
+import MiniProver.Proof.ProofDef
 import Control.Monad (when)
 import Data.List (elemIndex)
 import System.IO
@@ -47,17 +48,30 @@ infoColor = frontGroundColor BYELLOW
 okColor :: String -> String
 okColor = frontGroundColor BGREEN
 
+nameColor :: String -> String
+nameColor = frontGroundColor BBLUE
+
 getInputCommand :: IO String
 getInputCommand = do
+  input <- getInputCommand'
+  return $ removeLeadingSpaces input
+
+getInputCommand' :: IO String
+getInputCommand' = do
   str <- getLine 
   case elemIndex '.' str of
     Just t -> return $ take (t + 1) str
     Nothing -> do
-      str1 <- getInputCommand
+      str1 <- getInputCommand'
       return $ str ++ " " ++ str1
 
 hGetInputCommand :: Handle -> IO String
 hGetInputCommand handle = do
+  input <- hGetInputCommand' handle
+  return $ removeLeadingSpaces input
+
+hGetInputCommand' :: Handle -> IO String
+hGetInputCommand' handle = do
   eofFlag <- hIsEOF handle
   if eofFlag
     then return ""
@@ -74,3 +88,39 @@ removeLeadingSpaces [] = []
 removeLeadingSpaces str@(x:xs)
   | x == ' ' = removeLeadingSpaces xs
   | otherwise = str
+
+printBindingTy :: Name -> Binding -> IO ()
+printBindingTy name (VarBind ty) = do
+  putStr $ nameColor name ++ " : "
+  prettyPrint ty
+
+printGoalBindings :: Int -> Context -> IO ()
+printGoalBindings i ((name,binding):xs)
+  | i == 0 = return ()
+  | otherwise = do
+      printGoalBindings (i - 1) xs
+      printBindingTy name binding
+
+printGoal :: Goal -> IO ()
+printGoal (Goal i ctx ty) = do
+  putStrLn ""
+  when (i /= 0) $
+    printGoalBindings i ctx
+  putStrLn $ replicate 20 '='
+  prettyPrint ty
+  putStrLn ""
+
+printGoals :: [Goal] -> IO ()
+printGoals goallst@(x:xs) = do
+  putStrLn $ show (length goallst) ++ " subgoal" ++
+    if length goallst == 1 then "" else "s"
+  printGoal x
+  printGoals' 2 xs
+
+printGoals' :: Int -> [Goal] -> IO ()
+printGoals' _ [] = return ()
+printGoals' i (Goal _ _ ty:xs) = do
+  putStrLn $ "Subgoal " ++ show i ++ " is"
+  prettyPrint ty
+  putStrLn ""
+  printGoals' (i + 1) xs
