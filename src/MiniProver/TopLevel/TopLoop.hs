@@ -13,63 +13,16 @@ import MiniProver.PrettyPrint.PrettyPrint
 import MiniProver.PrettyPrint.PrettyPrintAST
 import MiniProver.PrettyPrint.Colorful
 import MiniProver.TopLevel.Command
-import Data.List (elemIndex)
+import MiniProver.TopLevel.IO
 import Data.Either (fromRight)
 import Control.Monad (forever,when)
 import System.IO
-
--- printing functions for verbose levels
-printIfNoLessThan :: (Show a) => Int -> Int -> a -> IO ()
-printIfNoLessThan i threshold x =
-  when (i >= threshold) $ print x
-
-putStrIfNoLessThan :: Int -> Int -> String -> IO ()
-putStrIfNoLessThan i threshold str =
-  when (i >= threshold) $ putStr str
-
-putStrLnIfNoLessThan :: Int -> Int -> String -> IO ()
-putStrLnIfNoLessThan i threshold str =
-  when (i >= threshold) $ putStrLn str
-
-prettyPrintIfNoLessThan :: Int -> Int -> Term -> IO ()
-prettyPrintIfNoLessThan i threshold tm =
-  when (i >= threshold) $ prettyPrint tm
-
-prettyPrintCommandIfNoLessThan :: Int -> Int -> Command -> IO ()
-prettyPrintCommandIfNoLessThan i threshold cmd =
-  when (i >= threshold) $ prettyPrintCommand cmd
-
-prettyPrintASTIfNoLessThan :: Int -> Int -> Term -> IO ()
-prettyPrintASTIfNoLessThan i threshold tm =
-  when (i >= threshold) $ prettyPrintAST tm
-
-prettyPrintCommandASTIfNoLessThan :: Int -> Int -> Command -> IO ()
-prettyPrintCommandASTIfNoLessThan i threshold cmd =
-  when (i >= threshold) $ prettyPrintCommandAST cmd
-
-getInputCommand :: IO String
-getInputCommand = do
-  str <- getLine 
-  case elemIndex '.' str of
-    Just t -> return $ take (t + 1) str
-    Nothing -> do
-      str1 <- getInputCommand
-      return $ str ++ " " ++ str1
 
 isIndCommand :: Command -> Bool
 isIndCommand cmd =
   case cmd of
     Ind{} -> True
     _ -> False
-
-errorColor :: String -> String
-errorColor = frontGroundColor BRED
-
-infoColor :: String -> String
-infoColor = frontGroundColor BYELLOW
-
-okColor :: String -> String
-okColor = frontGroundColor BGREEN
 
 topLoop :: Int -> Context -> IO Context
 topLoop verboseLevel ctx = forever $ do
@@ -82,30 +35,11 @@ topLoop verboseLevel ctx = forever $ do
   newCtx <- processOneCommand verboseLevel inputStr ctx
   topLoop verboseLevel newCtx
 
-removeLeadingSpaces :: String -> String
-removeLeadingSpaces [] = []
-removeLeadingSpaces str@(x:xs)
-  | x == ' ' = removeLeadingSpaces xs
-  | otherwise = str
-
 showOrdinal :: Int -> String
 showOrdinal i
   | i == 1 = "1st"
   | i == 2 = "2nd"
   | otherwise = show i ++ "st"
-
-hGetInputCommand :: Handle -> IO String
-hGetInputCommand handle = do
-  eofFlag <- hIsEOF handle
-  if eofFlag
-    then return ""
-    else do
-      str <- hGetLine handle
-      case elemIndex '.' str of
-        Just t -> return $ take (t + 1) str
-        Nothing -> do
-          str1 <- hGetInputCommand handle
-          return $ str ++ " " ++ str1
 
 processFile :: Handle -> Int -> Context -> IO Context
 processFile handle verboseLevel ctx = do
@@ -206,55 +140,58 @@ processOneCommand verboseLevel inputStr ctx = do
                           return ctx
                         Nothing -> do
                           putStrLnV 1 $ okColor "[ OK ] type checking"
-                          let newctx = addEnvCommand ctx cmdWithDec
-                          if length newctx == length ctx
-                            then do
-                              putStrLn $ errorColor "[ FAIL ] adding to context"
-                              putStrLn "Some features are not implemented"
-                              return ctx
-                            else do
-                              putStrLnV 1 $ okColor "[ OK ] adding to context"
-                              case cmdWithDec of
-                                Ax name _ -> do
-                                  putStrLnV 2 $ infoColor "**** type declared ****"
-                                  pPrintTopTy newctx
-                                  putStrLnV 3 $ infoColor "**** type declared (AST) ****"
-                                  pPrintTopTyAST newctx
-                                  putStrLn $ name ++ " is declared"
-                                Def name _ _ -> do
-                                  putStrLnV 2 $ infoColor "**** term defined ****"
-                                  pPrintTopTm newctx
-                                  putStrLnV 3 $ infoColor "**** term defined (AST) ****"
-                                  pPrintTopTmAST newctx
-                                  putStrLnV 2 $ infoColor "**** type defined ****"
-                                  pPrintTopTy newctx
-                                  putStrLnV 3 $ infoColor "**** type defined (AST) ****"
-                                  pPrintTopTyAST newctx
-                                  putStrLn $ name ++ " is defined"
-                                Fix name (TmFix i _) -> do
-                                  putStrLnV 2 $ infoColor "**** term defined ****"
-                                  pPrintTopTm newctx
-                                  putStrLnV 3 $ infoColor "**** term defined (AST) ****"
-                                  pPrintTopTmAST newctx
-                                  putStrLnV 2 $ infoColor "**** type defined ****"
-                                  pPrintTopTy newctx
-                                  putStrLnV 3 $ infoColor "**** type defined (AST) ****"
-                                  pPrintTopTyAST newctx
-                                  putStrLn $ name ++ " is defined"
-                                  putStrLn $ name ++ " is recursively defined (decreasing on " ++
-                                    showOrdinal i ++ " argument)"
-                                Ind name _ _ _ _ -> do
-                                  putStrLnV 2 $ infoColor "**** inductive principle term defined ****"
-                                  pPrintTopTm newctx
-                                  putStrLnV 3 $ infoColor "**** inductive principle term defined (AST) ****"
-                                  pPrintTopTmAST newctx
-                                  putStrLnV 2 $ infoColor "**** inductive principle type defined ****"
-                                  pPrintTopTy newctx
-                                  putStrLnV 3 $ infoColor "**** inductive principle type defined (AST) ****"
-                                  pPrintTopTyAST newctx
-                                  putStrLn $ name ++ " is defined"
-                                  putStrLn $ name ++ "_rect is defined"
-                              return newctx
+                          case cmdWithDec of
+                            Theorem name tm -> return ctx
+                            _ -> do
+                              let newctx = addEnvCommand ctx cmdWithDec
+                              if length newctx == length ctx
+                                then do
+                                  putStrLn $ errorColor "[ FAIL ] adding to context"
+                                  putStrLn "Some features are not implemented"
+                                  return ctx
+                                else do
+                                  putStrLnV 1 $ okColor "[ OK ] adding to context"
+                                  case cmdWithDec of
+                                    Ax name _ -> do
+                                      putStrLnV 2 $ infoColor "**** type declared ****"
+                                      pPrintTopTy newctx
+                                      putStrLnV 3 $ infoColor "**** type declared (AST) ****"
+                                      pPrintTopTyAST newctx
+                                      putStrLn $ name ++ " is declared"
+                                    Def name _ _ -> do
+                                      putStrLnV 2 $ infoColor "**** term defined ****"
+                                      pPrintTopTm newctx
+                                      putStrLnV 3 $ infoColor "**** term defined (AST) ****"
+                                      pPrintTopTmAST newctx
+                                      putStrLnV 2 $ infoColor "**** type defined ****"
+                                      pPrintTopTy newctx
+                                      putStrLnV 3 $ infoColor "**** type defined (AST) ****"
+                                      pPrintTopTyAST newctx
+                                      putStrLn $ name ++ " is defined"
+                                    Fix name (TmFix i _) -> do
+                                      putStrLnV 2 $ infoColor "**** term defined ****"
+                                      pPrintTopTm newctx
+                                      putStrLnV 3 $ infoColor "**** term defined (AST) ****"
+                                      pPrintTopTmAST newctx
+                                      putStrLnV 2 $ infoColor "**** type defined ****"
+                                      pPrintTopTy newctx
+                                      putStrLnV 3 $ infoColor "**** type defined (AST) ****"
+                                      pPrintTopTyAST newctx
+                                      putStrLn $ name ++ " is defined"
+                                      putStrLn $ name ++ " is recursively defined (decreasing on " ++
+                                        showOrdinal i ++ " argument)"
+                                    Ind name _ _ _ _ -> do
+                                      putStrLnV 2 $ infoColor "**** inductive principle term defined ****"
+                                      pPrintTopTm newctx
+                                      putStrLnV 3 $ infoColor "**** inductive principle term defined (AST) ****"
+                                      pPrintTopTmAST newctx
+                                      putStrLnV 2 $ infoColor "**** inductive principle type defined ****"
+                                      pPrintTopTy newctx
+                                      putStrLnV 3 $ infoColor "**** inductive principle type defined (AST) ****"
+                                      pPrintTopTyAST newctx
+                                      putStrLn $ name ++ " is defined"
+                                      putStrLn $ name ++ "_rect is defined"
+                                  return newctx
                           
                     
             err -> do
