@@ -559,6 +559,9 @@ spec = do
                           , TmAppl
                               [ TmVar "S"
                               , TmVar "y"]])])))))
+    it "theorem" $
+      parse ptheorem "" "Theorem a (d:e):b->c." `shouldParse`
+        Theorem "a" (TmProd "d" (TmVar "e") (TmProd "_" (TmVar "b") (TmVar "c")))
   describe "pcommand" $ do
     it "axiom" $
       parse pcommand "" "Axiom a:b->c." `shouldParse`
@@ -1064,6 +1067,9 @@ spec = do
                           , TmAppl
                               [ TmVar "S"
                               , TmVar "y"]])])))))
+    it "theorem" $
+      parse pcommand "" "Theorem a (d:e):b->c." `shouldParse`
+        Theorem "a" (TmProd "d" (TmVar "e") (TmProd "_" (TmVar "b") (TmVar "c")))
   describe "pproofcmd" $ do
     it "Proof" $
       parse pproofcmd "" "Proof."

@@ -115,6 +115,7 @@ prettyShowCommand (Ax name ty) = frontGroundColor RED (bright "Axiom ") ++ name 
 prettyShowCommand (Def name ty tm) = frontGroundColor RED (bright "Definition ") ++ name ++ prettyDefinitionTail ty tm
 prettyShowCommand (Ind name n ty _ constrlst) = frontGroundColor RED (bright "Inductive ") ++ name ++ prettyInductiveTyTail n ty ++ prettyConstrLst n constrlst
 prettyShowCommand (Fix name (TmFix _ (TmLambda _ ty tm))) = frontGroundColor RED (bright "Fixpoint ") ++ name ++ prettyDefinitionTail ty tm
+prettyShowCommand (Theorem name ty) = frontGroundColor RED (bright "Theorem ") ++ name ++ " : " ++ prettyShow ty
 
 prettyPrintCommand :: Command -> IO ()
 prettyPrintCommand cmd = putStrLn $ prettyShowCommand cmd

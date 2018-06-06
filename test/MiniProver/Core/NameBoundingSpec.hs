@@ -485,3 +485,42 @@ spec =
                           , TmVar "xx2"
                           , TmVar "y2" ]])])))))
           `shouldBe` UnboundNameInTerm (sort ["nat2", "y2", "xx2", "plus2"])
+      describe "Theorem" $ do
+        it "bounded" $
+          checkAllNameBoundedCommand natContext
+          ( Theorem "pluscomm"
+            ( TmProd "x"
+              ( TmVar "nat" )
+              ( TmProd "y"
+                ( TmVar "nat" )
+                ( TmAppl
+                  [ TmVar "eq"
+                  , TmVar "nat"
+                  , TmAppl
+                    [ TmVar "plus"
+                    , TmVar "x"
+                    , TmVar "y" ]
+                  , TmAppl
+                    [ TmVar "plus"
+                    , TmVar "y"
+                    , TmVar "x" ]]))))
+          `shouldBe` AllNameBounded
+        it "unbounded" $
+          checkAllNameBoundedCommand natContext
+          ( Theorem "pluscomm"
+            ( TmProd "x"
+              ( TmVar "nat1" )
+              ( TmProd "y"
+                ( TmVar "nat" )
+                ( TmAppl
+                  [ TmVar "eq"
+                  , TmVar "nat"
+                  , TmAppl
+                    [ TmVar "plus"
+                    , TmVar "x"
+                    , TmVar "y" ]
+                  , TmAppl
+                    [ TmVar "plus"
+                    , TmVar "y"
+                    , TmVar "z" ]]))))
+          `shouldBe` UnboundNameInTerm ["nat1","z"]

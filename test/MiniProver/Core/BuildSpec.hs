@@ -675,4 +675,47 @@ spec = do
                           [ TmRel "plus" 3
                           , TmRel "n" 0
                           , TmRel "y" 1 ]])])))))
-      
+    describe "Theorem" $
+      it "pluscomm" $
+        buildCommand
+          ( Theorem "pluscomm"
+            ( TmProd "a"
+              ( TmVar "nat")
+              ( TmProd "b"
+                ( TmVar "nat")
+                ( TmAppl
+                  [ TmVar "eq"
+                  , TmVar "nat"
+                  , TmAppl
+                    [ TmVar "plus"
+                    , TmVar "a"
+                    , TmVar "b" ]
+                  , TmAppl
+                    [ TmVar "plus"
+                    , TmVar "b"
+                    , TmVar "a" ]]))))
+          ctx
+          `shouldBe`
+          Theorem "pluscomm"
+          ( TmProd "a"
+            ( TmIndType "nat" [] )
+            ( TmProd "b"
+              ( TmIndType "nat" [] )
+              ( TmAppl
+                [ TmLambda "a"
+                    TmType
+                  ( TmLambda ".0"
+                    ( TmRel "a" 0 )
+                    ( TmLambda ".1" 
+                      ( TmRel "a" 1 )
+                      ( TmIndType "eq"
+                        [ TmRel "a" 2, TmRel ".0" 1, TmRel ".1" 0 ])))
+                , TmIndType "nat" []
+                , TmAppl
+                  [ TmRel "plus" 2
+                  , TmRel "a" 1
+                  , TmRel "b" 0 ]
+                , TmAppl
+                  [ TmRel "plus" 2
+                  , TmRel "b" 0
+                  , TmRel "a" 1 ]])))

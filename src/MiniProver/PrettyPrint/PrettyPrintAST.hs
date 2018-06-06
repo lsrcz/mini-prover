@@ -149,6 +149,8 @@ prettyShowCommandAST' (Ind name i ty tm constrlst) indent =
     addParens (prettyShowConstrList constrlst (indent + 2)) '[' ']')
 prettyShowCommandAST' (Fix name tm) indent = (spaces indent ++ "Fix " ++ show name) :
   prettyShowAddParensNonAtom tm (indent + 2)
+prettyShowCommandAST' (Theorem name tm) indent = (spaces indent ++ "Theorem " ++ show name) :
+  prettyShowAddParensNonAtom tm (indent + 2)
 
 prettyShowConstr :: (Name, Term, Term) -> Int -> [String]
 prettyShowConstr (name, ty, tm) indent = (spaces indent ++ show name) :

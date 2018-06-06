@@ -76,6 +76,8 @@ checkDuplicateGlobalName ctx (Ind name _ _ _ constrlst) =
   [ xname | xname <- name : map (\(n,_,_) -> n) constrlst, isNameBound ctx xname]
 checkDuplicateGlobalName ctx (Fix name _) =
   [ name | isNameBound ctx name ]
+checkDuplicateGlobalName ctx (Theorem name _) =
+  [ name | isNameBound ctx name ]
 
 removeTailDigits :: Name -> Name
 removeTailDigits [] = []

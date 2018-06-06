@@ -254,12 +254,23 @@ pfixdefinition = do
       (TmLambda name
         (addBinderAbbr TmProd ty binders)
         (addBinderAbbr TmLambda tm binders)))
+  
+ptheorem :: Parser Command
+ptheorem = do
+  _ <- rword "Theorem"
+  name <- ident
+  binders <- many pbinder
+  _ <- colon
+  ty <- pterm
+  _ <- dot
+  return $ Theorem name (addBinderAbbr TmProd ty binders)
 
 pcommand :: Parser Command
 pcommand = try paxiom
        <|> try pdefinition
        <|> try pinductive
        <|> try pfixdefinition
+       <|> try ptheorem
 
 pproofcmd :: Parser ProofCommand
 pproofcmd = do

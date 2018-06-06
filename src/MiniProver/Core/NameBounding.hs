@@ -261,4 +261,5 @@ checkAllNameBoundedCommand ctx (Ind name _ ty tm constrlst) =
           , checkAllNameBounded (addName ctxWithName namec) tmc ])
         constrlst )
 checkAllNameBoundedCommand ctx (Fix _ tm) = checkAllNameBounded ctx tm
+checkAllNameBoundedCommand ctx (Theorem _ tm) = checkAllNameBounded ctx tm
 

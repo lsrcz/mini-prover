@@ -1069,3 +1069,36 @@ spec = do
                     , TmRel "n" 2
                     , TmRel ".0" 1
                     , TmRel ".1" 0 ])))))]
+    it "Theorem" $
+      simplifyIndCmd
+      ( Theorem "S_Sn"
+        ( TmProd "n"
+          ( TmIndType "nat" [])
+          ( TmAppl
+            [ TmLambda "T"
+                TmType
+              ( TmLambda "x"
+                ( TmRel "T" 0 )
+                ( TmLambda ".0"
+                  ( TmRel "T" 1 )
+                  ( TmIndType "eq"
+                    [ TmRel "T" 2
+                    , TmRel "x" 1
+                    , TmRel ".0" 0 ])))
+            , TmIndType "nat" []
+            , TmRel "n" 0
+            , TmAppl
+              [ TmLambda ".0"
+                ( TmIndType "nat" [])
+                ( TmConstr "S"
+                  [ TmRel ".0" 0 ])
+              , TmRel "n" 0 ]])))
+      `shouldBe`
+      Theorem "S_Sn"
+        ( TmProd "n"
+          ( TmIndType "nat" [])
+          ( TmIndType "eq"
+            [ TmIndType "nat" []
+            , TmRel "n" 0
+            , TmConstr "S"
+              [ TmRel "n" 0 ]]))

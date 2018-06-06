@@ -2868,4 +2868,108 @@ spec = do
                           [ TmRel "plus" 3
                           , TmRel "n" 0
                           , TmRel "y" 1 ]])]))))))
+    it "Theorem" $
+      computeDecParamCmd
+      ( Theorem "pluscomm"
+        ( TmIndType "eq"
+          [ TmIndType "nat" []
+          , TmAppl
+            [ TmFix (-1)
+              ( TmLambda "plus"
+                ( TmProd "x"
+                  ( TmIndType "nat" [])
+                  ( TmProd "y"
+                    ( TmIndType "nat" [])
+                    ( TmIndType "nat" [])))
+                ( TmLambda "x"
+                  ( TmIndType "nat" [])
+                  ( TmLambda "y"
+                    ( TmIndType "nat" [])
+                    ( TmMatch 0
+                      ( TmRel "x" 1 )
+                      "x0"
+                      [ "nat" ]
+                      ( TmIndType "nat" [])
+                      [ Equation
+                        [ "O" ]
+                        ( TmRel "y" 0 )
+                      , Equation
+                        [ "S"
+                        , "n" ]
+                        ( TmAppl
+                          [ TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmConstr "S"
+                              [ TmRel ".0" 0 ])
+                          , TmAppl
+                            [ TmRel "plus" 3
+                            , TmRel "n" 0
+                            , TmRel "y" 1 ]])]))))
+            , TmAppl
+              [ TmLambda ".0"
+                ( TmIndType "nat" [])
+                ( TmConstr "S"
+                  [ TmRel ".0" 0 ])
+              , TmAppl
+                [ TmLambda ".0"
+                  ( TmIndType "nat" [])
+                  ( TmConstr "S"
+                    [ TmRel ".0" 0 ])
+                , TmConstr "O" []]]
+            , TmConstr "O" []]
+            , TmConstr "S"
+              [ TmConstr "S"
+                [ TmConstr "O" [] ]]]))
+      `shouldBe`
+      Right
+      ( Theorem "pluscomm"
+        ( TmIndType "eq"
+          [ TmIndType "nat" []
+          , TmAppl
+            [ TmFix 1
+              ( TmLambda "plus"
+                ( TmProd "x"
+                  ( TmIndType "nat" [])
+                  ( TmProd "y"
+                    ( TmIndType "nat" [])
+                    ( TmIndType "nat" [])))
+                ( TmLambda "x"
+                  ( TmIndType "nat" [])
+                  ( TmLambda "y"
+                    ( TmIndType "nat" [])
+                    ( TmMatch 0
+                      ( TmRel "x" 1 )
+                      "x0"
+                      [ "nat" ]
+                      ( TmIndType "nat" [])
+                      [ Equation
+                        [ "O" ]
+                        ( TmRel "y" 0 )
+                      , Equation
+                        [ "S"
+                        , "n" ]
+                        ( TmAppl
+                          [ TmLambda ".0"
+                            ( TmIndType "nat" [])
+                            ( TmConstr "S"
+                              [ TmRel ".0" 0 ])
+                          , TmAppl
+                            [ TmRel "plus" 3
+                            , TmRel "n" 0
+                            , TmRel "y" 1 ]])]))))
+            , TmAppl
+              [ TmLambda ".0"
+                ( TmIndType "nat" [])
+                ( TmConstr "S"
+                  [ TmRel ".0" 0 ])
+              , TmAppl
+                [ TmLambda ".0"
+                  ( TmIndType "nat" [])
+                  ( TmConstr "S"
+                    [ TmRel ".0" 0 ])
+                , TmConstr "O" []]]
+            , TmConstr "O" []]
+            , TmConstr "S"
+              [ TmConstr "S"
+                [ TmConstr "O" [] ]]]))
 

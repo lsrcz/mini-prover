@@ -48,3 +48,4 @@ simplifyIndCmd (Ind name i ty tm constrlst) =
 simplifyIndCmd (Ax name tm) = Ax name (simplifyIndType tm)
 simplifyIndCmd (Def name ty tm) = Def name (simplifyIndType ty) (simplifyIndType tm)
 simplifyIndCmd (Fix name tm) = Fix name (simplifyIndType tm)
+simplifyIndCmd (Theorem name tm) = Theorem name (simplifyIndType tm)

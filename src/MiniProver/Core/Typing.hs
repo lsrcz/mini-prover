@@ -296,6 +296,10 @@ checkCommandType ctx (Ind name n t1 t2 ls) =
     case typeof' newctx (tmShift 1 t1)  of
       Left er -> Just er
       Right _ -> checkConstr newctx ls
+checkCommandType ctx (Theorem _ term) =
+  if typeeq ctx (typeof' ctx term) (Right TmType)
+    then Nothing
+    else Just (TypingError term "the type of it is not Type")
 
 listToConstr::[(Name, Term, Term)]->[Constructor]
 listToConstr [] = []
