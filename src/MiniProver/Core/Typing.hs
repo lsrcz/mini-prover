@@ -3,6 +3,7 @@ module MiniProver.Core.Typing (
   , simplifyType
   , typeof
   , checkCommandType
+  , typeeq
   ) where
 
 import MiniProver.Core.Syntax
