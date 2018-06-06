@@ -3,8 +3,7 @@ module MiniProver.Parser.Parser where
 import Text.Megaparsec
 import MiniProver.Core.Syntax
 import MiniProver.Parser.Lexer
-import MiniProver.Proof.ProofCommand
-import MiniProver.Proof.TacticDef
+import MiniProver.Proof.ProofDef
 
 addBinderAbbr :: (Name -> Term -> Term -> Term) -> Term -> [(Name, Term)] -> Term
 addBinderAbbr abbrty = foldr (\(name, ty) acc -> abbrty name ty acc)
@@ -365,3 +364,6 @@ psimpl = do
   _ <- rword "simpl"
   mbid <- pmaybeinident
   return $ Simpl mbid
+
+pproofinput :: Parser ProofInput
+pproofinput = (PCmd <$> try pproofcmd) <|> (PTac <$> try ptactic)

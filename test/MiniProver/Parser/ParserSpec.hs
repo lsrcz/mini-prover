@@ -3,8 +3,7 @@ module MiniProver.Parser.ParserSpec (main, spec) where
 import Test.Hspec
 import Test.Hspec.Megaparsec
 import MiniProver.Core.Syntax
-import MiniProver.Proof.ProofCommand
-import MiniProver.Proof.TacticDef
+import MiniProver.Proof.ProofDef
 import MiniProver.Parser.Parser
 import Text.Megaparsec
 
@@ -1138,6 +1137,12 @@ spec = do
     it "symmetry" $
       parse ptactic "" "symmetry."
       `shouldParse` Symmetry
-    
+  describe "pproofinput" $ do
+    it "cmd" $
+      parse pproofinput "" "Proof."
+      `shouldParse` PCmd Proof
+    it "tactic" $
+      parse pproofinput "" "simpl."
+      `shouldParse` PTac (Simpl Nothing)
     
     
