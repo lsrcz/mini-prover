@@ -1751,3 +1751,41 @@ realEx2Context =
                     , TmRel "x" 2
                     , TmRel "f" 1
                     , TmRel "f0" 0 ])))))))])] ++ realExContext
+
+realPlusContext :: Context
+realPlusContext =
+  ( "plus"
+    , TmAbbBind
+      (TmProd "a"
+        ( TmIndType "nat" [])
+        ( TmProd "b"
+          ( TmIndType "nat" [])
+          ( TmIndType "nat" [])))
+      ( Just
+        ( TmFix 1
+        ( TmLambda "plus"
+          ( TmProd "a"
+            ( TmIndType "nat" [])
+            ( TmProd "b"
+              ( TmIndType "nat" [])
+              ( TmIndType "nat" [])))
+          ( TmLambda "a"
+            ( TmIndType "nat" [])
+            ( TmLambda "b"
+              ( TmIndType "nat" [])
+              ( TmMatch 0
+                ( TmRel "a" 1 )
+                  "a0"
+                [ "nat" ]
+                ( TmIndType "nat" [])
+                [ Equation
+                  [ "O" ]
+                  ( TmRel "b" 0 )
+                , Equation
+                  [ "S"
+                  , "n" ]
+                  ( TmConstr "S"
+                    [ TmAppl
+                      [ TmRel "plus" 3
+                      , TmRel "n" 0
+                      , TmRel "b" 1 ]])]))))))) : realEx2Context

@@ -151,10 +151,167 @@ spec = do
             Right (Result goallst f) ->
               length goallst == 1 &&
               case head goallst of
-                Goal i ctx1 ty -> i == 1 && ctx1 == (("m0",VarBind (TmRel "T1" 1)):("t",VarBind (TmRel "T1" 0)):("T1",VarBind TmType):realEqContext) &&
+                Goal i ctx1 ty -> i == 1 && 
+                  ctx1 == (("m0",VarBind (TmRel "T1" 1)):("t",VarBind (TmRel "T1" 0)):("T1",VarBind TmType):realEqContext) &&
                   ty == 
                     TmIndType "eq"
                       [ TmRel "T1" 2
                       , TmRel "m0" 0
                       , TmRel "m0" 0 ]
               && f [TmVar "Goal1"] == TmLambda "T1" TmType (TmLambda "t" (TmRel "T1" 0) (TmLambda "m0" (TmRel "T1" 1) (TmVar "Goal1"))))
+  describe "destruct" $ do
+    let
+      goal = Goal 0 
+        ( ("m",VarBind (TmIndType "nat" []))
+        : ("n",VarBind (TmIndType "nat" []))
+        : realNatContext)
+        ( TmIndType "eq"
+          [ TmIndType "nat" []
+          , TmAppl
+            [ TmRel "plus" 2
+            , TmRel "n" 1
+            , TmRel "m" 0 ]
+          , TmAppl
+            [ TmRel "plus" 2
+            , TmRel "n" 1
+            , TmRel "m" 0 ]])
+      ans = TmMatch 0
+        ( TmRel "m" 0 )
+        "n0"
+        ["nat"]
+        ( TmIndType "eq"
+          [ TmIndType "nat" []
+          , TmAppl
+            [ TmRel "plus" 3
+            , TmRel "n" 2
+            , TmRel "n0" 0 ]
+          , TmAppl
+            [ TmRel "plus" 3
+            , TmRel "n" 2
+            , TmRel "n0" 0 ]])
+        [ Equation
+          [ "O" ]
+          ( TmAppl
+            [ TmConstr "eq_refl"
+              [ TmIndType "nat" []
+              , TmAppl
+                [ TmRel "plus" 2
+                , TmRel "n" 1
+                , TmConstr "O" []]]])
+        , Equation
+          [ "S", "m0" ]
+          ( TmMatch 0
+            ( TmRel "n" 2 )
+            "n0"
+            ["nat"]
+            ( TmIndType "eq"
+              [ TmIndType "nat" []
+              , TmAppl
+                [ TmRel "plus" 4
+                , TmRel "n0" 0
+                , TmConstr "S"
+                  [ TmRel "m0" 1 ]]
+              , TmAppl
+                [ TmRel "plus" 4
+                , TmRel "n0" 0
+                , TmConstr "S"
+                  [ TmRel "m0" 1 ]]])
+            [ Equation
+              [ "O" ]
+              ( TmConstr "eq_refl"
+                [ TmIndType "nat" []
+                , TmAppl
+                  [ TmRel "plus" 3
+                  , TmConstr "O" []
+                  , TmConstr "S"
+                    [ TmRel "m0" 0 ]]])
+            , Equation
+              [ "S", "n0" ]
+              ( TmConstr "eq_refl"
+                [ TmIndType "nat" []
+                , TmAppl
+                  [ TmRel "plus" 4
+                  , TmConstr "S"
+                    [ TmRel "n0" 0]
+                  , TmConstr "S"
+                    [ TmRel "m0" 1]]])])]
+    it "eq naive" $
+      handleTactic goal (Destruct (TmRel "m" 0)) `shouldSatisfy`
+      (\case
+        Left _ -> False
+        Right (Result goallst f) ->
+          length goallst == 2 &&
+          case head goallst of
+            Goal i ctx1 ty -> i == 1 &&
+              ctx1 == ("n",VarBind (TmIndType "nat" [])):realPlusContext &&
+              ty ==
+                TmIndType "eq"
+                [ TmIndType "nat" []
+                , TmAppl
+                  [ TmRel "plus" 2
+                  , TmRel "n" 1
+                  , TmConstr "O" [] ]
+                , TmAppl
+                  [ TmRel "plus" 2
+                  , TmRel "n" 1
+                  , TmConstr "O" [] ]]
+          &&
+          case goallst !! 1 of
+            Goal i ctx1 ty -> i == 1 &&
+              ctx1 == ("m0",VarBind (TmIndType "nat" [])):("n",VarBind (TmIndType "nat" [])):realPlusContext &&
+              ty ==
+                TmIndType "eq"
+                [ TmIndType "nat" []
+                , TmAppl
+                  [ TmRel "plus" 2
+                  , TmRel "n" 1
+                  , TmConstr "S"
+                    [ TmRel "m0" 0 ]]
+                , TmAppl
+                [ TmRel "plus" 2
+                , TmRel "n" 1
+                , TmConstr "S"
+                  [ TmRel "m0" 0 ]]]
+          &&
+          f [ TmAppl
+              [ TmConstr "eq_refl"
+                [ TmIndType "nat" []
+                , TmAppl
+                  [ TmRel "plus" 1
+                  , TmRel "n" 0
+                  , TmConstr "O" []]]]
+            , TmMatch 0
+              ( TmRel "n" 1 )
+              "n0"
+              ["nat"]
+              ( TmIndType "eq"
+                [ TmIndType "nat" []
+                , TmAppl
+                  [ TmRel "plus" 3
+                  , TmRel "n0" 0
+                  , TmConstr "S"
+                    [ TmRel "m0" 1 ]]
+                , TmAppl
+                  [ TmRel "plus" 3
+                  , TmRel "n0" 0
+                  , TmConstr "S"
+                    [ TmRel "m0" 1 ]]])
+              [ Equation
+                [ "O" ]
+                ( TmConstr "eq_refl"
+                  [ TmIndType "nat" []
+                  , TmAppl
+                    [ TmRel "plus" 2
+                    , TmConstr "O" []
+                    , TmConstr "S"
+                      [ TmRel "m0" 0 ]]])
+              , Equation
+                [ "S", "n0" ]
+                ( TmConstr "eq_refl"
+                  [ TmIndType "nat" []
+                  , TmAppl
+                    [ TmRel "plus" 3
+                    , TmConstr "S"
+                      [ TmRel "n0" 0]
+                    , TmConstr "S"
+                      [ TmRel "m0" 1]]])]] == ans)
