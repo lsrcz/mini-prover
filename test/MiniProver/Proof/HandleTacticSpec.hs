@@ -8,6 +8,7 @@ import MiniProver.Core.Context
 import MiniProver.Proof.HandleTactic
 import MiniProver.Proof.ProofDef
 import MiniProver.Utils.ContextForTesting
+import Data.Either (fromRight)
 
 main :: IO ()
 main = hspec spec
@@ -27,8 +28,7 @@ spec = do
               [ TmRel "T" 2
               , TmRel "m0" 0
               , TmRel "m0" 0 ])))
-    it "all in one" $
-      handleTactic goal
+      allinoneAns = fromRight undefined $ handleTactic goal
         ( Exact
           ( TmLambda "T"
             TmType
@@ -46,21 +46,19 @@ spec = do
                       , TmRel "x" 0 ]))
                 , TmRel "T" 2
                 , TmRel "x2" 0 ])))))
-      `shouldSatisfy`
-      (\case
-          Left _ -> False
-          Right (Result goallst f) ->
-            null goallst &&
-            f [] ==
-              TmLambda "T"
-                  TmType
-                ( TmLambda "x1"
-                  ( TmRel "T" 0 )
-                  ( TmLambda "x2"
-                    ( TmRel "T" 1 )
-                    ( TmConstr "eq_refl"
-                      [ TmRel "T" 2
-                      , TmRel "x2" 0 ]))))
+    it "all in one -- goal" $
+      getGoalList allinoneAns `shouldBe` []
+    it "all in one -- func" $
+      getResultFunc allinoneAns [] `shouldBe`
+      TmLambda "T"
+        TmType
+      ( TmLambda "x1"
+        ( TmRel "T" 0 )
+        ( TmLambda "x2"
+          ( TmRel "T" 1 )
+          ( TmConstr "eq_refl"
+            [ TmRel "T" 2
+            , TmRel "x2" 0 ])))
   describe "intro" $ do
     let
       goal = Goal 0 realEqContext $
@@ -74,59 +72,50 @@ spec = do
               [ TmRel "T" 2
               , TmRel "m0" 0
               , TmRel "m0" 0 ])))
-    it "no name" $
-      handleTactic goal (Intro []) `shouldSatisfy`
-      (\case
-          Left _ -> False
-          Right (Result goallst f) ->
-            length goallst == 1 &&
-            case head goallst of
-              Goal i ctx1 ty -> i == 1 && ctx1 == (("T",VarBind TmType):realEqContext) &&
-                ty == 
-                  TmProd "_"
-                    ( TmRel "T" 0 )
-                    ( TmProd "m0"
-                      ( TmRel "T" 1 )
-                      ( TmIndType "eq"
-                        [ TmRel "T" 2
-                        , TmRel "m0" 0
-                        , TmRel "m0" 0 ]))
-            && f [TmVar "Goal1"] == TmLambda "T" TmType (TmVar "Goal1"))
-    it "1 name" $
-      handleTactic goal (Intro ["T1"]) `shouldSatisfy`
-      (\case
-          Left _ -> False
-          Right (Result goallst f) ->
-            length goallst == 1 &&
-            case head goallst of
-              Goal i ctx1 ty -> i == 1 && ctx1 == (("T1",VarBind TmType):realEqContext) &&
-                ty == 
-                  TmProd "_"
-                    ( TmRel "T1" 0 )
-                    ( TmProd "m0"
-                      ( TmRel "T1" 1 )
-                      ( TmIndType "eq"
-                        [ TmRel "T1" 2
-                        , TmRel "m0" 0
-                        , TmRel "m0" 0 ]))
-            && f [TmVar "Goal1"] == TmLambda "T1" TmType (TmVar "Goal1"))
-    it "2 names" $
-      handleTactic goal (Intro ["T1","m"]) `shouldSatisfy`
-      (\case
-          Left _ -> False
-          Right (Result goallst f) ->
-            length goallst == 1 &&
-            case head goallst of
-              Goal i ctx1 ty -> i == 1 && ctx1 == (("m",VarBind (TmRel "T1" 0)):("T1",VarBind TmType):realEqContext) &&
-                ty == 
-                  TmProd "m0"
-                    ( TmRel "T1" 1 )
-                    ( TmIndType "eq"
-                      [ TmRel "T1" 2
-                      , TmRel "m0" 0
-                      , TmRel "m0" 0 ])
-            && f [TmVar "Goal1"] == TmLambda "T1" TmType (TmLambda "m" (TmRel "T1" 0) (TmVar "Goal1")))
-    it "4 names" $
+      nonameAns = fromRight undefined $ handleTactic goal (Intro [])
+    it "no name -- goal" $
+      getGoalList nonameAns `shouldBe`
+      [ Goal 1 (("T",VarBind TmType):realEqContext)
+        ( TmProd "_"
+          ( TmRel "T" 0 )
+          ( TmProd "m0"
+            ( TmRel "T" 1 )
+            ( TmIndType "eq"
+              [ TmRel "T" 2
+              , TmRel "m0" 0
+              , TmRel "m0" 0 ])))]
+    it "no name -- func" $
+      getResultFunc nonameAns [TmVar "Goal1"] `shouldBe`
+        TmLambda "T" TmType (TmVar "Goal1")
+    let onenameAns = fromRight undefined $ handleTactic goal (Intro ["T1"])
+    it "one name -- goal" $
+      getGoalList onenameAns `shouldBe`
+      [ Goal 1 (("T1",VarBind TmType):realEqContext)
+        ( TmProd "_"
+          ( TmRel "T" 0 )
+          ( TmProd "m0"
+            ( TmRel "T1" 1 )
+            ( TmIndType "eq"
+              [ TmRel "T1" 2
+              , TmRel "m0" 0
+              , TmRel "m0" 0 ])))]
+    it "one name -- func" $
+      getResultFunc onenameAns [TmVar "Goal1"] `shouldBe`
+        TmLambda "T1" TmType (TmVar "Goal1")
+    let twonamesAns = fromRight undefined $ handleTactic goal (Intro ["T1","m"])
+    it "two names -- goal" $
+      getGoalList onenameAns `shouldBe`
+      [ Goal 2 (("m",VarBind (TmRel "T1" 0)):("T1",VarBind TmType):realEqContext)
+        ( TmProd "m0"
+          ( TmRel "T1" 1 )
+          ( TmIndType "eq"
+            [ TmRel "T1" 2
+            , TmRel "m0" 0
+            , TmRel "m0" 0 ]))]
+    it "two names -- func" $
+      getResultFunc onenameAns [TmVar "Goal1"] `shouldBe`
+        TmLambda "T1" TmType (TmLambda "m" (TmRel "T1" 0) (TmVar "Goal1"))
+    it "four names -- should fail" $
       handleTactic goal (Intro ["a","b","c","d"]) `shouldSatisfy`
       (\case
         Left (TacticError str) -> str == "No enough products"
@@ -144,21 +133,17 @@ spec = do
               [ TmRel "T" 2
               , TmRel "m0" 0
               , TmRel "m0" 0 ])))
-    it "all in one" $
-      handleTactic goal Intros `shouldSatisfy`
-        (\case
-            Left _ -> False
-            Right (Result goallst f) ->
-              length goallst == 1 &&
-              case head goallst of
-                Goal i ctx1 ty -> i == 1 && 
-                  ctx1 == (("m0",VarBind (TmRel "T1" 1)):("t",VarBind (TmRel "T1" 0)):("T1",VarBind TmType):realEqContext) &&
-                  ty == 
-                    TmIndType "eq"
-                      [ TmRel "T1" 2
-                      , TmRel "m0" 0
-                      , TmRel "m0" 0 ]
-              && f [TmVar "Goal1"] == TmLambda "T1" TmType (TmLambda "t" (TmRel "T1" 0) (TmLambda "m0" (TmRel "T1" 1) (TmVar "Goal1"))))
+      allinoneAns = fromRight undefined $ handleTactic goal Intros
+    it "all in one -- goal" $
+      getGoalList allinoneAns `shouldBe`
+      [ Goal 3 (("m0",VarBind (TmRel "T1" 1)):("t",VarBind (TmRel "T1" 0)):("T1",VarBind TmType):realEqContext)
+        ( TmIndType "eq"
+          [ TmRel "T1" 2
+          , TmRel "m0" 0
+          , TmRel "m0" 0 ])]
+    it "all in one -- func" $
+      getResultFunc allinoneAns [TmVar "Goal1"] `shouldBe`
+        TmLambda "T1" TmType (TmLambda "t" (TmRel "T1" 0) (TmLambda "m0" (TmRel "T1" 1) (TmVar "Goal1")))
   describe "destruct" $ do
     let
       goal = Goal 0 
@@ -175,7 +160,50 @@ spec = do
             [ TmRel "plus" 2
             , TmRel "n" 1
             , TmRel "m" 0 ]])
-      ans = TmMatch 0
+      fParam = 
+        [ TmAppl
+          [ TmConstr "eq_refl"
+            [ TmIndType "nat" []
+            , TmAppl
+              [ TmRel "plus" 1
+              , TmRel "n" 0
+              , TmConstr "O" []]]]
+        , TmMatch 0
+          ( TmRel "n" 1 )
+          "n0"
+          ["nat"]
+          ( TmIndType "eq"
+            [ TmIndType "nat" []
+            , TmAppl
+              [ TmRel "plus" 3
+              , TmRel "n0" 0
+              , TmConstr "S"
+                [ TmRel "m0" 1 ]]
+            , TmAppl
+              [ TmRel "plus" 3
+              , TmRel "n0" 0
+              , TmConstr "S"
+                [ TmRel "m0" 1 ]]])
+          [ Equation
+            [ "O" ]
+            ( TmConstr "eq_refl"
+              [ TmIndType "nat" []
+              , TmAppl
+                [ TmRel "plus" 2
+                , TmConstr "O" []
+                , TmConstr "S"
+                  [ TmRel "m0" 0 ]]])
+          , Equation
+            [ "S", "n0" ]
+            ( TmConstr "eq_refl"
+              [ TmIndType "nat" []
+              , TmAppl
+                [ TmRel "plus" 3
+                , TmConstr "S"
+                  [ TmRel "n0" 0]
+                , TmConstr "S"
+                  [ TmRel "m0" 1]]])]]
+      resultTerm = TmMatch 0
         ( TmRel "m" 0 )
         "n0"
         ["nat"]
@@ -235,83 +263,32 @@ spec = do
                     [ TmRel "n0" 0]
                   , TmConstr "S"
                     [ TmRel "m0" 1]]])])]
-    it "eq naive" $
-      handleTactic goal (Destruct (TmRel "m" 0)) `shouldSatisfy`
-      (\case
-        Left _ -> False
-        Right (Result goallst f) ->
-          length goallst == 2 &&
-          case head goallst of
-            Goal i ctx1 ty -> i == 1 &&
-              ctx1 == ("n",VarBind (TmIndType "nat" [])):realPlusContext &&
-              ty ==
-                TmIndType "eq"
-                [ TmIndType "nat" []
-                , TmAppl
-                  [ TmRel "plus" 2
-                  , TmRel "n" 1
-                  , TmConstr "O" [] ]
-                , TmAppl
-                  [ TmRel "plus" 2
-                  , TmRel "n" 1
-                  , TmConstr "O" [] ]]
-          &&
-          case goallst !! 1 of
-            Goal i ctx1 ty -> i == 1 &&
-              ctx1 == ("m0",VarBind (TmIndType "nat" [])):("n",VarBind (TmIndType "nat" [])):realPlusContext &&
-              ty ==
-                TmIndType "eq"
-                [ TmIndType "nat" []
-                , TmAppl
-                  [ TmRel "plus" 2
-                  , TmRel "n" 1
-                  , TmConstr "S"
-                    [ TmRel "m0" 0 ]]
-                , TmAppl
-                [ TmRel "plus" 2
-                , TmRel "n" 1
-                , TmConstr "S"
-                  [ TmRel "m0" 0 ]]]
-          &&
-          f [ TmAppl
-              [ TmConstr "eq_refl"
-                [ TmIndType "nat" []
-                , TmAppl
-                  [ TmRel "plus" 1
-                  , TmRel "n" 0
-                  , TmConstr "O" []]]]
-            , TmMatch 0
-              ( TmRel "n" 1 )
-              "n0"
-              ["nat"]
-              ( TmIndType "eq"
-                [ TmIndType "nat" []
-                , TmAppl
-                  [ TmRel "plus" 3
-                  , TmRel "n0" 0
-                  , TmConstr "S"
-                    [ TmRel "m0" 1 ]]
-                , TmAppl
-                  [ TmRel "plus" 3
-                  , TmRel "n0" 0
-                  , TmConstr "S"
-                    [ TmRel "m0" 1 ]]])
-              [ Equation
-                [ "O" ]
-                ( TmConstr "eq_refl"
-                  [ TmIndType "nat" []
-                  , TmAppl
-                    [ TmRel "plus" 2
-                    , TmConstr "O" []
-                    , TmConstr "S"
-                      [ TmRel "m0" 0 ]]])
-              , Equation
-                [ "S", "n0" ]
-                ( TmConstr "eq_refl"
-                  [ TmIndType "nat" []
-                  , TmAppl
-                    [ TmRel "plus" 3
-                    , TmConstr "S"
-                      [ TmRel "n0" 0]
-                    , TmConstr "S"
-                      [ TmRel "m0" 1]]])]] == ans)
+    let eqnaiveAns = fromRight undefined $ handleTactic goal (Destruct (TmRel "m" 0))
+    it "eq naive -- goal" $
+      getGoalList eqnaiveAns `shouldBe`
+      [ Goal 1 (("n",VarBind (TmIndType "nat" [])):realPlusContext)
+        ( TmIndType "eq"
+          [ TmIndType "nat" []
+          , TmAppl
+            [ TmRel "plus" 2
+            , TmRel "n" 1
+            , TmConstr "O" [] ]
+          , TmAppl
+            [ TmRel "plus" 2
+            , TmRel "n" 1
+            , TmConstr "O" [] ]])
+      , Goal 2 (("m0",VarBind (TmIndType "nat" [])):("n",VarBind (TmIndType "nat" [])):realPlusContext)
+        ( TmIndType "eq"
+          [ TmIndType "nat" []
+          , TmAppl
+            [ TmRel "plus" 2
+            , TmRel "n" 1
+            , TmConstr "S"
+              [ TmRel "m0" 0 ]]
+          , TmAppl
+          [ TmRel "plus" 2
+          , TmRel "n" 1
+          , TmConstr "S"
+            [ TmRel "m0" 0 ]]])]
+    it "eq naive -- func" $
+      getResultFunc eqnaiveAns fParam `shouldBe` resultTerm
