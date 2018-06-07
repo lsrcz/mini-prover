@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 module MiniProver.TopLevel.ProofLoop where
 
 import Text.Megaparsec
@@ -5,6 +6,8 @@ import MiniProver.Parser.Parser
 import MiniProver.Core.Syntax
 import MiniProver.Core.Context
 import MiniProver.Core.Typing
+import MiniProver.Core.Rename
+import MiniProver.Core.SimplifyIndType
 import MiniProver.PrettyPrint.PrettyPrint
 import MiniProver.PrettyPrint.PrettyPrintAST
 import MiniProver.PrettyPrint.Colorful
@@ -64,18 +67,19 @@ proof ctx tm = do
 proofList :: [Goal] -> IO (Either ProofControl [Term])
 proofList [] = return $ Right []
 proofList glist@(g:gs) = do
-  printGoals glist
+  let rglist = map (\case Goal i ctx ty -> Goal i ctx (renameTerm ctx (simplifyIndType ty))) glist
+  printGoals rglist
   r <- proofLoop g
   case r of
     Left UndoCmd -> return $ Left UndoCmd
     Left QedCmd -> do
       putStrLn "not finished yet"
-      proofList glist
+      proofList rglist
     Left cmd -> return $ Left cmd
     Right tm -> do
       tl <- proofList gs
       case tl of
-        Left UndoCmd -> proofList glist
+        Left UndoCmd -> proofList rglist
         Left cmd -> return $ Left cmd
         Right tmlst -> return $ Right (tm:tmlst)
 

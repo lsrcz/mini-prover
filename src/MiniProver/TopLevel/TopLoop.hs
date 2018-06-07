@@ -9,6 +9,7 @@ import MiniProver.Core.IndPos
 import MiniProver.Core.Termination
 import MiniProver.Core.Typing
 import MiniProver.Core.NameBounding
+import MiniProver.Core.SimplifyIndType
 import MiniProver.PrettyPrint.PrettyPrint
 import MiniProver.PrettyPrint.PrettyPrintAST
 import MiniProver.PrettyPrint.Colorful

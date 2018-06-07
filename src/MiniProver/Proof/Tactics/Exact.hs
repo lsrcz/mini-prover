@@ -5,6 +5,7 @@ module MiniProver.Proof.Tactics.Exact (
 import MiniProver.Proof.ProofDef
 import MiniProver.Core.Typing
 import MiniProver.Core.Syntax
+import MiniProver.Core.SimplifyIndType
 import MiniProver.PrettyPrint.PrettyPrint
 
 handleExact :: Goal -> Tactic -> Either TacticError Result
@@ -17,7 +18,7 @@ handleExact (Goal _ ctx ty) (Exact tm) =
           prettyShow tm ++ "\n" ++ str
     Right ty1 ->
       if typeeq ctx (Right ty) (Right ty1)
-        then Right (Result [] (const tm))
+        then Right (Result [] (const (simplifyIndType tm)))
         else Left $ TacticError $
           "The term:\n" ++ prettyShow tm ++
           "\nhas the type:\n" ++ prettyShow ty1 ++
