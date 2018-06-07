@@ -94,7 +94,7 @@ deltaReduction :: Context -> Term -> Term
 deltaReduction ctx tmold@(TmRel _ idx) =
   case getBinding ctx idx of
     Right (TmAbbBind _ (Just tm)) -> tm
-    Right (TmAbbBind _ Nothing) -> error "delta reduction can not be applied to axioms"
+    Right (TmAbbBind _ Nothing) -> tmold
     Right (VarBind _) -> tmold
     Right NameBind -> tmold
     Left _ -> error "This should not happen in well-typed term"
