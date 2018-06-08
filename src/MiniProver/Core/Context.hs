@@ -79,6 +79,7 @@ checkDuplicateGlobalName ctx (Fix name _) =
   [ name | isNameBound ctx name ]
 checkDuplicateGlobalName ctx (Theorem name _) =
   [ name | isNameBound ctx name ]
+checkDuplicateGlobalName _ (Check _) = []
 
 removeTailDigits :: Name -> Name
 removeTailDigits [] = []

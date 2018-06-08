@@ -24,6 +24,7 @@ buildCommand (Ind name int ty tm lst) ctx =
 buildCommand (Fix name tm) ctx =
   Fix name (buildTerm tm ctx)
 buildCommand (Theorem name tm) ctx = Theorem name $ buildTerm tm ctx
+buildCommand (Check tm) ctx = Check $ buildTerm tm ctx
 
 -- before building the term, check whether all the names are bounded
 buildTerm :: Term -> BuiltTerm

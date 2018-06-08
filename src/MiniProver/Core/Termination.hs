@@ -162,3 +162,4 @@ computeDecParamCmd (Ind name n ty tm constrlst) =
 computeDecParamCmd (Fix name tm) =
   Fix name <$> computeDecParam tm
 computeDecParamCmd (Theorem name tm) = Theorem name <$> computeDecParam tm
+computeDecParamCmd (Check tm) = Check <$> computeDecParam tm

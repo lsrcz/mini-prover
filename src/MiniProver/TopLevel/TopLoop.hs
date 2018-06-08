@@ -89,10 +89,13 @@ processOneCommand verboseLevel inputStr ctx = do
       return ctx
     Right cmd -> do
       putStrLnV 1 $ okColor "[ OK ] parsing"
-      putStrLnV 2 $ infoColor "**** parsing result (term) ****"
-      pPrintCmdV 2 cmd
-      putStrLnV 3 $ infoColor "**** parsing result (AST) ****"
-      pPrintCmdASTV 3 cmd
+      case cmd of
+        Check _ -> return ()
+        _ -> do
+          putStrLnV 2 $ infoColor "**** parsing result (term) ****"
+          pPrintCmdV 2 cmd
+          putStrLnV 3 $ infoColor "**** parsing result (AST) ****"
+          pPrintCmdASTV 3 cmd
 
       case checkDuplicateGlobalName ctx cmd of
         lst@(_:_) -> do
@@ -114,10 +117,13 @@ processOneCommand verboseLevel inputStr ctx = do
                   putStrLnV 1 $ okColor "[ OK ] nameless representation building"
                   when (isIndCommand boundedCmd) $
                     putStrLnV 1 $ okColor "[ OK ] positivity checking"
-                  putStrLnV 2 $ infoColor "**** building result (command) ****"
-                  pPrintCmdV 2 boundedCmd
-                  putStrLnV 3 $ infoColor "**** building result (AST) ****"
-                  pPrintCmdASTV 3 boundedCmd
+                  case cmd of
+                    Check _ -> return ()
+                    _ -> do
+                      putStrLnV 2 $ infoColor "**** building result (command) ****"
+                      pPrintCmdV 2 boundedCmd
+                      putStrLnV 3 $ infoColor "**** building result (AST) ****"
+                      pPrintCmdASTV 3 boundedCmd
                   return ctx
                 
                   case computeDecParamCmd boundedCmd of
@@ -125,6 +131,17 @@ processOneCommand verboseLevel inputStr ctx = do
                       putStrLn $ errorColor "[ FAIL ] termination checking"
                       putStrLn "This term may not be terminating"
                       prettyPrint tm
+                      return ctx
+                    Right (Check tm) -> do
+                      putStrLnV 1 $ okColor "[ OK ] termination checking"
+                      case typeof ctx tm of
+                        Left (TypingError tm1 err) -> do
+                          putStrLn "In term:\n"
+                          prettyPrint tm1
+                          putStrLn err
+                        Right ty -> do
+                          prettyPrint (simplifyIndType tm)
+                          putStrLn $ "     : " ++ drop 7 (addIndent 7 $ prettyShow ty)
                       return ctx
                     Right cmdWithDec -> do
                       putStrLnV 1 $ okColor "[ OK ] termination checking"
