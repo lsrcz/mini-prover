@@ -16,6 +16,7 @@ module MiniProver.Core.Context (
   , getBindingType
   , getBindingTerm
   , getIndType
+  , getIndTypeByConstr
   , getIndTypeTerm
   , getIndTypeType
   , getIndTypeConstrlst
@@ -171,6 +172,14 @@ getIndType ((nameb,binder):xs) name =
     IndTypeBind i ty tm constrlst
       | nameb == name -> Right (i, ty, tm, constrlst)
     _ -> getIndType xs name
+
+getIndTypeByConstr :: Context -> Name -> Either ContextError (Name, Int, Term, Term, [Constructor])
+getIndTypeByConstr [] _ = Left NotAConstructor
+getIndTypeByConstr ((namei,binder):xs) name =
+  case binder of
+    IndTypeBind i ty tm constrlst
+      | any (\case Constructor namec _ _ -> name == namec) constrlst -> Right (namei, i, ty, tm, constrlst)
+    _ -> getIndTypeByConstr xs name
 
 getIndTypeTerm :: Context -> Name -> Either ContextError Term
 getIndTypeTerm ctx name = (\(_,_,tm,_) -> tm) <$> getIndType ctx name

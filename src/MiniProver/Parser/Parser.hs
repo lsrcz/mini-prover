@@ -264,12 +264,19 @@ ptheorem = do
   _ <- dot
   return $ Theorem name (addBinderAbbr TmProd ty binders)
 
+pprint :: Parser Command
+pprint = do
+  _ <- rword "Print"
+  name <- ident
+  return $ Print name
+
 pcommand :: Parser Command
 pcommand = try paxiom
        <|> try pdefinition
        <|> try pinductive
        <|> try pfixdefinition
        <|> try ptheorem
+       <|> try pprint
 
 pproofcmd :: Parser ProofCommand
 pproofcmd = do

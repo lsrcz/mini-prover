@@ -16,6 +16,7 @@ import MiniProver.PrettyPrint.Colorful
 import MiniProver.TopLevel.Command
 import MiniProver.TopLevel.IO
 import MiniProver.TopLevel.ProofLoop
+import MiniProver.PrettyPrint.PrintingCommand
 import Data.Either (fromRight)
 import Control.Monad (forever,when)
 import System.IO
@@ -83,6 +84,9 @@ processOneCommand verboseLevel inputStr ctx = do
       putStrLn $ errorColor "[ FAIL ] parsing"
       print err
       return ctx
+    Right (Print nm) -> do
+      processPrint ctx nm
+      return ctx
     Right cmd -> do
       putStrLnV 1 $ okColor "[ OK ] parsing"
       putStrLnV 2 $ infoColor "**** parsing result (term) ****"
@@ -140,19 +144,19 @@ processOneCommand verboseLevel inputStr ctx = do
                           putStrLnV 1 $ okColor "[ OK ] type checking"
                           case cmdWithDec of
                             Theorem name ty -> do
-                              result <- proof ctx ty
+                              result <- proof ctx (simplifyIndType ty)
                               case result of
                                 Left AdmittedCmd -> do
                                   putStrLn $ name ++ " is declared"
                                   return $ addBinding ctx name $
-                                    TmAbbBind ty Nothing
+                                    TmAbbBind (simplifyIndType ty) Nothing
                                 Left AbortCmd -> do
                                   putStrLn "Aborted"
                                   return ctx
                                 Right tm -> do
                                   putStrLn $ name ++ " is defined"
                                   return $ addBinding ctx name $
-                                    TmAbbBind ty $ Just tm
+                                    TmAbbBind (simplifyIndType ty) $ Just tm
                             _ -> do
                               let newctx = addEnvCommand ctx cmdWithDec
                               if length newctx == length ctx
