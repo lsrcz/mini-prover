@@ -23,6 +23,8 @@ data Tactic =
   | Simpl (Maybe Name)
   | Reflexivity
   | Symmetry
+  | Unfold Name (Maybe Name)
+  | Inversion Name
   deriving (Show, Eq)
 
 data ProofInput =
