@@ -3,6 +3,7 @@ module MiniProver.Core.NameBounding (
     NameBoundStatus(..)
   , checkAllNameBounded
   , checkAllNameBoundedCommand
+  , combineNameBoundStatus
   ) where
 
 import MiniProver.Core.Syntax
