@@ -21,7 +21,10 @@ reductionToNotAnAppl tm@(TmAppl (_:_)) = reductionToNotAnAppl $ betaReduction tm
 simplifyIndType :: Term -> Term
 simplifyIndType tm@(TmAppl lst@(x:_))
   | simplToConstrOrIndType x = simplifyIndType $ reductionToNotAnAppl tm
-  | otherwise = TmAppl (map simplifyIndType lst)
+  | otherwise =
+      let newtm = TmAppl (map simplifyIndType lst)
+      in
+        if newtm == tm then tm else simplifyIndType newtm
 simplifyIndType (TmProd name ty tm) = 
   TmProd name (simplifyIndType ty) (simplifyIndType tm)
 simplifyIndType (TmLambda name ty tm) = 
