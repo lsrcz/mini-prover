@@ -48,9 +48,15 @@ prettyLambdaTail (TmLambda name ty tm) indent =
 prettyLambdaTail tm indent =
   " => " ++ indentNewline indent ++ prettyShow' tm indent
 
+prettyFixTail :: Term -> Term -> Int -> String
+prettyFixTail (TmProd _ _ tmp) (TmLambda name ty tml) indent =
+  " (" ++ name ++ ":" ++ prettyShow' ty indent ++ ")" ++ prettyFixTail tmp tml indent
+prettyFixTail tmp tml indent =
+  " : " ++ prettyShow' tmp indent ++ " := " ++ indentNewline indent ++ prettyShow' tml indent
+
 prettyFix :: Term -> Int -> String
-prettyFix (TmFix _ (TmLambda name _ tm)) indent =
-  frontGroundColor BWHITE (bright "fix ") ++ name ++ prettyLambdaTail tm (indent + 2)
+prettyFix (TmFix _ (TmLambda name tmp tml)) indent =
+  frontGroundColor BWHITE (bright "fix ") ++ name ++ prettyFixTail tmp tml (indent + 2)
 
 prettyShow' :: Term -> Int -> String
 prettyShow' (TmRel name _) _ = name
