@@ -146,7 +146,7 @@ spec = do
         TmLambda "T1" TmType (TmLambda "t" (TmRel "T1" 0) (TmLambda "m0" (TmRel "T1" 1) (TmVar "Goal1")))
   describe "destruct" $ do
     let
-      goal = Goal 0 
+      eqmgoal = Goal 2
         ( ("m",VarBind (TmIndType "nat" []))
         : ("n",VarBind (TmIndType "nat" []))
         : realNatContext)
@@ -160,7 +160,7 @@ spec = do
             [ TmRel "plus" 2
             , TmRel "n" 1
             , TmRel "m" 0 ]])
-      fParam = 
+      eqmfParam = 
         [ TmAppl
           [ TmConstr "eq_refl"
             [ TmIndType "nat" []
@@ -203,7 +203,7 @@ spec = do
                   [ TmRel "n0" 0]
                 , TmConstr "S"
                   [ TmRel "m0" 1]]])]]
-      resultTerm = TmMatch 0
+      eqmResultTerm = TmMatch 0
         ( TmRel "m" 0 )
         "n0"
         ["nat"]
@@ -263,9 +263,9 @@ spec = do
                     [ TmRel "n0" 0]
                   , TmConstr "S"
                     [ TmRel "m0" 1]]])])]
-    let eqnaiveAns = fromRight undefined $ handleTactic goal (Destruct (TmRel "m" 0))
-    it "eq naive -- goal" $
-      getGoalList eqnaiveAns `shouldBe`
+      eqmAns = fromRight undefined $ handleTactic eqmgoal (Destruct (TmRel "m" 0))
+    it "eq m -- goal" $
+      getGoalList eqmAns `shouldBe`
       [ Goal 1 (("n",VarBind (TmIndType "nat" [])):realPlusContext)
         ( TmIndType "eq"
           [ TmIndType "nat" []
@@ -290,5 +290,4 @@ spec = do
           , TmRel "n" 1
           , TmConstr "S"
             [ TmRel "m0" 0 ]]])]
-    it "eq naive -- func" $
-      getResultFunc eqnaiveAns fParam `shouldBe` resultTerm
+            
