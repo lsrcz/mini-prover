@@ -302,6 +302,8 @@ ptactic' = try pexact
   <|> try psimpl
   <|> try (Reflexivity <$ rword "reflexivity")
   <|> try (Symmetry <$ rword "symmetry")
+  <|> try punfold
+  <|> try pinversion
 
 pexact :: Parser Tactic
 pexact = do
@@ -365,6 +367,19 @@ psimpl = do
   _ <- rword "simpl"
   mbid <- pmaybeinident
   return $ Simpl mbid
+
+punfold :: Parser Tactic
+punfold = do
+  _ <- rword "unfold"
+  nm <- ident
+  mbid <- pmaybeinident
+  return $ Unfold nm mbid
+
+pinversion :: Parser Tactic
+pinversion = do
+  _ <- rword "inversion"
+  nm <- ident
+  return $ Inversion nm
 
 pproofinput :: Parser ProofInput
 pproofinput = (PCmd <$> try pproofcmd) <|> (PTac <$> try ptactic)
