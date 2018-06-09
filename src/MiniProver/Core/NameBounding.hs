@@ -3,6 +3,7 @@ module MiniProver.Core.NameBounding (
     NameBoundStatus(..)
   , checkAllNameBounded
   , checkAllNameBoundedCommand
+  , combineNameBoundStatus
   ) where
 
 import MiniProver.Core.Syntax
@@ -262,4 +263,5 @@ checkAllNameBoundedCommand ctx (Ind name _ ty tm constrlst) =
         constrlst )
 checkAllNameBoundedCommand ctx (Fix _ tm) = checkAllNameBounded ctx tm
 checkAllNameBoundedCommand ctx (Theorem _ tm) = checkAllNameBounded ctx tm
+checkAllNameBoundedCommand ctx (Check tm) = checkAllNameBounded ctx tm
 

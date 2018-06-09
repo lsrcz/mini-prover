@@ -1140,6 +1140,15 @@ spec = do
     it "symmetry" $
       parse ptactic "" "symmetry."
       `shouldParse` Symmetry
+    it "unfold" $
+      parse ptactic "" "unfold a."
+      `shouldParse` Unfold "a" Nothing
+    it "unfold" $
+      parse ptactic "" "unfold a in H."
+      `shouldParse` Unfold "a" (Just "H")
+    it "inversion" $
+      parse ptactic "" "inversion H."
+      `shouldParse` Inversion "H" 
   describe "pproofinput" $ do
     it "cmd" $
       parse pproofinput "" "Proof."

@@ -264,12 +264,26 @@ ptheorem = do
   _ <- dot
   return $ Theorem name (addBinderAbbr TmProd ty binders)
 
+pprint :: Parser Command
+pprint = do
+  _ <- rword "Print"
+  name <- ident
+  return $ Print name
+
+pcheck :: Parser Command
+pcheck = do
+  _ <- rword "Check"
+  tm <- pterm
+  return $ Check tm
+
 pcommand :: Parser Command
 pcommand = try paxiom
        <|> try pdefinition
        <|> try pinductive
        <|> try pfixdefinition
        <|> try ptheorem
+       <|> try pprint
+       <|> try pcheck
 
 pproofcmd :: Parser ProofCommand
 pproofcmd = do
@@ -302,6 +316,8 @@ ptactic' = try pexact
   <|> try psimpl
   <|> try (Reflexivity <$ rword "reflexivity")
   <|> try (Symmetry <$ rword "symmetry")
+  <|> try punfold
+  <|> try pinversion
 
 pexact :: Parser Tactic
 pexact = do
@@ -365,6 +381,19 @@ psimpl = do
   _ <- rword "simpl"
   mbid <- pmaybeinident
   return $ Simpl mbid
+
+punfold :: Parser Tactic
+punfold = do
+  _ <- rword "unfold"
+  nm <- ident
+  mbid <- pmaybeinident
+  return $ Unfold nm mbid
+
+pinversion :: Parser Tactic
+pinversion = do
+  _ <- rword "inversion"
+  nm <- ident
+  return $ Inversion nm
 
 pproofinput :: Parser ProofInput
 pproofinput = (PCmd <$> try pproofcmd) <|> (PTac <$> try ptactic)

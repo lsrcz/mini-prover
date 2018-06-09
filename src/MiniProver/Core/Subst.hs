@@ -1,5 +1,6 @@
 module MiniProver.Core.Subst (
-    tmShiftAbove
+    tmMap
+  , tmShiftAbove
   , tmShift
   , tmSubst
   , tmSubstTop

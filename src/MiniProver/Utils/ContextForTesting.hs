@@ -1789,3 +1789,14 @@ realPlusContext =
                       [ TmRel "plus" 3
                       , TmRel "n" 0
                       , TmRel "b" 1 ]])]))))))) : realEx2Context
+
+realPlus1Context :: Context
+realPlus1Context =
+  ( "plus1"
+  , TmAbbBind
+    (TmProd "a"
+        ( TmIndType "nat" [])
+        ( TmProd "b"
+          ( TmIndType "nat" [])
+          ( TmIndType "nat" [])))
+    ( Just ( TmRel "plus" 0 ))) : realPlusContext

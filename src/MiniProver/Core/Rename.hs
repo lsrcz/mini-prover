@@ -2,6 +2,7 @@ module MiniProver.Core.Rename (
     renameInd
   , getOrigNameFromTy
   , renameTerm
+  , renameTerm'
   , addAnonymousName
   ) where
 

@@ -16,6 +16,7 @@ import MiniProver.PrettyPrint.Colorful
 import MiniProver.TopLevel.Command
 import MiniProver.TopLevel.IO
 import MiniProver.TopLevel.ProofLoop
+import MiniProver.PrettyPrint.PrintingCommand
 import Data.Either (fromRight)
 import Control.Monad (forever,when)
 import System.IO
@@ -83,12 +84,18 @@ processOneCommand verboseLevel inputStr ctx = do
       putStrLn $ errorColor "[ FAIL ] parsing"
       print err
       return ctx
+    Right (Print nm) -> do
+      processPrint ctx nm
+      return ctx
     Right cmd -> do
       putStrLnV 1 $ okColor "[ OK ] parsing"
-      putStrLnV 2 $ infoColor "**** parsing result (term) ****"
-      pPrintCmdV 2 cmd
-      putStrLnV 3 $ infoColor "**** parsing result (AST) ****"
-      pPrintCmdASTV 3 cmd
+      case cmd of
+        Check _ -> return ()
+        _ -> do
+          putStrLnV 2 $ infoColor "**** parsing result (term) ****"
+          pPrintCmdV 2 cmd
+          putStrLnV 3 $ infoColor "**** parsing result (AST) ****"
+          pPrintCmdASTV 3 cmd
 
       case checkDuplicateGlobalName ctx cmd of
         lst@(_:_) -> do
@@ -110,10 +117,13 @@ processOneCommand verboseLevel inputStr ctx = do
                   putStrLnV 1 $ okColor "[ OK ] nameless representation building"
                   when (isIndCommand boundedCmd) $
                     putStrLnV 1 $ okColor "[ OK ] positivity checking"
-                  putStrLnV 2 $ infoColor "**** building result (command) ****"
-                  pPrintCmdV 2 boundedCmd
-                  putStrLnV 3 $ infoColor "**** building result (AST) ****"
-                  pPrintCmdASTV 3 boundedCmd
+                  case cmd of
+                    Check _ -> return ()
+                    _ -> do
+                      putStrLnV 2 $ infoColor "**** building result (command) ****"
+                      pPrintCmdV 2 boundedCmd
+                      putStrLnV 3 $ infoColor "**** building result (AST) ****"
+                      pPrintCmdASTV 3 boundedCmd
                   return ctx
                 
                   case computeDecParamCmd boundedCmd of
@@ -121,6 +131,17 @@ processOneCommand verboseLevel inputStr ctx = do
                       putStrLn $ errorColor "[ FAIL ] termination checking"
                       putStrLn "This term may not be terminating"
                       prettyPrint tm
+                      return ctx
+                    Right (Check tm) -> do
+                      putStrLnV 1 $ okColor "[ OK ] termination checking"
+                      case typeof ctx tm of
+                        Left (TypingError tm1 err) -> do
+                          putStrLn "In term:\n"
+                          prettyPrint tm1
+                          putStrLn err
+                        Right ty -> do
+                          prettyPrint (simplifyIndType tm)
+                          putStrLn $ "     : " ++ drop 7 (addIndent 7 $ prettyShow ty)
                       return ctx
                     Right cmdWithDec -> do
                       putStrLnV 1 $ okColor "[ OK ] termination checking"
@@ -140,19 +161,19 @@ processOneCommand verboseLevel inputStr ctx = do
                           putStrLnV 1 $ okColor "[ OK ] type checking"
                           case cmdWithDec of
                             Theorem name ty -> do
-                              result <- proof ctx ty
+                              result <- proof ctx (simplifyIndType ty)
                               case result of
                                 Left AdmittedCmd -> do
                                   putStrLn $ name ++ " is declared"
                                   return $ addBinding ctx name $
-                                    TmAbbBind ty Nothing
+                                    TmAbbBind (simplifyIndType ty) Nothing
                                 Left AbortCmd -> do
                                   putStrLn "Aborted"
                                   return ctx
                                 Right tm -> do
                                   putStrLn $ name ++ " is defined"
                                   return $ addBinding ctx name $
-                                    TmAbbBind ty $ Just tm
+                                    TmAbbBind (simplifyIndType ty) $ Just tm
                             _ -> do
                               let newctx = addEnvCommand ctx cmdWithDec
                               if length newctx == length ctx
