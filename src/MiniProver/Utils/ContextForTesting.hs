@@ -1800,3 +1800,340 @@ realPlus1Context =
           ( TmIndType "nat" [])
           ( TmIndType "nat" [])))
     ( Just ( TmRel "plus" 0 ))) : realPlusContext
+
+realFEqualContext :: Context
+realFEqualContext =
+  ( "f_equal"
+  , TmAbbBind
+    ( TmProd "A"
+      TmType
+    ( TmProd "B"
+        TmType
+      ( TmProd "f"
+        ( TmProd "_"
+          ( TmRel "A" 1 )
+          ( TmRel "B" 1 ))
+        ( TmProd "x"
+          ( TmRel "A" 2 )
+          ( TmProd "y"
+            ( TmRel "A" 3 )
+            ( TmProd "H"
+              ( TmIndType "eq"
+                [ TmRel "A" 4
+                , TmRel "x" 1
+                , TmRel "y" 0 ])
+              ( TmIndType "eq"
+                [ TmRel "B" 4
+                , TmAppl
+                  [ TmRel "f" 3
+                  , TmRel "x" 2 ]
+                , TmAppl
+                  [ TmRel "f" 3
+                  , TmRel "y" 1 ]])))))))
+    ( Just
+      ( TmLambda "A"
+        TmType
+      ( TmLambda "B"
+          TmType
+        ( TmLambda "f"
+          ( TmProd "_"
+            ( TmRel "A" 1 )
+            ( TmRel "B" 1 ))
+          ( TmLambda "x"
+            ( TmRel "A" 2 )
+            ( TmLambda "y"
+              ( TmRel "A" 3 )
+              ( TmLambda "H"
+                ( TmIndType "eq"
+                  [ TmRel "A" 4
+                  , TmRel "x" 1
+                  , TmRel "y" 0 ])
+                ( TmMatch 2
+                  ( TmRel "H" 0 )
+                    "H0"
+                  [ "eq"
+                  , "_"
+                  , "_"
+                  , "y0" ]
+                  ( TmIndType "eq"
+                    [ TmRel "B" 6
+                    , TmAppl
+                      [ TmRel "f" 5
+                      , TmRel "x" 4 ]
+                    , TmAppl
+                      [ TmRel "f" 5
+                      , TmRel "y0" 1 ]])
+                  [ Equation
+                    [ "eq_refl"
+                    , "_"
+                    , "_" ]
+                    ( TmConstr "eq_refl"
+                      [ TmRel "B" 4
+                      , TmAppl
+                        [ TmRel "f" 3
+                        , TmRel "x" 2 ]])]))))))))) : realPlus1Context
+
+realP1arguContext :: Context
+realP1arguContext =
+  [ ( "p1argu_rect"
+    , TmAbbBind
+      ( TmProd "a"
+        ( TmIndType "nat" [])
+        ( TmProd "b"
+          ( TmIndType "nat" [])
+          ( TmProd "P"
+            ( TmProd "n"
+              ( TmIndType "nat" [])
+              ( TmProd "_"
+                ( TmIndType "p1argu"
+                  [ TmRel "a" 2
+                  , TmRel "b" 1
+                  , TmRel "n" 0 ])
+                  TmType ))
+            ( TmProd "f"
+              ( TmAppl
+                [ TmRel "P" 0
+                , TmRel "a" 2
+                , TmConstr "lp"
+                  [ TmRel "a" 2
+                  , TmRel "b" 1 ]])
+              ( TmProd "f0"
+                ( TmAppl
+                  [ TmRel "P" 1
+                  , TmRel "b" 2
+                  , TmConstr "rp"
+                    [ TmRel "a" 3
+                    , TmRel "b" 2 ]])
+                ( TmProd "n"
+                  ( TmIndType "nat" [])
+                  ( TmProd "p"
+                    ( TmIndType "p1argu"
+                      [ TmRel "a" 5
+                      , TmRel "b" 4
+                      , TmRel "n" 0 ])
+                    ( TmAppl
+                      [ TmRel "P" 4
+                      , TmRel "n" 1
+                      , TmRel "p" 0 ]))))))))
+      ( Just
+        ( TmLambda "a"
+          ( TmIndType "nat" [])
+          ( TmLambda "b"
+            ( TmIndType "nat" [])
+            ( TmLambda "P"
+              ( TmProd "n"
+                ( TmIndType "nat" [])
+                ( TmProd "_"
+                  ( TmIndType "p1argu"
+                    [ TmRel "a" 2
+                    , TmRel "b" 1
+                    , TmRel "n" 0 ])
+                    TmType ))
+              ( TmLambda "f"
+                ( TmAppl
+                  [ TmRel "P" 0
+                  , TmRel "a" 2
+                  , TmConstr "lp"
+                    [ TmRel "a" 2
+                    , TmRel "b" 1 ]])
+                ( TmLambda "f0"
+                  ( TmAppl
+                    [ TmRel "P" 1
+                    , TmRel "b" 2
+                    , TmConstr "rp"
+                      [ TmRel "a" 3
+                      , TmRel "b" 2 ]])
+                  ( TmLambda "n"
+                    ( TmIndType "nat" [])
+                    ( TmLambda "p"
+                      ( TmIndType "p1argu"
+                        [ TmRel "a" 5
+                        , TmRel "b" 4
+                        , TmRel "n" 0 ])
+                      ( TmMatch 2
+                        ( TmRel "p" 0 )
+                          "p0"
+                        [ "p1argu"
+                        , "_"
+                        , "_"
+                        , "n0" ]
+                        ( TmAppl
+                          [ TmRel "P" 6
+                          , TmRel "n0" 1
+                          , TmRel "p0" 0 ])
+                        [ Equation
+                          [ "lp"
+                          , "_"
+                          , "_" ]
+                          ( TmRel "f" 3 )
+                        , Equation
+                          [ "rp"
+                          , "_"
+                          , "_" ]
+                          ( TmRel "f0" 2 )]))))))))))
+  , ( "p1argu"
+    , IndTypeBind 2
+    ( TmProd "a"
+      ( TmIndType "nat" [])
+      ( TmProd "b"
+        ( TmIndType "nat" [])
+        ( TmProd "_"
+          ( TmIndType "nat" [])
+            TmType )))
+    ( TmLambda "a"
+      ( TmIndType "nat" [])
+      ( TmLambda "b"
+        ( TmIndType "nat" [])
+        ( TmLambda ".0"
+          ( TmIndType "nat" [])
+          ( TmIndType "p1argu"
+            [ TmRel "a" 2
+            , TmRel "b" 1
+            , TmRel ".0" 0 ]))))
+    [ Constructor"lp"
+      ( TmProd "a"
+        ( TmIndType "nat" [])
+        ( TmProd "b"
+          ( TmIndType "nat" [])
+          ( TmIndType "p1argu"
+            [ TmRel "a" 1
+            , TmRel "b" 0
+            , TmRel "a" 1 ])))
+      ( TmLambda "a"
+        ( TmIndType "nat" [])
+        ( TmLambda "b"
+          ( TmIndType "nat" [])
+          ( TmConstr "lp"
+            [ TmRel "a" 1
+            , TmRel "b" 0 ])))
+    , Constructor "rp"
+      ( TmProd "a"
+        ( TmIndType "nat" [])
+        ( TmProd "b"
+          ( TmIndType "nat" [])
+          ( TmIndType "p1argu"
+            [ TmRel "a" 1
+            , TmRel "b" 0
+            , TmRel "b" 0 ])))
+      ( TmLambda "a"
+        ( TmIndType "nat" [])
+        ( TmLambda "b"
+          ( TmIndType "nat" [])
+          ( TmConstr "rp"
+            [ TmRel "a" 1
+            , TmRel "b" 0 ])))])] ++ realFEqualContext
+
+realP2arguContext :: Context
+realP2arguContext =
+  [ ( "p2argu_rect"
+    , TmAbbBind
+      ( TmProd "a"
+        ( TmIndType "nat" [])
+        ( TmProd "P"
+          ( TmProd "n"
+            ( TmIndType "nat" [])
+            ( TmProd "n0"
+              ( TmIndType "nat" [])
+              ( TmProd "_"
+                ( TmIndType "p2argu"
+                  [ TmRel "a" 2
+                  , TmRel "n" 1
+                  , TmRel "n0" 0 ])
+                  TmType )))
+          ( TmProd "f"
+            ( TmAppl
+              [ TmRel "P" 0
+              , TmRel "a" 1
+              , TmRel "a" 1
+              , TmConstr "p2"
+                [ TmRel "a" 1 ]])
+            ( TmProd "n"
+              ( TmIndType "nat" [])
+              ( TmProd "n0"
+                ( TmIndType "nat" [])
+                ( TmProd "p"
+                  ( TmIndType "p2argu"
+                    [ TmRel "a" 4
+                    , TmRel "n" 1
+                    , TmRel "n0" 0 ])
+                  ( TmAppl
+                    [ TmRel "P" 4
+                    , TmRel "n" 2
+                    , TmRel "n0" 1
+                    , TmRel "p" 0 ])))))))
+      ( Just
+        ( TmLambda "a"
+          ( TmIndType "nat" [])
+          ( TmLambda "P"
+            ( TmProd "n"
+              ( TmIndType "nat" [])
+              ( TmProd "n0"
+                ( TmIndType "nat" [])
+                ( TmProd "_"
+                  ( TmIndType "p2argu"
+                    [ TmRel "a" 2
+                    , TmRel "n" 1
+                    , TmRel "n0" 0 ])
+                    TmType )))
+            ( TmLambda "f"
+              ( TmAppl
+                [ TmRel "P" 0
+                , TmRel "a" 1
+                , TmRel "a" 1
+                , TmConstr "p2"
+                  [ TmRel "a" 1 ]])
+              ( TmLambda "n"
+                ( TmIndType "nat" [])
+                ( TmLambda "n0"
+                  ( TmIndType "nat" [])
+                  ( TmLambda "p"
+                    ( TmIndType "p2argu"
+                      [ TmRel "a" 4
+                      , TmRel "n" 1
+                      , TmRel "n0" 0 ])
+                    ( TmMatch 1
+                      ( TmRel "p" 0 )
+                        "p0"
+                      [ "p2argu"
+                      , "_"
+                      , "n1"
+                      , "n2" ]
+                      ( TmAppl
+                        [ TmRel "P" 7
+                        , TmRel "n1" 2
+                        , TmRel "n2" 1
+                        , TmRel "p0" 0 ])
+                      [ Equation
+                        [ "p2"
+                        , "_" ]
+                        ( TmRel "f" 3 )])))))))))
+    , ( "p2argu"
+      , IndTypeBind 1
+      ( TmProd "a"
+        ( TmIndType "nat" [])
+        ( TmProd "_"
+          ( TmIndType "nat" [])
+          ( TmProd "_"
+            ( TmIndType "nat" [])
+              TmType )))
+      ( TmLambda "a"
+        ( TmIndType "nat" [])
+        ( TmLambda ".0"
+          ( TmIndType "nat" [])
+          ( TmLambda ".1"
+            ( TmIndType "nat" [])
+            ( TmIndType "p2argu"
+              [ TmRel "a" 2
+              , TmRel ".0" 1
+              , TmRel ".1" 0 ]))))
+      [ Constructor "p2"
+        ( TmProd "a"
+          ( TmIndType "nat" [])
+          ( TmIndType "p2argu"
+            [ TmRel "a" 0
+            , TmRel "a" 0
+            , TmRel "a" 0 ]))
+        ( TmLambda "a"
+          ( TmIndType "nat" [])
+          ( TmConstr "p2"
+            [ TmRel "a" 0 ]))])] ++ realP1arguContext
