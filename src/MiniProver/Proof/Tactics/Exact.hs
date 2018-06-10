@@ -9,7 +9,7 @@ import MiniProver.Core.SimplifyIndType
 import MiniProver.PrettyPrint.PrettyPrint
 
 handleExact :: Goal -> Tactic -> Either TacticError Result
-handleExact (Goal _ ctx ty) (Exact tm) =
+handleExact g@(Goal _ ctx ty) e@(Exact tm) =
   case typeof ctx tm of
     Left err -> Left $ TacticError $ 
       case err of
@@ -18,7 +18,7 @@ handleExact (Goal _ ctx ty) (Exact tm) =
           prettyShow tm ++ "\n" ++ str
     Right ty1 ->
       if typeeq ctx (Right ty) (Right ty1)
-        then Right (Result [] (const (simplifyIndType tm)))
+        then Right (Result [] (\[] -> checkResult g e (simplifyIndType tm)))
         else Left $ TacticError $
           "The term:\n" ++ prettyShow tm ++
           "\nhas the type:\n" ++ prettyShow ty1 ++
