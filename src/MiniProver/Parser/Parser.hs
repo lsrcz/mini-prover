@@ -270,6 +270,12 @@ pprint = do
   name <- ident
   return $ Print name
 
+pprintast :: Parser Command
+pprintast = do
+  _ <- rword "PrintAST"
+  name <- ident
+  return $ PrintAST name
+
 pcheck :: Parser Command
 pcheck = do
   _ <- rword "Check"
@@ -284,6 +290,7 @@ pcommand = try paxiom
        <|> try ptheorem
        <|> try pprint
        <|> try pcheck
+       <|> try pprintast
 
 pproofcmd :: Parser ProofCommand
 pproofcmd = do

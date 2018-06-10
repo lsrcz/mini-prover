@@ -69,6 +69,7 @@ data Command =
   | Theorem Name Term
   | Print Name
   | Check Term
+  | PrintAST Name
   | DummyCmd                         -- Just for testing
   deriving (Eq, Show)
 
