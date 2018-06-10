@@ -14,7 +14,7 @@ deltaOne i tmst =
   tmMap (\nm c x -> if c + i == x then tmShift c tmst else TmRel nm x) 0
 
 handleUnfold :: Goal -> Tactic -> Either TacticError Result
-handleUnfold (Goal d ctx ty) (Unfold nm mbtm) =
+handleUnfold g@(Goal d ctx ty) u@(Unfold nm mbtm) =
   case nameToIndex ctx nm of
     Left UnboundName -> Left $ TacticError $ "Unbound name " ++ nm
     Left IsTypeConstructor -> Left $ TacticError "Can't unfold type constructors"
@@ -34,7 +34,7 @@ handleUnfold (Goal d ctx ty) (Unfold nm mbtm) =
                   Right $
                   Result
                   [ Goal d ctx newty ]
-                  head
+                  (\tmlst -> checkResult g u (head tmlst))
               _ -> error "This should not happen"
           Just hyponame ->
             case nameToIndex ctx hyponame of
@@ -57,7 +57,7 @@ handleUnfold (Goal d ctx ty) (Unfold nm mbtm) =
                         Right $
                         Result
                         [ Goal d newctx ty ]
-                        head
+                        (\tmlst -> checkResult g u (head tmlst))
 
 
   

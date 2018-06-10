@@ -2,6 +2,11 @@ module MiniProver.Proof.ProofDef where
 
 import MiniProver.Core.Syntax
 import MiniProver.Core.Context
+import MiniProver.Core.Typing
+import System.IO.Unsafe
+import MiniProver.PrettyPrint.Colorful
+import MiniProver.PrettyPrint.PrettyPrint
+import MiniProver.PrettyPrint.PrettyPrintAST
 
 data ProofCommand =
     Proof
@@ -44,6 +49,26 @@ getGoalList (Result goallst _) = goallst
 
 getResultFunc :: Result -> ResultFunc
 getResultFunc (Result _ rf) = rf
+
+checkResult :: Goal -> Tactic -> Term -> Term
+checkResult g@(Goal i ctx ty) tactic tm =
+  if typeeq ctx (typeof ctx tm) (Right ty) then tm else seq 
+    (unsafePerformIO $ do
+      putStrLn $ frontGroundColor BRED "FATAL Error"
+      putStrLn $ frontGroundColor BYELLOW "When trying to handle tactic:"
+      print tactic
+      putStrLn $ frontGroundColor BYELLOW "The goal is"
+      prettyPrint ty
+      putStrLn $ frontGroundColor BYELLOW "with AST"
+      prettyPrintAST ty
+      putStrLn $ frontGroundColor BYELLOW "The term constructed is"
+      prettyPrint tm
+      putStrLn $ frontGroundColor BYELLOW "with AST"
+      prettyPrintAST tm
+      putStrLn $ frontGroundColor BYELLOW "in local context"
+      print (take i ctx)
+    )
+    error $ frontGroundColor BRED "Tactic typing error, this should not happen"
 
 instance Show Result where
   show (Result goallst f) = "Goals\n" ++ unlines (map show goallst) ++ "\nfunc\n" ++ show (f [TmVar ("Goal" ++ show i) | i <- [1..]])

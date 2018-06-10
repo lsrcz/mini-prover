@@ -11,11 +11,12 @@ import MiniProver.PrettyPrint.PrettyPrint
 import Debug.Trace
 
 handleIntro :: Goal -> Tactic -> Either TacticError Result
-handleIntro goal tactic =
+handleIntro goal@(Goal _ ctx ty) tactic =
     let x = introFunc goal tactic in
         case x of
             Right (onegoal, outparam) ->
-                Right $ Result [onegoal] (captureOutParam outparam) 
+                Right $ Result [onegoal]
+                    (\tmlst -> checkResult goal tactic (captureOutParam outparam tmlst))
             Left str -> Left str
 
 introFunc :: Goal -> Tactic -> Either TacticError (Goal, [(Name, Term)])
