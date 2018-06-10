@@ -87,6 +87,9 @@ processOneCommand verboseLevel inputStr ctx = do
     Right (Print nm) -> do
       processPrint ctx nm
       return ctx
+    Right (PrintAST nm) -> do
+      processPrintAST ctx nm
+      return ctx
     Right cmd -> do
       putStrLnV 1 $ okColor "[ OK ] parsing"
       case cmd of
