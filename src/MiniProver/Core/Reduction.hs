@@ -32,6 +32,7 @@ module MiniProver.Core.Reduction (
   , fullIotaStrategy
   , fullDeltaStrategy
   , reductionWithStrategy
+  , fullBZIDStrategySet
   , fullBZIDReduction
   , fullBZIReduction
   , fullBZDReduction
