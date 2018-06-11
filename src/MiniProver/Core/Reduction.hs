@@ -54,6 +54,8 @@ import MiniProver.Core.Syntax
 import MiniProver.Core.Subst
 import MiniProver.Core.Context
 import Data.Bits
+import Debug.Trace
+import GHC.Stack
 
 -- not context sensitive
 betaReduction :: Term -> Term
@@ -177,6 +179,8 @@ data DeltaStrategy =
   | DeltaInConstr
   | DeltaInMatchTm
   | DeltaInMatchBranch
+  | DeltaLeadingToIota
+  | DeltaRestricted
   deriving (Eq, Show, Enum)
 
 data StrategySet = StrategySet {
@@ -199,6 +203,9 @@ intBitsToStrategy = toEnum . countTrailingZeros
 
 strategyListToSet :: (Strategy a) => [a] -> Int
 strategyListToSet = foldr ((.|.) . strategyToIntBits) 0
+
+clearStrategyInSingleSet :: (Strategy a) => Int -> a -> Int
+clearStrategyInSingleSet set s = set .&. complement (strategyToIntBits s)
 
 hasStrategy :: (Strategy a) => Int -> a -> Bool
 hasStrategy set strategy = strategyToIntBits strategy .&. set /= 0
@@ -282,29 +289,68 @@ fullIotaStrategy = strategyListToSet $ enumFrom IotaInAppl
 
 -- delta strategies
 fullDeltaStrategy :: DeltaStrategySet
-fullDeltaStrategy = strategyListToSet $ enumFrom DeltaRel
+fullDeltaStrategy = (strategyListToSet $ enumFrom DeltaRel)
+                    `clearStrategyInSingleSet` DeltaRestricted
 
 reductionWithStrategy :: StrategySet -> Context -> Term -> Term
-reductionWithStrategy strategy = go
+reductionWithStrategy strategy@(StrategySet bs zs is ds) = go
   where
     goIfUnequal :: Context -> Term -> Term -> Term
     goIfUnequal ctx tmold tmnew =
       if tmold == tmnew
         then tmold
         else go ctx tmnew
-    go :: Context -> Term -> Term
+    go :: HasCallStack => Context -> Term -> Term
     -- can evaluate
     go ctx tmold@TmRel{}
-      | hasStrategyInSet strategy DeltaRel =
+      | hasStrategyInSet strategy DeltaRel = 
           goIfUnequal ctx tmold $ deltaReduction ctx tmold
-    go ctx (TmAppl [t]) = go ctx t
-    go ctx (TmAppl ((TmAppl lst):tl)) = go ctx (TmAppl (lst ++ tl))
+    go ctx tmold@TmRel{}
+      | hasStrategyInSet strategy DeltaRestricted = 
+          goIfUnequal ctx tmold $ deltaReduction ctx tmold
+    go ctx tmold@TmRel{}
+      | hasStrategyInSet strategy DeltaLeadingToIota &&
+        (case deltaReduction ctx tmold of
+          TmConstr{} -> True
+          _ -> False) = go ctx $ deltaReduction ctx tmold
+    go ctx (TmAppl [t]) =  go ctx t
+    go ctx (TmAppl (TmAppl lst:tl)) = go ctx (TmAppl (lst ++ tl))
     go ctx tmold@(TmAppl (TmProd{}:_))
       | hasStrategyInSet strategy BetaProd = goIfUnequal ctx tmold $ betaReduction tmold
     go ctx tmold@(TmAppl (TmLambda{}:_))
       | hasStrategyInSet strategy BetaLambda = goIfUnequal ctx tmold $ betaReduction tmold
     go ctx tmold@(TmAppl (TmFix{}:_))
-      | hasStrategyInSet strategy BetaFix = goIfUnequal ctx tmold $ betaReduction tmold
+      | hasStrategyInSet strategy BetaFix = goIfUnequal ctx tmold $ betaReduction tmold 
+    go ctx tmold@(TmAppl (r@TmRel{}:lst))
+      | hasStrategyInSet strategy DeltaLeadingToIota &&
+        case reductionWithStrategy fullBZIDStrategySet ctx r of
+          TmFix i _ -> length lst >= i &&
+            case reductionWithStrategy fullBZIDStrategySet ctx (lst !! (i-1)) of
+              TmConstr{} -> True
+              _ -> False
+          l@TmLambda{} -> trace "??" $
+            let
+              getAbsNum (TmLambda _ _ tm) = 1 + getAbsNum tm
+              getAbsNum _ = 0
+            in
+              getAbsNum l == length lst &&
+              case reductionWithStrategy (StrategySet (strategyToIntBits BetaLambda) 0 0 0) ctx (TmAppl (l:lst)) of
+                t@(TmMatch _ r@(TmRel _ _) _ _ _ _) ->
+                  case reductionWithStrategy fullBZIDStrategySet ctx r of
+                    TmConstr{} -> True
+                    _ -> False
+                _ -> False
+          _ -> False =
+            let
+              maskedStrategySet =
+                clearIfUnSet BetaInAppl ZetaInAppl
+                  IotaInAppl DeltaInAppl strategy
+            in
+              goIfUnequal ctx tmold
+              (TmAppl (reductionWithStrategy (setStrategyInSet strategy DeltaRestricted) ctx r
+                      :map (reductionWithStrategy maskedStrategySet ctx) lst))
+    go ctx tmold@(TmAppl (x:xs))
+      | hasStrategyInSet strategy DeltaRestricted = goIfUnequal ctx tmold (TmAppl (go ctx x:xs))
     go ctx tmold@TmLetIn{}
       | hasStrategyInSet strategy ZetaLetIn = goIfUnequal ctx tmold $ zetaReduction tmold
     go ctx tmold@(TmMatch _ TmConstr{} _ _ _ _)
@@ -390,6 +436,16 @@ reductionWithStrategy strategy = go
           map (reductionWithStrategy maskedStrategySet ctx) tmlst
       in
         goIfUnequal ctx tmold reducedTm
+    -- used in simpl tactic
+    go ctx tmold@(TmMatch i r@TmRel{} name namelst retty equlst)
+      | hasStrategyInSet strategy DeltaLeadingToIota &&
+        (case reductionWithStrategy fullBZIDStrategySet ctx r of
+          TmConstr{} -> True
+          _ -> False) =
+            goIfUnequal ctx tmold
+            (TmMatch i
+              (reductionWithStrategy (setStrategyInSet strategy DeltaRestricted) ctx r)
+              name namelst retty equlst)
     go ctx tmold@(TmMatch i tm name namelst ty equlst) =
       let
         maskedStrategySetTm =
