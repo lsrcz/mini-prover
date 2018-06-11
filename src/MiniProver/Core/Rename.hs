@@ -44,6 +44,9 @@ addAnonymousName ctx lst name mty
       in
         pickFreshNameWithRejectList ctx lst origname
   | head name == '_' = (addName ctx "_","_")
+  | head name == '~' =
+      case pickFreshNameWithRejectList ctx lst (tail name) of
+        (_,newname) -> (addName ctx ('~':newname), '~':newname)
   | otherwise = pickFreshNameWithRejectList ctx lst name
 
 renameTerm :: Context -> Term -> Term
