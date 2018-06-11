@@ -412,7 +412,7 @@ reductionWithStrategy strategy = go
                 Equation namelsteq
                   (reductionWithStrategy
                     maskedStrategySetBranch
-                    (foldl addName ctx (tail namelsteq))
+                    (foldl addName ctx (drop (i+1) namelsteq))
                     term
                   ))
             equlst)
