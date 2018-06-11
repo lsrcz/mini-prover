@@ -95,8 +95,10 @@ printBindingTy name (VarBind ty) = do
   prettyPrint ty
 
 printGoalBindings :: Int -> Context -> IO ()
+printGoalBindings _ [] = return ()
 printGoalBindings i ((name,binding):xs)
   | i == 0 = return ()
+  | head name == '~' = printGoalBindings (i - 1) xs
   | otherwise = do
       printGoalBindings (i - 1) xs
       printBindingTy name binding

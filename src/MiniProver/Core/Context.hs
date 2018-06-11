@@ -55,12 +55,15 @@ addBinding ctx name bind = (name,bind) : ctx
 addName :: Context -> Name -> Context
 addName ctx name = addBinding ctx name NameBind
 
+deleteTilde :: String -> String
+deleteTilde n@(x:xs) = if x == '~' then xs else n
+
 isNameBound :: Context -> Name -> Bool
 isNameBound ctx name =
   let
     nameBoundInBinding :: (Name, Binding) -> Bool
     nameBoundInBinding (n,b) =
-      name == n ||
+      deleteTilde name == deleteTilde n ||
         case b of
           IndTypeBind _ _ _ lst ->
             any (\case Constructor namei _ _ -> namei == name) lst
