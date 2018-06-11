@@ -38,5 +38,5 @@ spec =
           , TmRel "m" 0
           , TmRel "m" 0 ])]
     it "all in one -- func" $
-      getResultFunc allinoneAns [TmVar "Goal1"] `shouldBe`
-        TmLambda "T" TmType (TmLambda "t" (TmRel "T" 0) (TmLambda "m" (TmRel "T" 1) (TmVar "Goal1")))
+      getResultFunc allinoneAns [TmConstr "eq_refl" [TmRel "T" 2, TmRel "m" 0]] `shouldBe`
+        TmLambda "T" TmType (TmLambda "t" (TmRel "T" 0) (TmLambda "m" (TmRel "T" 1) (TmConstr "eq_refl" [TmRel "T" 2, TmRel "m" 0])))

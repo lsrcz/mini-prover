@@ -42,8 +42,14 @@ spec =
               , TmRel "m" 0
               , TmRel "m" 0 ])))]
     it "no name -- func" $
-      getResultFunc nonameAns [TmVar "Goal1"] `shouldBe`
-        TmLambda "T" TmType (TmVar "Goal1")
+      getResultFunc nonameAns
+        [TmLambda "_" (TmRel "T" 0)
+          (TmLambda "m" (TmRel "T" 1)
+            (TmConstr "eq_refl" [TmRel "T" 2, TmRel "m" 0]))] `shouldBe`
+        TmLambda "T" TmType
+        (TmLambda "_" (TmRel "T" 0)
+          (TmLambda "m" (TmRel "T" 1)
+            (TmConstr "eq_refl" [TmRel "T" 2, TmRel "m" 0])))
     let onenameAns = fromRight undefined $ handleTactic goal (Intro ["T1"])
     it "one name -- goal" $
       getGoalList onenameAns `shouldBe`
@@ -57,8 +63,14 @@ spec =
               , TmRel "m" 0
               , TmRel "m" 0 ])))]
     it "one name -- func" $
-      getResultFunc onenameAns [TmVar "Goal1"] `shouldBe`
-        TmLambda "T1" TmType (TmVar "Goal1")
+      getResultFunc onenameAns
+        [TmLambda "_" (TmRel "T1" 0)
+          (TmLambda "m" (TmRel "T1" 1)
+            (TmConstr "eq_refl" [TmRel "T1" 2, TmRel "m" 0]))] `shouldBe`
+        TmLambda "T1" TmType
+        (TmLambda "_" (TmRel "T1" 0)
+          (TmLambda "m" (TmRel "T1" 1)
+            (TmConstr "eq_refl" [TmRel "T1" 2, TmRel "m" 0])))
     let twonamesAns = fromRight undefined $ handleTactic goal (Intro ["T1","m"])
     it "two names -- goal" $
       getGoalList twonamesAns `shouldBe`
@@ -70,8 +82,13 @@ spec =
             , TmRel "m0" 0
             , TmRel "m0" 0 ]))]
     it "two names -- func" $
-      getResultFunc twonamesAns [TmVar "Goal1"] `shouldBe`
-        TmLambda "T1" TmType (TmLambda "m" (TmRel "T1" 0) (TmVar "Goal1"))
+      getResultFunc twonamesAns
+        [TmLambda "m0" (TmRel "T1" 1)
+          (TmConstr "eq_refl" [TmRel "T1" 2, TmRel "m0" 0])] `shouldBe`
+        TmLambda "T1" TmType
+        (TmLambda "m" (TmRel "T1" 0)
+          (TmLambda "m0" (TmRel "T1" 1)
+            (TmConstr "eq_refl" [TmRel "T1" 2, TmRel "m0" 0])))
     it "four names -- should fail" $
       handleTactic goal (Intro ["a","b","c","d"]) `shouldSatisfy`
       (\case
