@@ -81,7 +81,17 @@ buildResultFunc len ctx d tm nmlst ty cases [] goals =
     renameTerm ctx $ TmMatch d tm ".0" nmlst ty $ buildResultEqs len cases goals
 buildResultFunc len ctx d tm nmlst ty cases apps goals =
     renameTerm ctx $ 
-    TmAppl $ (TmMatch d tm ".0" nmlst ty $ buildResultEqs len cases goals):apps
+    TmAppl $ (TmMatch d tm ".0" nmlst (convertToType (length apps) ty) $ buildResultEqs len cases goals):apps
+
+
+convertToType :: Int -> Term -> Term
+convertToType d tm 
+    | d == 0 = tm
+    | otherwise =
+        case tm of 
+            TmLambda nm ty tm' -> 
+                TmProd nm ty $ convertToType (d - 1) tm'
+            _ -> error "This should not happen"
 
 
 buildTermInConstr :: Int -> Int -> Context -> Int -> Constructor -> Term -> [Term] -> (Goal, [Name], Term)
