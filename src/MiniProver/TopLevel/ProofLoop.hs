@@ -17,12 +17,15 @@ import MiniProver.Proof.HandleTactic
 import MiniProver.Proof.Build
 import MiniProver.Proof.NameBounding
 import MiniProver.Proof.Termination
+import MiniProver.Proof.SimplifyIndTactic
 import MiniProver.TopLevel.IO
 import Control.Monad (forM)
 import Debug.Trace
 
 data ProofControl =
     UndoCmd
+  | UndoOneCmd
+  | UndoOKCmd
   | RestartCmd
   | AdmittedCmd
   | AbortCmd
@@ -55,6 +58,7 @@ proof ctx tm = do
     Left AbortCmd -> return $ Left AbortCmd
     Left RestartCmd -> proof ctx tm
     Left AdmittedCmd -> return $ Left AdmittedCmd
+    Left UndoOneCmd -> proof ctx tm
     Right tm1 -> do
       putStrLn "No more subgoals"
       cmd <- getProofCmd
@@ -71,7 +75,8 @@ proofList glist@(g:gs) = do
   printGoals rglist
   r <- proofLoop g
   case r of
-    Left UndoCmd -> return $ Left UndoCmd
+    Left UndoCmd -> return $ Left UndoOneCmd
+    Left UndoOKCmd -> proofList glist
     Left QedCmd -> do
       putStrLn "not finished yet"
       proofList rglist
@@ -79,6 +84,7 @@ proofList glist@(g:gs) = do
     Right tm -> do
       tl <- proofList gs
       case tl of
+        Left UndoOneCmd -> proofList glist
         Left UndoCmd -> proofList rglist
         Left cmd -> return $ Left cmd
         Right tmlst -> return $ Right (tm:tmlst)
@@ -110,16 +116,21 @@ proofLoop g@(Goal i ctx ty) = do
               prettyPrint tm
               proofLoop g
             Right tacWithDec ->
-              case handleTactic g tacWithDec of
+              case handleTactic g (simplifyIndTactic tacWithDec) of
                 Left (TacticError str) -> do
                   putStrLn str
                   proofLoop g
-                Right (Result goallst resultFunc) -> do
-                  rlst <- proofList goallst
-                  case rlst of
-                    Left cmd -> return $ Left cmd
-                    Right tmlst ->
-                      return $ Right $ resultFunc tmlst
+                Right (Result goallst resultFunc) ->
+                  let
+                    f = do
+                      rlst <- proofList goallst
+                      case rlst of
+                        Left UndoOneCmd -> return $ Left UndoOKCmd
+                        Left cmd -> return $ Left cmd
+                        Right tmlst ->
+                          return $ Right $ resultFunc tmlst
+                  in
+                    f
         err -> do
           putStrLn $ errorColor "[ FAIL ] name checking"
           print err
