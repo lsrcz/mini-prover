@@ -1121,13 +1121,13 @@ spec = do
         `shouldParse` Rewrite True (TmVar "a") Nothing
     it "rewrite no arrow in" $
       parse ptactic "" "rewrite a in b."
-      `shouldParse` Rewrite False (TmVar "a") (Just (TmVar "b"))
+      `shouldParse` Rewrite False (TmVar "a") (Just "b")
     it "rewrite right arrow in" $
       parse ptactic "" "rewrite -> a in b."
-        `shouldParse` Rewrite False (TmVar "a") (Just (TmVar "b"))
+        `shouldParse` Rewrite False (TmVar "a") (Just "b")
     it "rewrite left arrow in" $
       parse ptactic "" "rewrite <- a in b."
-        `shouldParse` Rewrite True (TmVar "a") (Just (TmVar "b"))
+        `shouldParse` Rewrite True (TmVar "a") (Just "b")
     it "simpl" $
       parse ptactic "" "simpl."
       `shouldParse` Simpl Nothing

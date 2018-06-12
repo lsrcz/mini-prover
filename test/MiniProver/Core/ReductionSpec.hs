@@ -615,7 +615,7 @@ spec = do
     it "fullIotaStrategy" $
       fullIotaStrategy `shouldBe` 16383
     it "fullDeltaStrategy" $
-      fullDeltaStrategy `shouldBe` 16383
+      fullDeltaStrategy `shouldBe` 32767
   describe "reductionWithStrategy" $
     describe "full reduction" $ do
       let
