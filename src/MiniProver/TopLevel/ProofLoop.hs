@@ -17,6 +17,7 @@ import MiniProver.Proof.HandleTactic
 import MiniProver.Proof.Build
 import MiniProver.Proof.NameBounding
 import MiniProver.Proof.Termination
+import MiniProver.Proof.SimplifyIndTactic
 import MiniProver.TopLevel.IO
 import Control.Monad (forM)
 import Debug.Trace
@@ -115,7 +116,7 @@ proofLoop g@(Goal i ctx ty) = do
               prettyPrint tm
               proofLoop g
             Right tacWithDec ->
-              case handleTactic g tacWithDec of
+              case handleTactic g (simplifyIndTactic tacWithDec) of
                 Left (TacticError str) -> do
                   putStrLn str
                   proofLoop g
