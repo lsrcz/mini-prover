@@ -24,7 +24,7 @@ multipleItems d x
 
 
 handleDestruct :: Goal -> Tactic -> Either TacticError Result
-handleDestruct (Goal d ctx ty) (Destruct tm) = 
+handleDestruct g@(Goal d ctx ty) tac@(Destruct tm) = 
     let ty' = typeof ctx tm in
         case ty' of 
             Right (TmIndType nm inty) ->
@@ -47,7 +47,7 @@ handleDestruct (Goal d ctx ty) (Destruct tm) =
                         in
                             --trace (show branches) $ dummyreturn
                             trace (prettyShowAST $ resultf $ multipleItems (length subgoals) TmType) $
-                            Right $ Result subgoals resultf
+                            Right $ Result subgoals (checkResult g tac . resultf)
             Right _ ->
                 Left $ TacticError "Not an inductive product"
             Left _ ->

@@ -67,6 +67,14 @@ checkResult g@(Goal i ctx ty) tactic tm =
       prettyPrintAST tm
       putStrLn $ frontGroundColor BYELLOW "in local context"
       print (take i ctx)
+      case typeof ctx tm of
+        Left (TypingError tm str) -> do
+          putStrLn $ frontGroundColor BRED "Typing error in the term: "
+          prettyPrint tm
+          putStrLn str
+        Right ty -> do
+          putStrLn $ frontGroundColor BYELLOW "The type of the constructed term is"
+          prettyPrint ty
     )
     error $ frontGroundColor BRED "Tactic typing error, this should not happen"
 
