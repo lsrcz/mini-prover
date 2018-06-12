@@ -11,7 +11,9 @@ import MiniProver.Core.SimplifyIndType
 import MiniProver.Core.Subst
 import MiniProver.Core.Context
 import MiniProver.PrettyPrint.PrettyPrint
+import MiniProver.Core.Rename
 import Debug.Trace
+
 handleRewrite :: Goal->Tactic->Either TacticError Result
 handleRewrite g@(Goal num ctx goal) (Rewrite flag t Nothing) = 
   case typeof ctx t of
@@ -25,7 +27,7 @@ handleRewrite g@(Goal num ctx goal) (Rewrite flag t Nothing) =
             let
               p =getP ctx eqTy goal t newGoal x y flag
             in
-              (trace (show p)handleApply g (Apply p Nothing) )
+              handleApply g (Apply p Nothing) 
         _ -> Left (TacticError "The type of term is not eq type")
 
 
@@ -42,12 +44,12 @@ handleRewrite g@(Goal num ctx goal) (Rewrite flag t (Just name)) =
                 (Right ty1) = getBindingType ctx index
               in
                 let 
-                  p = getP' ctx eqTy goal t ty1 x y flag
+                  p = getP' ctx eqTy t ty1 x y flag
                 in
-                  (trace (show p) handleApply g (Apply p (Just name)))
+                  handleApply g (Apply p (Just name))
         _ -> Left (TacticError "The type of term is not eq type")
-getP' :: Context->Term->Term->Term->Term->Term->Term->Bool->Term
-getP' ctx eqTy goal t ty1 x y flag =
+getP' :: Context->Term->Term->Term->Term->Term->Bool->Term
+getP' ctx eqTy t ty1 x y flag =
   let
     (Right index1) = nameToIndex ctx "eq_rect"
     (Right index2) = nameToIndex ctx "eq_rect_r"
@@ -67,7 +69,7 @@ getP' ctx eqTy goal t ty1 x y flag =
                 (TmLambda
                   ""
                   (TmIndType "eq" [(tmShift 2 eqTy),(tmShift 2 x),(TmRel "" 0)])
-                  (replace (TmRel "" 1) (tmShift 3 x) (tmShift 3 goal)))),
+                  (replace (TmRel "" 1) (tmShift 3 x) (tmShift 3 ty1)))),
               (TmRel "" 0),  -- ??????
               (tmShift 1 y),
               (tmShift 1 t)
@@ -86,7 +88,7 @@ getP' ctx eqTy goal t ty1 x y flag =
                 (TmLambda
                   ""
                   (TmIndType "eq" [(tmShift 2 eqTy),(tmShift 2 y),(TmRel "" 0)])
-                  (replace (TmRel "" 1) (tmShift 3 y) (tmShift 3 goal)))),
+                  (replace (TmRel "" 1) (tmShift 3 y) (tmShift 3 ty1)))),
               (TmRel "" 0),  -- ??????
               (tmShift 1 x),
               (tmShift 1 t)

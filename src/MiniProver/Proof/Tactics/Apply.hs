@@ -52,7 +52,7 @@ handleApply g@(Goal num ctx t1) a@(Apply t2 (Just name)) =
               case typeof ctx (TmAppl [t2,(TmRel name index)]) of
                 Left er -> Left (TacticError "type is not matched")
                 Right ty -> 
-                  case  (getGoal num ctx index (renameTerm ctx ty) t1) of
+                  case getGoal num ctx index (renameTerm ctx ty) t1 of
                     (_,Left er) -> Left er
                     (newList,Right goal) ->
                       Right
@@ -162,7 +162,7 @@ getGoal num ctx index term oldGoal=
               in
                 let 
                   newCtx = renameCtx index $ makeCtx ctx newList mapList 0 index ctx term
-                  newGoal = changeIndex oldGoal mapList (-1)
+                  newGoal = changeIndex oldGoal mapList (-1) 
                 in
                   (newList,Right(Goal num newCtx newGoal))
 
@@ -200,7 +200,7 @@ makeCtx ctx newList mapList i bound ls changeTerm =
                 (i+1) 
                 bound 
                 (tail ls)
-                changeTerm)
+                changeTerm) 
           else
             let
               tmp = changeBind bind mapList i
@@ -243,7 +243,9 @@ changeIndex' (TmRel name index) mapList i depth =
   if ((index >= depth)&&(index-depth<(length mapList)))
     then TmRel name ((getNewIndex (index-depth) mapList) - i -1 + depth)
     else
-      TmRel name index
+      if (index >= depth)
+        then TmRel name (index-i-1)
+        else TmRel name index
 changeIndex' (TmAppl ls) mapList i depth =
   TmAppl 
     (map
