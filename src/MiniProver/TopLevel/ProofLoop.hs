@@ -17,7 +17,7 @@ import MiniProver.Proof.HandleTactic
 import MiniProver.Proof.Build
 import MiniProver.Proof.NameBounding
 import MiniProver.Proof.Termination
-import MiniProver.Proof.SimplifyIndTactic
+import MiniProver.Proof.SimplifyIndType
 import MiniProver.TopLevel.IO
 import Control.Monad (forM)
 import Debug.Trace
