@@ -106,7 +106,7 @@ processOneCommand verboseLevel inputStr ctx = do
           putStrLn $ "Name " ++ unwords lst ++ " exists"
           return ctx
         [] -> do
-          putStrLn $ okColor "[ OK ] duplicate name checking"
+          putStrLnV 1 $ okColor "[ OK ] duplicate name checking"
           case checkAllNameBoundedCommand ctx cmd of
             AllNameBounded -> do
               putStrLnV 1 $ okColor "[ OK ] name checking"
