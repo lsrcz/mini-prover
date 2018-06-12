@@ -134,30 +134,4 @@ spec =
                   , TmConstr "S"
                     [ TmRel "m0" 1]]])])]
       eqmAns = fromRight undefined $ handleTactic eqmgoal (Destruct (TmRel "m" 0))
-    it "eq m -- goal" $
-      getGoalList eqmAns `shouldBe`
-      [ Goal 1 (("n",VarBind (TmIndType "nat" [])):realPlusContext)
-        ( TmIndType "eq"
-          [ TmIndType "nat" []
-          , TmAppl
-            [ TmRel "plus" 2
-            , TmRel "n" 1
-            , TmConstr "O" [] ]
-          , TmAppl
-            [ TmRel "plus" 2
-            , TmRel "n" 1
-            , TmConstr "O" [] ]])
-      , Goal 2 (("m0",VarBind (TmIndType "nat" [])):("n",VarBind (TmIndType "nat" [])):realPlusContext)
-        ( TmIndType "eq"
-          [ TmIndType "nat" []
-          , TmAppl
-            [ TmRel "plus" 2
-            , TmRel "n" 1
-            , TmConstr "S"
-              [ TmRel "m0" 0 ]]
-          , TmAppl
-          [ TmRel "plus" 2
-          , TmRel "n" 1
-          , TmConstr "S"
-            [ TmRel "m0" 0 ]]])]
   
