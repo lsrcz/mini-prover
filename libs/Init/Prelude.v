@@ -499,7 +499,22 @@ Definition eq_trans_assoc (A:Type) (x:A) (y:A) (z:A) (t:A)
   | eq_refl _ _ => eq_refl (eq A x z) (eq_trans A x y z e1 e2)
   end.
 
+Inductive nat : Type :=
+| O : nat
+| S : nat -> nat.
 
+Fixpoint plus (n:nat) (m:nat) : nat :=
+match n as n0 in nat return nat with
+| O => m
+| S n1 => S (plus n1 m)
+end.
 
+Inductive list (T:Type) : Type :=
+| nil : list T
+| cons : T -> list T -> list T.
+
+Inductive ilist (T:Type) : nat -> Type :=
+| inil : ilist T O
+| icons : forall (n:nat), T -> ilist T n -> ilist T (S n).
 
   
