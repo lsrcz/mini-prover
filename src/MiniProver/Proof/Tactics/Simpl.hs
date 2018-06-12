@@ -17,5 +17,5 @@ handleSimpl g@(Goal d ctx ty) s@(Simpl Nothing) =
     ( reductionWithStrategy
       ( clearStrategyInSet (clearStrategyInSet fullBZIDStrategySet DeltaRestricted) DeltaRel)
       ctx ty)]
-  (\[tm] -> tm)
+  (\[tm] -> checkResult g s tm)
 
