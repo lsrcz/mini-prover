@@ -328,7 +328,7 @@ reductionWithStrategy strategy@(StrategySet bs zs is ds) = go
             case reductionWithStrategy fullBZIDStrategySet ctx (lst !! (i-1)) of
               TmConstr{} -> True
               _ -> False
-          l@TmLambda{} -> trace "??" $
+          l@TmLambda{} ->
             let
               getAbsNum (TmLambda _ _ tm) = 1 + getAbsNum tm
               getAbsNum _ = 0

@@ -34,7 +34,7 @@ handleApply g@(Goal num ctx t1) a@(Apply t2 Nothing) =
             then 
               Left (TacticError "type is not matched")
             else
-              case find ctx simpleGoal simpleTy num of
+              case find ctx simpleGoal simpleTy num 0 of
                 Left er -> Left er
                 Right goalList ->
                   Right (Result (map renameGoal goalList) (\tmlst -> checkResult g a (renameTerm ctx $ simpleResultFunc t2 tmlst)))
@@ -434,21 +434,77 @@ getDependList ctx bound _ num nowList = nowList
 
 
 
-
-find::Context->Term->Term->Int->Either TacticError [Goal]
-find ctx t1 t2 num =
+ 
+find :: Context->Term->Term->Int->Int->Either TacticError [Goal]
+find ctx t1 t2 num depth =
   if typeeq ctx (Right t1) (Right t2)
     then
       Right []
     else 
       case t2 of
         TmProd name ty tm ->
-          case find (addBinding ctx name (VarBind ty)) (tmShift 1 t1) tm (num+1) of
-            Left er ->Left er
-            Right goalLs -> Right ((Goal num ctx ty):goalLs) 
+          if findDepend ty depth 0
+            then Left (TacticError "type depend!")
+            else
+              case find ctx (tmShift 1 t1) tm num (depth+1) of
+                Left er ->Left er
+                Right goalLs -> Right ((Goal num ctx (tmShift (-depth) ty)):goalLs) 
         _ -> Left (TacticError "type is not matched")
 
-
+findDepend :: Term->Int->Int->Bool
+findDepend (TmRel _ index) depth newdepth =
+  if (index < depth)&&(index >= newdepth)
+    then True
+    else False
+findDepend (TmAppl ls) depth newdepth =
+  foldl
+    (\b t-> if b then b else (findDepend t depth newdepth))
+    False
+    ls
+findDepend (TmProd _ ty tm) depth newdepth =
+  if findDepend ty depth newdepth
+    then True
+    else  findDepend tm (depth+1) (newdepth+1)
+findDepend (TmLambda _ ty tm) depth newdepth =
+  if findDepend ty depth newdepth
+    then True
+    else  findDepend tm (depth+1) (newdepth+1)
+findDepend (TmLetIn _ t1 t2 t3) depth newdepth =
+  if findDepend t1 depth newdepth
+    then True
+    else 
+      if findDepend t2 depth newdepth 
+        then True
+        else findDepend t3 (depth+1) (newdepth+1)
+findDepend (TmIndType _ ls) depth newdepth = 
+  foldl
+    (\b t-> if b then b else (findDepend t depth newdepth))
+    False
+    ls  
+findDepend (TmConstr _ ls) depth newdepth = 
+  foldl
+    (\b t-> if b then b else (findDepend t depth newdepth))
+    False
+    ls         
+findDepend (TmMatch num t1 _ nameLs t2 eqLs) depth newdepth = 
+  if findDepend t1 depth newdepth
+    then True
+    else 
+      if findDepend t2 (depth+(length nameLs)-num) (newdepth+(length nameLs)-num) 
+        then True
+        else
+          foldl
+            (\b (Equation nameLs t)-> 
+              if b 
+                then b 
+                else 
+                  (findDepend 
+                    t 
+                    (depth+(length nameLs)-num-1) 
+                    (newdepth+(length nameLs)-num-1)))
+            False
+            eqLs  
+findDepend t depth newdepth = False
 
 
 

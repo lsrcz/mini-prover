@@ -7,8 +7,8 @@ import System.IO
 main :: IO ()
 main = do
   handle <- openFile "./libs/Init/Prelude.v" ReadMode
-  -- p <- processFile handle 1 []
-  ctx <- topLoop 0 realP2arguContext --ilistContext
+  p <- processFile handle 0 []
+  ctx <- topLoop 0 p --ilistContext
   print ctx
 
 {-
