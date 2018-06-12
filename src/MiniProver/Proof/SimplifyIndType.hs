@@ -11,5 +11,5 @@ simplifyIndTactic (Exact tm) = Exact (simplifyIndType tm)
 simplifyIndTactic (Apply tm mbnm) = Apply (simplifyIndType tm) mbnm
 simplifyIndTactic (Destruct tm) = Destruct (simplifyIndType tm)
 simplifyIndTactic (Induction tm) = Induction (simplifyIndType tm)
-simplifyIndTactic (Rewrite b tm mbtm) = Rewrite b (simplifyIndType tm) (simplifyIndType <$> mbtm)
+simplifyIndTactic (Rewrite b tm mbnm) = Rewrite b (simplifyIndType tm) mbnm
 simplifyIndTactic tactic = tactic

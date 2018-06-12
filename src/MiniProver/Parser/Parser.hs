@@ -371,8 +371,8 @@ prewrite = do
   _ <- rword "rewrite"
   isleftdir <- True <$ larrow <|> False <$ arrow <|> return False
   tm <- pterm
-  mbtm <- pmaybeinterm
-  return $ Rewrite isleftdir tm mbtm
+  mbnm <- pmaybeinident
+  return $ Rewrite isleftdir tm mbnm
 
 pmaybeinterm :: Parser (Maybe Term)
 pmaybeinterm = return <$> try pintermok

@@ -24,7 +24,7 @@ data Tactic =
   | Intros
   | Destruct Term
   | Induction Term
-  | Rewrite Bool Term (Maybe Term)
+  | Rewrite Bool Term (Maybe Name)
   | Simpl (Maybe Name)
   | Reflexivity
   | Symmetry

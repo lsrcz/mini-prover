@@ -11,6 +11,6 @@ buildTactic (Exact tm) ctx = Exact (buildTerm tm ctx)
 buildTactic (Apply tm i) ctx = Apply (buildTerm tm ctx) i
 buildTactic (Destruct tm) ctx = Destruct (buildTerm tm ctx)
 buildTactic (Induction tm) ctx = Induction (buildTerm tm ctx)
-buildTactic (Rewrite b tm mbtm) ctx =
-  Rewrite b (buildTerm tm ctx) (buildTerm <$> mbtm <*> Just ctx)
+buildTactic (Rewrite b tm mbnm) ctx =
+  Rewrite b (buildTerm tm ctx) mbnm
 buildTactic tactic _ = tactic
