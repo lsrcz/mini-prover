@@ -6,9 +6,9 @@ import System.IO
 
 main :: IO ()
 main = do
-  handle <- openFile "./libs/Init/Prelude.v" ReadMode
+  handle <- openFile "./libs/Init/Prelude.1.v" ReadMode
   p <- processFile handle 0 []
-  ctx <- topLoop 0 p --ilistContext
+  ctx <- topLoop 3 p --ilistContext
   print ctx
 
 {-
