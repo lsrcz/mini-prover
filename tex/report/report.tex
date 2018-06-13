@@ -23,11 +23,20 @@
     \maketitle 
     \tableofcontents
 
+    \include{introduction}
     \include{syntax}
-    \include{calculus}
-    \include{tactic}
+    \include{parser}
+    \include{typing}
+    \include{reduction}
+    \include{safetycheck}
     \include{toplevel}
+    \include{proofhandling}
+    \include{tactic}
+    \include{usage}
+    \include{conclusion}
 
-    \nocite{coqmanual}
+    \nocite{coqmanual,ttfp,cpwdt,ittcoic}
     \bibliography{reference}
+
+    \include{appendix}
 \end{document}

@@ -1,4 +1,4 @@
-\section{Calculus}
+\section{Typing}
 
 \subsection{Term}
 
@@ -85,53 +85,6 @@
     \tag{\sc T-Let}
 \end{equation*}
 
-\subsection{Conversion Rule}
-
-\subsubsection{Notation}
-\begin{itemize}
-    \item $E[\Gamma]\vdash \tt t\rhd u$ : $\tt t$ reduces to $\tt u$ in $E,\Gamma$ with 
-    one of the $\beta,\iota,\delta,\zeta$ reductions.
-    \item $E[\Gamma]\vdash \tt t\mathop{\rhd}\limits^* u$ : $E[\Gamma]\vdash\tt t\rhd\cdots\rhd u$.
-    \item $\tt u\equiv v$ : $\tt u$ and $\tt v$ are identical.
-\end{itemize}
-
-\subsubsection{Conversion Rules}
-\begin{equation*}
-\frac{E[\Gamma]\vdash(\lambda{\tt x:T.\ t})\ u}
-    {\tt t\{x/u\}}
-    \tag{\sc $\beta$-Conv}
-\end{equation*}
-\begin{equation*}
-\frac{E[\Gamma]\vdash{\tt x}\qquad ({\tt x:=t:T})\in\Gamma}
-    {\tt t}
-    \tag{\sc $\delta$-Conv1}
-\end{equation*}
-\begin{equation*}
-\frac{E[\Gamma]\vdash{\tt c}\qquad ({\tt x:=t:T})\in E}
-    {\tt t}
-    \tag{\sc $\delta$-Conv2}
-\end{equation*}
-\begin{equation*}
-\frac{E[\Gamma]\vdash \tt let\ \ x:=u\ \ in\ \ t}
-    {\tt t\{x/u\}}
-    \tag{\sc $\zeta$-Conv}
-\end{equation*}
-\begin{equation*}
-\frac{E[\Gamma]\vdash \tt t:\forall x:T,U\qquad x\text{ fresh in }t}
-    {\tt \lambda\tt x:T.\ (t\ x)}
-    \tag{\sc $\eta$-Exp}
-\end{equation*}
-\begin{equation*}
-    \textit{Later in \textbf{Sugar and Desugar}}
-    \tag{\sc $\iota$-Conv}
-\end{equation*}
-
-\begin{Def}[Convertibility]
-$\tt t_1$ and $\tt t_2$ are convertible iff there exists $\tt u_1$ and $\tt u_2$ such that 
-$E[\Gamma]\vdash \tt t_1\mathop{\rhd}\limits^* u_1$ and $E[\Gamma]\vdash \tt t_2\mathop{\rhd}\limits^* u_2$ 
-and either $u_1\equiv u_2$ or they are convertible up to $\eta$-expansion.
-\end{Def}
-
 \subsection{Inductive Definition}
 
 \subsubsection{Notation}
@@ -206,9 +159,7 @@ The type of constructor $\tt T$ satisfies \textit{the nested positivity conditio
     \end{itemize}
 \end{Def}
 
-\subsection{Sugar and Desugar}
-
-\subsubsection{Match}
+\subsection{Match}
 \begin{Def}[Desugar of \tt match]
     \begin{equation*}
     \frac{\tt match\ m\ with\ (c_1\ x_{11}\ \cdots\ x_{1p_1})\Rightarrow f_1\ |\ \cdots\ |\ (c_n\ x_{n1}\ \cdots\ x_{np_n})
@@ -231,7 +182,7 @@ The type of constructor $\tt T$ satisfies \textit{the nested positivity conditio
     \tag{\sc $\iota$-Conv-Match}
 \end{equation*}
 
-\subsubsection{Fixpoint}
+\subsection{Fixpoint}
 \begin{Def}[Desugar of \tt fix]
     \begin{equation*}
     \frac{\tt fix\ f_1(\Gamma_1):A_1:=t_1\ with\cdots with\ f_n(\Gamma_n):A_n:=t_n\qquad 
@@ -253,7 +204,7 @@ The type of constructor $\tt T$ satisfies \textit{the nested positivity conditio
     \tag{\sc $\iota$-Conv-Fix}
 \end{equation*}
 
-\subsubsection{Let}
+\subsection{Let}
 
 \begin{Def}[Desugar of \tt let]
 \begin{equation*}

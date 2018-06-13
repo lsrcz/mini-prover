@@ -1,0 +1,47 @@
+\section{Reduction}
+
+\subsection{Notation}
+\begin{itemize}
+    \item $E[\Gamma]\vdash \tt t\rhd u$ : $\tt t$ reduces to $\tt u$ in $E,\Gamma$ with 
+    one of the $\beta,\iota,\delta,\zeta$ reductions.
+    \item $E[\Gamma]\vdash \tt t\mathop{\rhd}\limits^* u$ : $E[\Gamma]\vdash\tt t\rhd\cdots\rhd u$.
+    \item $\tt u\equiv v$ : $\tt u$ and $\tt v$ are identical.
+\end{itemize}
+
+\subsection{Conversion Rules}
+\begin{equation*}
+\frac{E[\Gamma]\vdash(\lambda{\tt x:T.\ t})\ u}
+    {\tt t\{x/u\}}
+    \tag{\sc $\beta$-Conv}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash{\tt x}\qquad ({\tt x:=t:T})\in\Gamma}
+    {\tt t}
+    \tag{\sc $\delta$-Conv1}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash{\tt c}\qquad ({\tt x:=t:T})\in E}
+    {\tt t}
+    \tag{\sc $\delta$-Conv2}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash \tt let\ \ x:=u\ \ in\ \ t}
+    {\tt t\{x/u\}}
+    \tag{\sc $\zeta$-Conv}
+\end{equation*}
+\begin{equation*}
+\frac{E[\Gamma]\vdash \tt t:\forall x:T,U\qquad x\text{ fresh in }t}
+    {\tt \lambda\tt x:T.\ (t\ x)}
+    \tag{\sc $\eta$-Exp}
+\end{equation*}
+\begin{equation*}
+    \textit{Later in \textbf{Sugar and Desugar}}
+    \tag{\sc $\iota$-Conv}
+\end{equation*}
+
+\begin{Def}[Convertibility]
+$\tt t_1$ and $\tt t_2$ are convertible iff there exists $\tt u_1$ and $\tt u_2$ such that 
+$E[\Gamma]\vdash \tt t_1\mathop{\rhd}\limits^* u_1$ and $E[\Gamma]\vdash \tt t_2\mathop{\rhd}\limits^* u_2$ 
+and either $u_1\equiv u_2$ or they are convertible up to $\eta$-expansion.
+\end{Def}
+
