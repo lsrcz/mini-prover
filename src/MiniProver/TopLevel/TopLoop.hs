@@ -53,11 +53,14 @@ processFile handle verboseLevel ctx = do
       let
         putStrLnV = putStrLnIfNoLessThan verboseLevel
       inputStr <- hGetInputCommand handle
-      putStrLnV 1 $ okColor "[ OK ] reading in"
-      putStrLnV 2 $ infoColor "**** input string ****"
-      putStrLnV 2 inputStr
-      newCtx <- processOneCommand verboseLevel inputStr ctx
-      processFile handle verboseLevel newCtx
+      if all (==' ') inputStr
+        then return ctx
+        else do
+          putStrLnV 1 $ okColor "[ OK ] reading in"
+          putStrLnV 2 $ infoColor "**** input string ****"
+          putStrLnV 2 inputStr
+          newCtx <- processOneCommand verboseLevel inputStr ctx
+          processFile handle verboseLevel newCtx
 
 processOneCommand :: Int -> String -> Context -> IO Context
 processOneCommand verboseLevel inputStr ctx = do
