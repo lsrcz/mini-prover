@@ -32,13 +32,17 @@ addEnvCmd ctx (Ind nm' d' ty' tm' lst') =
     let (Ind nm d ty tm lst) = renameInd ctx $ Ind nm' d' ty' tm' lst' in
         let ctx' = addBinding ctx nm $ IndTypeBind d ty tm $
                 map (\case (a, b, c) -> (Constructor a b c)) lst in
+            --trace ("hello2") $
             let indterm = buildIndTermOuterParam ctx' nm d (ty, tm) lst in
                 case indterm of
                     Nothing -> ctx
                     Just term -> 
+                        --trace ("hello3 "++prettyShowAST term) $
                         let newty = typeof ctx' term in
+                            --trace ("hello4 "++show newty) $
                             case newty of
                                 Right tyterm ->
+                                    --trace ("hello5") $
                                     addBinding ctx' (nm++"_rect") $ 
                                         TmAbbBind (renameTerm ctx' tyterm) $ 
                                         Just $ renameTerm ctx' term
@@ -51,6 +55,7 @@ buildIndTermOuterParam ctx nm d (ty, tm) lst
     | d == 0 = 
         buildIndTermOuterProp ctx nm (ty, tm) lst
     | otherwise = 
+        --trace ("here") $
         case (ty, tm) of
             (TmProd nm1 ty1 inty, TmLambda nm1' ty1' intm) ->
                 case buildIndTermOuterParam ctx nm (d - 1) (inty, intm) lst of
@@ -120,7 +125,10 @@ buildIndMatch ctx nm pd =
 
 buildIndMatchEq :: Context -> Name -> Constructor -> Int -> Equation
 buildIndMatchEq ctx nm (Constructor nm1 ty1 tm1) fd = 
+    --trace ("Constructor is "++nm1) $
+    --trace ("tm1 is "++show tm1) $
     let newtm = stripExpParam ctx nm tm1 in
+        --trace ("newtm is "++show newtm) $
         let x = getIndType ctx nm in
             case x of
                 Right (d, ty, tm, _) -> 
@@ -138,7 +146,9 @@ buildIndMatchEq ctx nm (Constructor nm1 ty1 tm1) fd =
 buildIndMatchEqApp :: Context -> Name -> Term -> Int -> [(String, Int)] -> Int -> [Term]
 buildIndMatchEqApp ctx nm (TmConstr _ _) bigfd lst curid = []
 buildIndMatchEqApp ctx nm (TmLambda nm1 ty tm) bigfd lst curid =
+    --trace ("before head 1 "++(show $ length nm1)) $
     let dotname = "."++[head nm1] in
+        --trace ("after head 1") $
         let newlst = (dotname, curid):lst in
             let nxt = buildIndMatchEqApp ctx nm tm bigfd newlst (curid - 1) in
                 case ty of
@@ -148,8 +158,14 @@ buildIndMatchEqApp ctx nm (TmLambda nm1 ty tm) bigfd lst curid =
                         if nm /= nm2 then
                             (TmRel dotname curid):nxt
                         else 
+                            --trace ("tmlist "++show tmlst) $
                             let rawlst = drop (getIndTypeInt ctx nm) tmlst in
-                                let applst = map (\case (TmRel _ id) -> searchAndReplace lst id) rawlst in
+                                --trace ("raw list is "++show rawlst) $
+                                --trace ("lst is "++show lst) $
+                                --trace ("bigfd is "++show bigfd) $
+                                --trace ("dotname is "++dotname) $
+                                --trace ("nxt is "++show nxt) $
+                                let applst = map (\case (TmRel _ id) -> searchAndReplace ctx nm lst id bigfd) rawlst in
                                     (TmRel dotname curid): 
                                     (TmAppl $ (TmRel ".F" bigfd):
                                         applst++[(TmRel dotname 0)]):nxt 
@@ -158,10 +174,29 @@ buildIndMatchEqApp ctx nm (TmLambda nm1 ty tm) bigfd lst curid =
                     _ -> error "This should not happen"
 
 
-searchAndReplace :: [(String, Int)] -> Int -> Term
-searchAndReplace lst id =
-    let (nm, d) = head (drop id lst) in
-        TmRel nm d
+searchAndReplace :: Context -> Name -> [(String, Int)] -> Int -> Int -> Term
+searchAndReplace ctx nm lst id bigfd 
+    | length lst > id =
+        --trace ("before head 2: list length is "++(show $ length lst)++" drop number is "++(show id)) $
+        let (nm, d) = head (drop id lst) in
+            --trace ("after head 2") $
+            TmRel nm d
+    | otherwise =
+        let 
+            exp = getIndTypeInt ctx nm
+            conslen = getIndTypeConstrlstLen ctx nm
+            k = 1 - (length lst - id + exp) 
+            index = k + exp + 1 + bigfd + conslen
+        in
+            TmRel "?" index
+
+
+getIndTypeConstrlstLen :: Context -> Name -> Int
+getIndTypeConstrlstLen ctx nm =
+    let con = getIndTypeConstrlst ctx nm in
+        case con of
+            Right conlst -> length conlst
+            _ -> error "This should not happen"
 
 
 buildIndMatchEqList :: Context -> Name -> Int -> [Equation]
@@ -195,8 +230,10 @@ getArgByFirstLetterDot :: Term -> [String]
 getArgByFirstLetterDot term =
     case term of
         TmProd nm _ tm1 -> 
+            --trace ("here is prod and "++show nm)$
             ("."++[head nm]):(getArgByFirstLetterDot tm1)
         TmLambda nm _ tm1 ->
+            --trace ("here is lambda and "++show nm)$
             ("."++[head nm]):(getArgByFirstLetterDot tm1)
         _ -> []
 
@@ -229,7 +266,8 @@ buildIndFixFType ctx nm (TmLambda nm1 ty1 tm2) d =
         TmProd nm1 ty1 term
 buildIndFixFType ctx nm (TmIndType nm1 lst) d =
     TmProd "." (TmIndType nm1 lst) $
-    TmAppl $ (TmRel ".P" (d + 1)):(listShift 1 $ drop (getIndTypeInt ctx nm) lst)++[(TmRel "." 0)]
+    TmAppl $ (TmRel ".P" (d + 1)):(listShift 1 $ 
+    drop (getIndTypeInt ctx nm) lst)++[(TmRel "." 0)]
 
 
 buildIndConstrF :: Context -> Name -> (Term, Term) -> Int -> (Maybe Term, Bool)

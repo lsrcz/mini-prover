@@ -51,7 +51,7 @@ getResultFunc :: Result -> ResultFunc
 getResultFunc (Result _ rf) = rf
 
 checkResult :: Goal -> Tactic -> Term -> Term
-checkResult g@(Goal i ctx ty) tactic tm =
+checkResult g@(Goal i ctx ty) tactic tm = 
   if typeeq ctx (typeof ctx tm) (Right ty) then tm else seq 
     (unsafePerformIO $ do
       putStrLn $ frontGroundColor BRED "FATAL Error"
