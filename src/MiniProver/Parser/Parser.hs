@@ -329,6 +329,7 @@ ptactic' = try pexact
   <|> try (LeftTac <$ rword "left")
   <|> try (RightTac <$ rword "right")
   <|> try pexists
+  <|> try pequivalence
 
 pexact :: Parser Tactic
 pexact = do
@@ -411,6 +412,12 @@ pexists = do
   _ <- rword "exists"
   tm <- pterm
   return $ Exists tm
+
+pequivalence :: Parser Tactic
+pequivalence = do
+  _ <- rword "equivalence"
+  nm <- ident
+  return $ Equivalence nm
 
 pproofinput :: Parser ProofInput
 pproofinput = (PCmd <$> try pproofcmd) <|> (PTac <$> try ptactic)

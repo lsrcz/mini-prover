@@ -34,6 +34,8 @@ data Tactic =
   | LeftTac
   | RightTac
   | Exists Term
+  | Equvalence Name
+  | Equivalence Name
   deriving (Show, Eq)
 
 data ProofInput =
