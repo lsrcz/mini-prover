@@ -8,6 +8,7 @@ import MiniProver.Proof.HandleTactic
 import MiniProver.Proof.ProofDef
 import MiniProver.Utils.ContextForTesting
 import Data.Either (fromRight)
+import Debug.Trace
 
 main :: IO ()
 main = hspec spec
@@ -19,7 +20,7 @@ spec =
       eqmgoal = Goal 2
         ( ("m",VarBind (TmIndType "nat" []))
         : ("n",VarBind (TmIndType "nat" []))
-        : realNatContext)
+        : realPlusContext)
         ( TmIndType "eq"
           [ TmIndType "nat" []
           , TmAppl
@@ -133,7 +134,7 @@ spec =
                     [ TmRel "n0" 0]
                   , TmConstr "S"
                     [ TmRel "m0" 1]]])])]
-      eqmAns = fromRight undefined $ handleTactic eqmgoal (Destruct (TmRel "m" 0))
+      eqmAns =  trace (show $ getGoalList <$> handleTactic eqmgoal (Destruct (TmRel "m" 0)))      fromRight undefined $ handleTactic eqmgoal (Destruct (TmRel "m" 0))
     it "eq m -- goal" $ 
       getGoalList eqmAns `shouldBe`
       [ Goal 1 (("n",VarBind (TmIndType "nat" [])):realPlusContext)
