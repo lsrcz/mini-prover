@@ -33,6 +33,7 @@ data Tactic =
   | Split
   | LeftTac
   | RightTac
+  | Exists Term
   deriving (Show, Eq)
 
 data ProofInput =

@@ -15,4 +15,5 @@ checkAllNameBoundedTactic ctx (Destruct tm) = checkAllNameBounded ctx tm
 checkAllNameBoundedTactic ctx (Induction tm) = checkAllNameBounded ctx tm
 checkAllNameBoundedTactic ctx (Rewrite _ tm _) =
   checkAllNameBounded ctx tm
+checkAllNameBoundedTactic ctx (Exists tm) = checkAllNameBounded ctx tm
 checkAllNameBoundedTactic _ _ = AllNameBounded

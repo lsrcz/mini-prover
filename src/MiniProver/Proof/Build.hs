@@ -13,4 +13,5 @@ buildTactic (Destruct tm) ctx = Destruct (buildTerm tm ctx)
 buildTactic (Induction tm) ctx = Induction (buildTerm tm ctx)
 buildTactic (Rewrite b tm mbnm) ctx =
   Rewrite b (buildTerm tm ctx) mbnm
+buildTactic (Exists tm) ctx = Exists (buildTerm tm ctx)
 buildTactic tactic _ = tactic

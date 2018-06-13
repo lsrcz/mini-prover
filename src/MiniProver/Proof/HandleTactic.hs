@@ -18,6 +18,7 @@ import MiniProver.Proof.Tactics.Symmetry (handleSymmetry)
 import MiniProver.Proof.Tactics.Split (handleSplit)
 import MiniProver.Proof.Tactics.Left (handleLeft)
 import MiniProver.Proof.Tactics.Right (handleRight)
+import MiniProver.Proof.Tactics.Exists (handleExists)
 
 handleTactic :: Goal -> Tactic -> Either TacticError Result
 handleTactic g@Goal{} e@Exact{} = handleExact g e
@@ -34,4 +35,5 @@ handleTactic g@Goal{} s@Symmetry{} = handleSymmetry g s
 handleTactic g@Goal{} s@Split{} = handleSplit g s
 handleTactic g@Goal{} l@LeftTac{} = handleLeft g l
 handleTactic g@Goal{} r@RightTac{} = handleRight g r
+handleTactic g@Goal{} e@Exists{} = handleExists g e
 handleTactic g@Goal{} i@Inversion{} = Left $ TacticError "Not implemented"

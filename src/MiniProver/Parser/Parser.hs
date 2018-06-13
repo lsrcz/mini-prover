@@ -328,6 +328,7 @@ ptactic' = try pexact
   <|> try (Split <$ rword "split")
   <|> try (LeftTac <$ rword "left")
   <|> try (RightTac <$ rword "right")
+  <|> try pexists
 
 pexact :: Parser Tactic
 pexact = do
@@ -404,6 +405,12 @@ pinversion = do
   _ <- rword "inversion"
   nm <- ident
   return $ Inversion nm
+
+pexists :: Parser Tactic
+pexists = do
+  _ <- rword "exists"
+  tm <- pterm
+  return $ Exists tm
 
 pproofinput :: Parser ProofInput
 pproofinput = (PCmd <$> try pproofcmd) <|> (PTac <$> try ptactic)

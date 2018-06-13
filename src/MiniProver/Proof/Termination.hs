@@ -11,4 +11,5 @@ computeDecParamTactic (Destruct tm) = Destruct <$> computeDecParam tm
 computeDecParamTactic (Induction tm) = Induction <$> computeDecParam tm
 computeDecParamTactic (Rewrite b tm mbnm) = Rewrite b <$> computeDecParam tm <*>
   Right mbnm
+computeDecParamTactic (Exists tm) = Exists <$> computeDecParam tm
 computeDecParamTactic tactic = Right tactic
