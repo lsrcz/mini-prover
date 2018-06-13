@@ -57,15 +57,99 @@ draw=black, fill=green!30, font=\bf]
 \begin{document}
 \frame{\titlepage}
 
-\section{Syntax}
-\begin{frame}
+\begin{frame}{Flow Chart}
 \end{frame}
 
-\section{Type System and Inference Rule}
-\begin{frame}
+\section{Type System}
+\subsection{Calculus of Inductive Constructions}
+\begin{frame}{$\lambda$-cube}
+    \centering
+\begin{tikzpicture}[node distance=4.5cm]
+    \node (la) {$\lambda\!\to$};
+    \node (l2) [above of=la] {$\lambda 2$};
+    \node (lp) [right of=la] {$\lambda P$};
+    \node (lw') [right of=la, xshift=-1cm, yshift=1.5cm] {$\lambda \underline{\omega}$};
+    \node (lw) [above of=lw'] {$\lambda \omega$};
+    \node (lc) [right of=lw] {$\lambda C$};
+    \node (lpw) [right of=lw'] {$\lambda P\underline{\omega}$};
+    \node (lp2) [above of=lp] {$\lambda P2$};
+
+    \footnotesize
+        
+    \path[->, thick, >=stealth] (lw') edge (lw) edge (lpw);
+    \node[fill=white, minimum size=6mm] at (3.5,4.5) {};
+    \node[fill=white, minimum size=6mm] at (4.5,1.5) {};
+    \path[->, thick, >=stealth] 
+        (la) edge node[below] {Type depends on Term} (lp)  
+            edge node[sloped,yshift=2mm] {Term depends on Type} (l2)
+            edge node[sloped,yshift=2mm] {Type depends on Type} (lw')
+        (lp) edge (lpw) edge (lp2)
+        (l2) edge (lp2) edge (lw)
+        (lw) edge (lc)
+        (lp2) edge (lc)
+        (lpw) edge (lc);
+\end{tikzpicture}
 \end{frame}
 
-\section{Implementation}
+\begin{frame}{Example and \textbf{CIC}}
+\begin{itemize}
+\item Term depends on Type\\
+    $\tt\lambda T:Type.\ \lambda x:T.\ x\quad :\quad \Pi T:Type.\ T\to T$
+\item Type depends on Type\\
+    $\tt\lambda T:Type.\ T\to T\quad :\quad Type\to Type$
+\item Type depends on Term\\
+    $\tt\lambda n:nat.\ S\ n\quad :\quad nat\to Type$
+        \vspace{10pt}
+\item $\lambda C$ + \textit{Definition} $\Rightarrow$ $\lambda D$.\\
+\item $\lambda D$ + \textit{Inductive Type} $\Rightarrow$ \textbf{CIC}.
+\end{itemize}
+\end{frame}
+
+\subsection{Key Typing Rule}
+\begin{frame}[fragile]{Inductive Type}
+$$
+\tt Ind\ [{\it p}]\ (\Gamma_I:=\Gamma_C)
+$$
+\vspace{-10pt}
+\begin{itemize}
+\item $\it p$ : Number of parameters.
+\item $\tt \Gamma_I$ : Inductive type.
+\item $\tt \Gamma_C$ : Constructors of the inductive type.
+\end{itemize}
+\vspace{10pt}
+\begin{minted}{coq}
+Inductive lst (T : Type) : Type :=
+    | nil : lst T
+    | cons : T -> lst T -> lst T
+\end{minted}
+$$
+\small
+\tt Ind\ [1]\left([lst:Type\to Type]:=
+\begin{bmatrix}
+\tt nil:\Pi T:Type,\ lst\ T\\
+\tt cons:\Pi T:Type,\ T\to lst\ T\to lst\ T
+\end{bmatrix}\right)
+$$
+\end{frame}
+
+\begin{frame}[fragile]{Match}
+$$\tt match\ {\it t}\ as\ {\it x_0}\ in\ {\it namelist}\ return\ {\it returntype}\ with\ [{\it equation}]$$
+\begin{itemize}
+    \item $\it t$ : A term of inductive type.
+    \item $\it namelist$ : Arguments of the inductive type.
+    \item $\it equation$ : Different constructors of the inductive type.
+\end{itemize}
+
+\begin{minted}{coq}
+Inductive eq (T : Type) (x : T) : T -> Type :=
+    | eq_refl : eq T x x
+
+fun (n : nat) (m : nat) (e : eq nat n m) =>
+    match e in (eq _ _ y) return (eq nat y n) with
+    | eq_refl _ _ => ...
+\end{minted}
+\end{frame}
+
 \subsection{Termination}
 \begin{frame}[fragile]{Termination Check}
 \begin{minted}[escapeinside=<>]{coq}
@@ -101,7 +185,18 @@ Definition extract (t : ill) : ill :=
 \end{alertblock}
 \end{frame}
 
-\subsection{Inductive Type and Term}
+\section{Evaluation}
+\begin{frame}{Evaluation (Conversion)}
+\begin{itemize}
+    \item $\beta$-reduction : Remove \textit{application}.
+    \item $\iota$-reduction : 
+    \item $\delta$-reduction : 
+    \item $\zeta$-reduction :
+    \item $\eta$-expansion :
+\end{itemize}
+\end{frame}
+
+\section{Top Level}
 \begin{frame}[fragile]{Build Term and Type for Inductive Definition}
 \begin{exampleblock}{Intuition}
     View mathematical induction as building a term for inductive definition.
@@ -123,29 +218,43 @@ forall P : nat -> Type, P O ->
 \end{minted}
 \end{frame}
 
-\section{Key Tactic}
-\begin{frame}{Intro and Intros}
+\section{Proof Handling}
+\begin{frame}{Proof Handling}
+    \begin{itemize}
+    \item Build proof object.
+    \item Navigate : Undo.
+    \item Switch mode : Proof, Qed, Abort.
+    \item Request info : Print.
+    \end{itemize}
 \end{frame}
 
-\begin{frame}{Unfold}
+\section{Tactic}
+\begin{frame}{Tactics}
+\begin{itemize}
+\item Intro, Intros : Extract parameters \quad $\tt \vdash A\to B$ $\Rightarrow$ $\tt A\vdash B$
+\item Apply :
+\item Exact : Construct the term manually
+\item Reflexivity : 
+\item Simpl : 
+\item Split :
+\item Induction :
+\end{itemize}
 \end{frame}
 
-\begin{frame}{Rewrite}
-\end{frame}
-
-\begin{frame}{Apply}
-\end{frame}
-
-\begin{frame}{Destruct}
-\end{frame}
-
-\begin{frame}{Induction}
+\begin{frame}{Tactics}
+\begin{itemize}
+\item Destruct : Classified sub-proofs \quad $\tt P\ m$ $\Rightarrow$ $\tt (P\ O)\wedge(P\ (S\ n))$
+\item Left, Right :
+\item Symmetry :
+\item Rewrite :
+\item Unfold :
+\item Exists :
+\end{itemize}
 \end{frame}
 
 \section{Demo}
-\begin{frame}
+\begin{frame}{Demo}
 \end{frame}
-
 
 \section*{Thanks}
 \begin{frame}
