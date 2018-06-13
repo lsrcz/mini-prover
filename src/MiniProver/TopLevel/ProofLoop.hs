@@ -93,7 +93,7 @@ proofLoop :: Goal -> IO (Either ProofControl Term)
 proofLoop g@(Goal i ctx ty) = do
   input <- getInputCommand
   let proofinput = parse pproofinput "" input
-  case trace (show proofinput) proofinput of
+  case proofinput of
     Left err -> do
       print err
       proofLoop g

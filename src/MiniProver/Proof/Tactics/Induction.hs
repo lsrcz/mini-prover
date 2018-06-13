@@ -62,7 +62,7 @@ findDepDownInside ctx origdeplst tmlst =
     getNewTmlst i (False:xs) = getNewTmlst(i+1) xs
     getNewTmlst i (True:xs) = TmRel "x" i : getNewTmlst (i+1) xs
     newTmlst = getNewTmlst 0 deltaDepMap
-  in trace (show origdeplst ++ show tmlst) $ 
+  in
     if null newTmlst then origdeplst
       else zipWith (||) origdeplst $ findDepDownInside ctx totDepMap newTmlst
 
@@ -96,7 +96,7 @@ renameInEqn tm1 tm2 i (Equation namelst tm) =
   Equation namelst (renameSub (shiftInEqn tm1) (shiftInEqn tm2) tm)
 
 renamePTail :: [Term] -> Term -> Term
-renamePTail tmlst term = trace (frontGroundColor BRED $ show tmlst) go 0 tmlst term
+renamePTail tmlst term = go 0 tmlst term
   where
     go :: Int -> [Term] -> Term -> Term
     go _ [] tm = tm
@@ -111,7 +111,7 @@ splitAbs (TmLambda name ty tm) i =
 -- splitAbs t i = error (prettyShowAST t ++ show i)
 
 renameP :: [Term] -> Int -> Term -> Term
-renameP tmlst i pterm = trace (show i) $ 
+renameP tmlst i pterm =
   case splitAbs pterm (i+1) of
     (f,s) -> s $ renamePTail (map (tmShift (i+1)) tmlst) f
 
@@ -188,12 +188,12 @@ buildRawResult idx goal@(Goal d ctx goalty) itype@(TmIndType name tylst) tmorig 
         (p,lst,boolmap) = buildP idx goal itype tmorig
         strategy =
           StrategySet (strategyListToSet [BetaAppl .. BetaInLambdaTm]) 0 0 0
-        ptail = trace (prettyShow p) $ reductionWithStrategy strategy ctx (TmAppl ((tm:take i tylst) ++ [p]))
+        ptail = reductionWithStrategy strategy ctx (TmAppl ((tm:take i tylst) ++ [p]))
         maskedContext = genMaskedContext ctx boolmap
         (goals, funcs) =
           unzip $ map ((\case Result g r -> (g, r)) . fromRight undefined . (`handleIntros` Intros)) $ 
           genGoalsFromFList d maskedContext (length constrlst) 0 ptail
-        flatGoals = trace (unlines $ map prettyShow $ map (\case [Goal _ _ ty] -> ty) goals) map head goals
+        flatGoals = map head goals
         relTm = TmRel
           (name ++ "_rect")
           (fromRight undefined $ nameToIndex ctx $ name ++ "_rect")
