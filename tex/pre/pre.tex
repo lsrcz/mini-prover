@@ -184,17 +184,6 @@ Definition extract (t : ill) : ill :=
 \end{alertblock}
 \end{frame}
 
-\section{Evaluation}
-\begin{frame}{Evaluation (Conversion)}
-\begin{itemize}
-    \item $\beta$-reduction : Reduce \textit{application}
-    \item $\iota$-reduction : Reduce {\tt match}
-    \item $\delta$-reduction : $\tt let\ x\ =\ u$ \quad $\Rightarrow$\quad $\tt x\to u$
-    \item $\zeta$-reduction : $\tt let\ x\ =\ u\ in\ t$ \quad $\Rightarrow$\quad $\tt [x\to u]t$
-    \item $\eta$-expansion : $\tt t:\forall x:T,U$ \quad $\Rightarrow$\quad $\tt \lambda x:T.\ (t\ x)$
-\end{itemize}
-\end{frame}
-
 \section{Top Level}
 \begin{frame}[fragile]{Build Term and Type for Inductive Definition}
 \begin{exampleblock}{Intuition}
@@ -215,6 +204,17 @@ forall P : nat -> Type, P O ->
     (forall n : nat, P n -> P (S n)) -> 
         forall n: nat, P n
 \end{minted}
+\end{frame}
+
+\section{Evaluation}
+\begin{frame}{Evaluation (Conversion)}
+\begin{itemize}
+    \item $\beta$-reduction : Reduce \textit{application}
+    \item $\iota$-reduction : Reduce {\tt match}
+    \item $\delta$-reduction : $\tt Definition\ x\ :=\ u$ \quad $\Rightarrow$\quad $\tt x\to u$
+    \item $\zeta$-reduction : $\tt let\ x\ :=\ u\ in\ t$ \quad $\Rightarrow$\quad $\tt [x\to u]t$
+    \item $\eta$-expansion : $\tt t:\forall x:T,U$ \quad $\Rightarrow$\quad $\tt \lambda x:T.\ (t\ x)$
+\end{itemize}
 \end{frame}
 
 \section{Proof Handling}
