@@ -426,3 +426,47 @@ Inductive ilist (T:Type) : nat -> Type :=
 | icons : forall (n:nat), T -> ilist T n -> ilist T (S n).
 
   
+
+Inductive bool : Type :=
+  | true : bool
+  | false : bool.
+
+Definition negb (b:bool) : bool :=
+  match b as b0 in bool return bool with
+  | true => false
+  | false => true
+  end.
+Definition andb (b1:bool) (b2:bool) : bool :=
+  match b1 as b0 in bool return bool with
+  | true => b2
+  | false => false
+  end.
+Definition orb (b1:bool) (b2:bool) : bool :=
+  match b1 as b0 in bool return bool with
+  | true => true
+  | false => b2
+  end.
+
+Fixpoint beq_nat (n : nat) (m : nat) : bool :=
+  match n as n0 in nat return bool with
+  | O => match m as m0 in nat return bool with
+         | O => true
+         | S m1 => false
+         end
+  | S n1 => match m as m0 in nat return bool with
+            | O => false
+            | S m1 => beq_nat n1 m1
+            end
+  end.
+
+Fixpoint evenb (n:nat) : bool :=
+  match n as n0 in nat return bool with
+  | O => true
+  | S n1 => 
+    match n1 as n2 in nat return bool with
+    | O => false
+    | S n2 => evenb n2
+    end
+  end.
+
+Definition oddb (n:nat) : bool := negb (evenb n).
