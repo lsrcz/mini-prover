@@ -59,9 +59,6 @@ draw=black, fill=green!30, font=\bf]
 \begin{document}
 \frame{\titlepage}
 
-\begin{frame}{Flow Chart}
-\end{frame}
-
 \section{Type System}
 \subsection{Calculus of Inductive Constructions}
 \begin{frame}{$\lambda$-cube}
@@ -190,11 +187,11 @@ Definition extract (t : ill) : ill :=
 \section{Evaluation}
 \begin{frame}{Evaluation (Conversion)}
 \begin{itemize}
-    \item $\beta$-reduction : Remove \textit{application}.
-    \item $\iota$-reduction : 
-    \item $\delta$-reduction : 
-    \item $\zeta$-reduction :
-    \item $\eta$-expansion :
+    \item $\beta$-reduction : Reduce \textit{application}
+    \item $\iota$-reduction : Reduce {\tt match}
+    \item $\delta$-reduction : $\tt let\ x\ =\ u$ \quad $\Rightarrow$\quad $\tt x\to u$
+    \item $\zeta$-reduction : $\tt let\ x\ =\ u\ in\ t$ \quad $\Rightarrow$\quad $\tt [x\to u]t$
+    \item $\eta$-expansion : $\tt t:\forall x:T,U$ \quad $\Rightarrow$\quad $\tt \lambda x:T.\ (t\ x)$
 \end{itemize}
 \end{frame}
 
@@ -222,40 +219,37 @@ forall P : nat -> Type, P O ->
 
 \section{Proof Handling}
 \begin{frame}{Proof Handling}
-    \begin{itemize}
-    \item Build proof object.
-    \item Navigate : Undo.
-    \item Switch mode : Proof, Qed, Abort.
-    \item Request info : Print.
-    \end{itemize}
+\begin{itemize}
+\item Build proof object.
+\item Navigate : Undo.
+\item Switch mode : Proof, Qed, Abort.
+\item Request info : Print.
+\end{itemize}
 \end{frame}
 
 \section{Tactic}
 \begin{frame}{Tactics}
 \begin{itemize}
-\item Intro, Intros : Extract parameters \quad $\tt \vdash A\to B$ $\Rightarrow$ $\tt A\vdash B$
-\item Apply :
+\item Intro, Intros : $\tt \vdash A\to B$ $\Rightarrow$ $\tt A\vdash B$
+\item Apply : $\tt A\to B\vdash B$ $\Rightarrow$ $\tt A\to B\vdash A$
 \item Exact : Construct the term manually
-\item Reflexivity : 
-\item Simpl : 
-\item Split :
-\item Induction :
+\item Reflexivity : $\tt eq\ T\ x\ y$ $\Rightarrow$ check if $\tt x=_{\beta\delta\iota\eta\zeta}y$
+\item Split : $\tt \vdash P_1\wedge P_2$ $\Rightarrow$ $\tt \vdash P_1,P_2$
+\item Induction : Classified sub-proofs with induction hypothesis
+\item Equivalence : Build equivalence relations inside inductive term
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Tactics}
 \begin{itemize}
-\item Destruct : Classified sub-proofs \quad $\tt P\ m$ $\Rightarrow$ $\tt (P\ O)\wedge(P\ (S\ n))$
-\item Left, Right :
-\item Symmetry :
-\item Rewrite :
-\item Unfold :
-\item Exists :
+\item Simpl : Simplify into human-readable goal 
+\item Destruct : Classified sub-proofs without induction hypothesis
+\item Left, Right : $\tt \vdash P_1\vee P_2$ $\Rightarrow$ $\tt \vdash P_1$ or $\tt\vdash P_2$ 
+\item Symmetry : $\tt eq\ T\ x\ y\vdash eq\ T\ y\ x$
+\item Rewrite : $\tt eq\ T\ x\ y$ $\Rightarrow$ $\tt x\to y$ or $\tt y\to x$
+\item Unfold : Replace term with $\beta\iota$-normal form
+\item Exists : $\tt \vdash\exists x,\ P\ x$ $\Rightarrow$ $\tt x_0\wedge(P\ x_0)$
 \end{itemize}
-\end{frame}
-
-\section{Demo}
-\begin{frame}{Demo}
 \end{frame}
 
 \section*{Thanks}
