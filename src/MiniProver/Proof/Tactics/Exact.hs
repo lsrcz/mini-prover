@@ -22,4 +22,4 @@ handleExact g@(Goal _ ctx ty) e@(Exact tm) =
         else Left $ TacticError $
           "The term:\n" ++ prettyShow tm ++
           "\nhas the type:\n" ++ prettyShow ty1 ++
-          "\ndoesn't match the goal's type" ++ prettyShow ty
+          "\ndoesn't match the goal's type\n" ++ prettyShow ty
