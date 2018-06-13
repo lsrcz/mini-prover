@@ -17,10 +17,10 @@ import Data.Either (fromRight)
 import Debug.Trace
 
 
-multipleItems :: Int -> a -> [a]
-multipleItems d x 
+multipleVar :: Int -> Term -> [Term]
+multipleVar d (TmVar nm) 
     | d == 0 = []
-    | otherwise = x:multipleItems (d - 1) x
+    | otherwise = (TmVar (nm++show d)):multipleVar (d - 1) (TmVar nm)
 
 
 handleDestruct :: Goal -> Tactic -> Either TacticError Result
@@ -34,6 +34,7 @@ handleDestruct g@(Goal d ctx ty) tac@(Destruct tm) =
                     substlst = buildSubstList ctx (ups - 1) tm (TmIndType nm inty)
                     (newctx, returntype, apps) = buildMatchReturnType ups (Goal d ctx ty) substlst tm 
                 in
+                    --trace ("returntype is "++prettyShowAST returntype) $
                     --trace ("Apps "++show apps) $
                     let typeofbranchP = buildTermPBeforeBranch returntype (ups - 1) in
                         --trace ("P is "++show typeofbranchP) $
@@ -46,7 +47,7 @@ handleDestruct g@(Goal d ctx ty) tac@(Destruct tm) =
                                 tm nmlst returntype resultcases apps
                         in
                             --trace (show branches) $ dummyreturn
-                            trace (prettyShowAST $ resultf $ multipleItems (length subgoals) TmType) $
+                            trace (prettyShow $ resultf $ reverse $ multipleVar (length subgoals) (TmVar "Subgoal")) $
                             Right $ Result subgoals (checkResult g tac . resultf)
             Right _ ->
                 Left $ TacticError "Not an inductive product"
@@ -106,6 +107,7 @@ buildTermInConstr origin num ctx d (Constructor nm ty tm) tm' tmlst =
                         (ctx'', subty) = filterTermIntoContext ctx' num finalterm
                         subgoal = Goal (newadd + origin + num) ctx'' subty
                     in
+                        --trace ("finalterm is "++prettyShowAST finalterm) $
                         (subgoal, caselst, finalterm)
                     --trace ("Branch case "++show caselst) $
                     --trace ("Inner Goal "++prettyShowAST finalterm) $ seq caselst ([], TmType)
@@ -125,8 +127,10 @@ filterTermIntoContext ctx num tm
 refineTermAndBuildContext :: Context -> Term -> (Int, Context, [Name], Term)
 refineTermAndBuildContext ctx (TmProd nm ty tm) =
     let (_, newnm) = addAnonymousName ctx [] nm Nothing in
+        --trace ("New name is "++newnm) $
         let ctx' = addBinding ctx newnm (VarBind ty) in
-            let newtm = tmShift 1 $ fullBReduction ctx' $ TmAppl [(TmProd nm ty tm), TmRel newnm 0] in
+            let newtm = fullBReduction ctx' $ TmAppl [tmShift 1 (TmProd nm ty tm), TmRel newnm 0] in
+                --trace ("newtm is "++prettyShowAST newtm) $
                 let (s, ctx'', nmlst, rettm) = refineTermAndBuildContext ctx' newtm in
                     (s + 1, ctx'', newnm:nmlst, rettm)
 refineTermAndBuildContext ctx tm = (0, ctx, [], tm)
