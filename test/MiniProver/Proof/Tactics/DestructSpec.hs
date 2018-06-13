@@ -134,7 +134,7 @@ spec =
                   , TmConstr "S"
                     [ TmRel "m0" 1]]])])]
       eqmAns = fromRight undefined $ handleTactic eqmgoal (Destruct (TmRel "m" 0))
-    it "eq m -- goal" $
+    it "eq m -- goal" $ 
       getGoalList eqmAns `shouldBe`
       [ Goal 1 (("n",VarBind (TmIndType "nat" [])):realPlusContext)
         ( TmIndType "eq"
