@@ -57,39 +57,39 @@ getP' ctx eqTy t ty1 x y flag =
     case flag of
       False ->
         TmLambda
-          ""
+          "."
           ty1
           (TmAppl  
             [ (TmRel "eq_rect" (index1+1)),
               (tmShift 1 eqTy),
               (tmShift 1 x),
               (TmLambda
-                ""
+                "."
                 (tmShift 1 eqTy)
                 (TmLambda
-                  ""
-                  (TmIndType "eq" [(tmShift 2 eqTy),(tmShift 2 x),(TmRel "" 0)])
-                  (replace (TmRel "" 1) (tmShift 3 x) (tmShift 3 ty1)))),
-              (TmRel "" 0),  -- ??????
+                  "."
+                  (TmIndType "eq" [(tmShift 2 eqTy),(tmShift 2 x),(TmRel "." 0)])
+                  (replace (TmRel "." 1) (tmShift 3 x) (tmShift 3 ty1)))),
+              (TmRel "." 0),  -- ??????
               (tmShift 1 y),
               (tmShift 1 t)
             ])
       True ->
         TmLambda
-          ""
+          "."
           ty1
           (TmAppl  
             [ (TmRel "eq_rect_r" (index2+1)),  
               (tmShift 1 eqTy),
               (tmShift 1 y),
               (TmLambda
-                ""
+                "."
                 (tmShift 1 eqTy)
                 (TmLambda
-                  ""
-                  (TmIndType "eq" [(tmShift 2 eqTy),(tmShift 2 y),(TmRel "" 0)])
-                  (replace (TmRel "" 1) (tmShift 3 y) (tmShift 3 ty1)))),
-              (TmRel "" 0),  -- ??????
+                  "."
+                  (TmIndType "eq" [(tmShift 2 eqTy),(tmShift 2 y),(TmRel "." 0)])
+                  (replace (TmRel "." 1) (tmShift 3 y) (tmShift 3 ty1)))),
+              (TmRel "." 0),  -- ??????
               (tmShift 1 x),
               (tmShift 1 t)
             ])
@@ -104,39 +104,39 @@ getP ctx eqTy goal t newGoal x y flag =
     case flag of
       True ->
         TmLambda 
-          "" 
+          "." 
           newGoal 
           (TmAppl  
             [ (TmRel "eq_rect" (index1+1)),
               (tmShift 1 eqTy),
               (tmShift 1 x),
               (TmLambda
-                ""
+                "."
                 (tmShift 1 eqTy)
                 (TmLambda
-                  ""
-                  (TmIndType "eq" [(tmShift 2 eqTy),(tmShift 2 x),(TmRel "" 0)])
-                  (replace (TmRel "" 1) (tmShift 3 y) (tmShift 3 goal)))),
-              (TmRel "" 0),  -- ??????
+                  "."
+                  (TmIndType "eq" [(tmShift 2 eqTy),(tmShift 2 x),(TmRel "." 0)])
+                  (replace (TmRel "." 1) (tmShift 3 y) (tmShift 3 goal)))),
+              (TmRel "." 0),  -- ??????
               (tmShift 1 y),
               (tmShift 1 t)
             ])
       False ->
         TmLambda 
-          "" 
+          "." 
           newGoal
           (TmAppl  
             [ (TmRel "eq_rect_r" (index2+1)),
               (tmShift 1 eqTy),
               (tmShift 1 y),
               (TmLambda
-                ""
+                "."
                 (tmShift 1 eqTy)
                 (TmLambda
-                  ""
-                  (TmIndType "eq" [(tmShift 2 eqTy),(tmShift 2 y),(TmRel "" 0)])
-                  (replace (TmRel "" 1) (tmShift 3 x) (tmShift 3 goal)))),
-              (TmRel "" 0),  -- ??????
+                  "."
+                  (TmIndType "eq" [(tmShift 2 eqTy),(tmShift 2 y),(TmRel "." 0)])
+                  (replace (TmRel "." 1) (tmShift 3 x) (tmShift 3 goal)))),
+              (TmRel "." 0),  -- ??????
               (tmShift 1 x),
               (tmShift 1 t)
             ])             
