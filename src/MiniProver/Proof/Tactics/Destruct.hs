@@ -47,7 +47,8 @@ handleDestruct g@(Goal d ctx ty) tac@(Destruct tm) =
                                 tm nmlst returntype resultcases apps
                         in
                             --trace (show branches) $ dummyreturn
-                            trace (prettyShow $ resultf $ reverse $ multipleVar (length subgoals) (TmVar "Subgoal")) $
+                            -- trace (show subgoals) $ 
+                            -- trace (prettyShow $ resultf $ reverse $ multipleVar (length subgoals) (TmVar "Subgoal")) $
                             Right $ Result subgoals (checkResult g tac . resultf)
             Right _ ->
                 Left $ TacticError "Not an inductive product"

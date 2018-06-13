@@ -325,6 +325,9 @@ ptactic' = try pexact
   <|> try (Symmetry <$ rword "symmetry")
   <|> try punfold
   <|> try pinversion
+  <|> try (Split <$ rword "split")
+  <|> try (LeftTac <$ rword "left")
+  <|> try (RightTac <$ rword "right")
 
 pexact :: Parser Tactic
 pexact = do

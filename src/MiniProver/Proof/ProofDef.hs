@@ -30,6 +30,9 @@ data Tactic =
   | Symmetry
   | Unfold Name (Maybe Name)
   | Inversion Name
+  | Split
+  | LeftTac
+  | RightTac
   deriving (Show, Eq)
 
 data ProofInput =
