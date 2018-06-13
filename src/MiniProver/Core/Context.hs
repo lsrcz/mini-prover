@@ -23,6 +23,8 @@ module MiniProver.Core.Context (
   , getConstr
   , getConstrTerm
   , getConstrType
+  , getConstrTypeI
+  , getConstrIndTypeName
   ) where
 
 import MiniProver.Core.Syntax
@@ -208,4 +210,28 @@ getConstrTerm ctx name = snd <$> getConstr ctx name
 
 getConstrType :: Context -> Name -> Either ContextError Term
 getConstrType ctx name = fst <$> getConstr ctx name
+
+getConstrTypeI :: Context -> Name -> Either ContextError Int
+getConstrTypeI [] name = Left NotAConstructor
+getConstrTypeI ((_,binder):xs) name =
+  case binder of
+    IndTypeBind i _ _ constrlst ->
+      if any (\case Constructor cname _ _ -> cname == name) constrlst
+        then
+          Right i
+        else
+          getConstrTypeI xs name
+    _ -> getConstrTypeI xs name
+
+getConstrIndTypeName :: Context -> Name -> Either ContextError String
+getConstrIndTypeName [] name = Left NotAConstructor
+getConstrIndTypeName ((idname,binder):xs) name =
+  case binder of
+    IndTypeBind i _ _ constrlst ->
+      if any (\case Constructor cname _ _ -> cname == name) constrlst
+        then
+          Right idname
+        else
+          getConstrIndTypeName xs name
+    _ -> getConstrIndTypeName xs name
 

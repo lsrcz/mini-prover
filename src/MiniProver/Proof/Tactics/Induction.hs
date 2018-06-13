@@ -203,7 +203,7 @@ buildRawResult idx goal@(Goal d ctx goalty) itype@(TmIndType name tylst) tmorig 
     _ -> error "This should not happen"
 
 handleInduction :: Goal -> Tactic -> Either TacticError Result
-handleInduction goal@(Goal _ ctx ty) i@(Induction tm) =
+handleInduction goal@(Goal _ ctx ty) i@(Induction tm) = trace (show i) $
   case typeof ctx tm of
     Left (TypingError term err) -> Left $ TacticError (prettyShow term ++ err)
     Right ty@(TmIndType name tylst) ->
