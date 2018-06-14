@@ -1,34 +1,76 @@
 \section{Tactic}
+Although proofs can be automatically checked given the system above, it requires user to input the whole
+term of the specific type, which is tedious, exhaustive, mostly unintuitive.\par
+So in this part, we introduced some tactics into the system 
+to assist users in better writing the proof. With the help of
+tactics, the proof becomes more human-readable and intuitive.\par
 
-\subsection{Apply}
+\subsection{\it Apply}
 
-\subsection{Destruct}
+\subsection{\it Destruct}
 
-\subsection{Equivalence}
+\subsubsection*{Usage}
+\begin{itemize}
+\item ${\it destruct}\ \tt x.$ : 
+\item ${\it destruct}\ \tt t.$ :
+\end{itemize}
 
-\subsection{Exact}
+\subsubsection*{Implementation}
 
-\subsection{Exists}
+\subsection{\it Equivalence}
 
-\subsection{Induction}
+\subsection{\it Exact}
 
-\subsection{Intro}
+\subsection{\it Exists}
 
-\subsection{Intros}
+\subsection{\it Induction}
 
-\subsection{Left}
+\subsection{\it Intro}
 
-\subsection{Reflexivity}
+If the current goal is a dependent product $\tt \forall x:T,\ U$, \textit{intro} puts 
+$\tt x:T$ in the context, and the new subgoal is $\tt U$.\par
+If the current goal is a non-dependent product $\tt \forall \_:T,\ U$, \textit{intro} renames
+$\tt \_$ into $\tt s$ not in $\tt T,U$ and context. Then put $\tt s:T$ in the context, 
+and the new subgoal becomes $\tt U$.
 
-\subsection{Rewrite}
+\subsubsection*{Usage}
+\begin{itemize}
+\item ${\it intro}\ .$ : introduce the outmost augument of current goal and rename them automatically.
+\item ${\it intro}\ a_1\ a_2\ \cdots\ a_n.$ : introduce $n$ outmost auguments of current goal and
+try to rename them into $a_1,a_2,\cdots,a_n$.
+\end{itemize}
 
-\subsection{Right}
+\subsubsection*{Implementation}
+Since the context automatically preserves the index, we
+can safely move the auguments out into the context without worrying about the index.
 
-\subsection{Simpl}
+\subsection{\it Intros}
 
-\subsection{Split}
+If the current goal is a dependent (or non-dependent) product with $m$ auguments, namely,
+$\tt \forall x_1:T_1,\ \forall x_2:T_2,\ \cdots\ \forall x_m:T_m,\ U$ where $\tt U$ is not a product type.
+Then \textit{intros} will put these $m$ auguments into the context and rename automatically if necessary.
 
-\subsection{Symmetry}
+\subsubsection*{Usage}
+\begin{itemize}
+\item ${\it intros}.$ : introduce all the augument of current goal and rename them automatically.
+\end{itemize}
 
-\subsection{Unfold}
+\subsubsection*{Implementation}
+Keep calling {\it intro} until all the goal has no auguments.
+
+\subsection{\it Left}
+
+\subsection{\it Reflexivity}
+
+\subsection{\it Rewrite}
+
+\subsection{\it Right}
+
+\subsection{\it Simpl}
+
+\subsection{\it Split}
+
+\subsection{\it Symmetry}
+
+\subsection{\it Unfold}
 
