@@ -1,3 +1,13 @@
 \section{Introduction}
 
-
+In modern mathematical and computer science world, providing a proof is hard, but confirming its correctness
+is sometimes not a easy work as well. In November 2015, Babai announced a quasipolynomial 
+time algorithm for graph isomorphism problem, where Harald Helfgott discovered a flaw. 
+Though Babai re-announced a correction in 2017, the new proof has not been fully peer-reviewed yet.\par
+On the other hand, some famous problems have been solved with the help of computer programs,
+for example \href{http://www.ams.org/journals/notices/200811/tx081101382p.pdf}{proving {\it Four Color Theorem} using Coq}.\par
+The key idea is that although searching for proofs is an undeciable and unpractical task with respect to the 
+limited computation power and ability of computer, 
+checking the validity of a certain proof can be done in computer with the help of type system.\par
+In our implementation, using {\it Curry-Howard isomorphism}, programs, properties, and proofs are formalized in the same 
+language -- {\it Calculus of Inductive Constructions}, which is a $\lambda$-calculus with an enriched type system.
