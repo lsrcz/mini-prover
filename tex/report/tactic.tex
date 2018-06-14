@@ -38,7 +38,6 @@ From the constructor \mintinline{coq}|eq_refl : eq T x x| and the type of \minti
 we have \mintinline{coq}|m = n|, so any occurrence of \mintinline{coq}|m| should be replaced by \mintinline{coq}|n|.\par
 If some term depends on the destructed term, we should rewrite it.
 \begin{center}
-\begin{minipage}{\textwidth}
 \begin{minted}{coq}
 n, m : nat                                 n : nat              n : nat                  
 e : eq nat n m                             e0 : eq nat n O      e0 : eq nat n (S m0) 
@@ -46,7 +45,6 @@ f : eq nat m m      (* destruct m => *)    f0 : eq nat O O      f0 : eq nat (S m
 (* Current Goal *)                         (* SubGoal 1 *)      (* SubGoal 2 *)
 eq nat m n                                 eq nat O n           eq nat (S m0) n     
 \end{minted}
-\end{minipage}
 \end{center}
 The two cases above are viewed from user's perspective.
 On the other hand, in the system we also need to construct the term for back substitution.

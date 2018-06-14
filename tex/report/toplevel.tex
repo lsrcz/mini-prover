@@ -1,14 +1,103 @@
 \section{Top Level}
 
 In top level, the system maintains the interaction with user and
-adds the user input, namely \textit{Definition}, \textit{Fixpoint}, and \textit{Inductive Definition}, 
+adds the user input, namely, \textit{Axiom}, \textit{Definition}, \textit{Fixpoint}, and \textit{Inductive Definition}, 
 into the context.\par
 It is also in this part, the inductive rule forms.
 
+\subsection{Axiom}
+After parsing and checking, the command will be like
+$$
+\tt Ax\ {\it name term},
+$$ 
+where {\it term} denotes the type of this axiom.
+Since it is an axiom, we do not have to (sometimes can not) build the corresponding term.\par
+Just build the corresponding term as {\it Nothing} then put it into the context.
+
 \subsection{Definition}
+After parsing and checking, the command will be like
+$$
+\tt Def\ \ {\it name\ term2\ term1},
+$$
+where {\it term2} is the type of {\it term1}.\par
+Simply bind the name, term, type together and put it into the context.
 
 \subsection{Fixpoint}
+After parsing and checking, the command will be like
+$$
+\tt Fix\ {\it name }\ \left(\lambda {\it f}:{ \it term1},\ {\it term2}\right),
+$$
+where {\it term1} is the type of {\it term2} and it is a recursive function of {\it f}.\par 
+Since this recursive function has passed all the type check and safety check, we can safely use it without worrying termination
+problem.
+On the other hand, whether it is a {\it Fixpoint} definition will not influence any reduction, because the reduction
+always finds the term in context according to its index.\par
+So simply remove the {\it Fixpoint} mark and put it into the context.
 
 \subsection{Inductive Definition}
+After parsing and checking, the command will be like
+$$
+\tt Ind\ \ {\it name\ p\ term2\ term1\ constructors},
+$$
+where {\it p} is the number of parameters of the inductive type, {\it term1} is the type of the inductive definition,
+and {\it term2} is the corresponding term.\par
+Apart from the ordinary operation, we also need to add inductive rule, which is actually a type theory view of mathematical
+induction. Since the proof of a claim becomes a term of certain type, the induction rule is a term offering inductive scheme.\par
+For example,
+\begin{center}
+\begin{minted}{coq}
+Inductive nat : Type := 
+| O : nat
+| S : nat -> nat
+
+(* build inductive rule*)
+
+fun (P:nat -> Type)(f:P O)(f0:forall (n:nat), P n -> P (S n))
+    fix F (n:nat) : P n :=
+        match n as n0 in nat return (P n0) with
+        | O => f
+        | S n0 => f0 n0 (F n0)
+        end
+:
+forall (P:nat -> Type), P O -> 
+    (forall (n:nat), P n -> P (S n)) ->
+        forall (n:nat), P n
+\end{minted}
+\end{center}
+The intuition here is that for a proposition \mintinline{coq}|P|,
+\begin{itemize}
+\item it is true on \mintinline{coq}|O|;
+\item if it is true on \mintinline{coq}|n|, then it is true on \mintinline{coq}|S n|.
+\end{itemize}
+Then it is true on all term of \mintinline{coq}|nat| type, which is reasonable according 
+mathematical induction.\par
+Basically, to build such term, we should build weakened assumptions for all constructors first, 
+like the \mintinline{coq}|f|,
+\mintinline{coq}|f0| above. After that, the final proposition which applies to all the terms of such inductive type
+shall come out, like the \mintinline{coq}|F| above.\par
+Every occurrence of the inductive type on the constructors demands a verification of the proposition,
+which explains why for constructor \mintinline{coq}|S : nat -> nat|, which depends on a \mintinline{coq}|nat| term, 
+the weakened assumption is \mintinline{coq}|f0 : forall (n:nat), P n -> P (S n)|.\par
+The reason why the inductive rule of \mintinline{coq}|nat| requires {\it Fixpoint} is that some constructors of it
+rely on the term of type \mintinline{coq}|nat|. Here is a case which do not need recursive function.
+\begin{center}
+\begin{minted}{coq}
+Inductive eq (T : Type) (x : T) : T -> Type :=
+  | eq_refl : eq T x x
+
+(* build inductive rule*)
+
+fun (T:Type) (x:T) (P:forall (t:T) (_:eq T x t), Type) 
+    (f:P x (eq_refl T x)) (t:T) (e:eq T x t) => 
+        match e as e0 in eq _ _ a0 return P a0 e0 with 
+        | eq_refl _ _ => f
+        end
+: 
+forall (T:Type) (x:T) (P:forall (t:T) (_:eq T x t), Type) 
+    (f:P x (eq_refl T x)) (t:T) (e:eq T x t),
+        P t e
+\end{minted}
+\end{center}
+
 
 \subsection{Top Loop}
