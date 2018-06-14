@@ -356,7 +356,7 @@ pinidentok = do
 pintro :: Parser Tactic
 pintro = do
   _ <- rword "intro"
-  lst <- some ident
+  lst <- many ident
   return $ Intro lst
 
 pdestruct :: Parser Tactic
