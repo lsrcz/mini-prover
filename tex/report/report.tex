@@ -6,9 +6,26 @@
 \usepackage{amsmath,amsfonts,graphicx,amssymb,bm,amsthm}
 \usepackage{fancyhdr}
 \usepackage{mathtools}
-\usepackage{courier}
 \usepackage{longtable}
+\usepackage{extarrows}
 \usepackage{tikz}
+\usepackage{minted}
+\undef\checkmark
+\usepackage{dingbat}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{xcolor}
+
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+\renewcommand{\listingscaption}[1]{\begin{center}#1\end{center}\vspace{-20pt}}
+\setminted{
+    fontsize=\small,
+    bgcolor=bg, frame=lines,
+    mathescape, breaklines, breakanywhere,
+    breaksymbolleft=\raisebox{0.8ex}{\small\reflectbox{\carriagereturn}},
+    breaksymbolright=\small\carriagereturn,
+    escapeinside=<>
+}
 
 \bibliographystyle{plain}
 

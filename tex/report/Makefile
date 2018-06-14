@@ -5,10 +5,10 @@ SUF = log aux toc thm out blg bbl ps dvi tex~
 
 
 make:
-	xelatex $(JOBNAME).tex
+	xelatex -shell-escape $(JOBNAME).tex
 
 bib:
-	xelatex $(JOBNAME).tex; bibtex $(JOBNAME); xelatex $(JOBNAME).tex
+	xelatex -shell-escape $(JOBNAME).tex; bibtex $(JOBNAME); xelatex -shell-escape $(JOBNAME).tex
 
 clean:
-	rm -rf $(foreach i, $(AUX),$(foreach j, $(SUF),$(i).$(j)))
+	rm -rf $(foreach i, $(AUX),$(foreach j, $(SUF),$(i).$(j))) _minted-report
