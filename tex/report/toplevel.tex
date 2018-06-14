@@ -8,7 +8,7 @@ It is also in this part, the inductive rule forms.
 \subsection{Axiom}
 After parsing and checking, the command will be like
 $$
-\tt Ax\ {\it name term},
+\tt Ax\ \ {\it name\ term},
 $$ 
 where {\it term} denotes the type of this axiom.
 Since it is an axiom, we do not have to (sometimes can not) build the corresponding term.\par
@@ -89,7 +89,7 @@ Inductive eq (T : Type) (x : T) : T -> Type :=
 
 fun (T:Type) (x:T) (P:forall (t:T) (_:eq T x t), Type) 
     (f:P x (eq_refl T x)) (t:T) (e:eq T x t) => 
-        match e as e0 in eq _ _ a0 return P a0 e0 with 
+        match e as e0 in eq _ _ a0 return (P a0 e0) with 
         | eq_refl _ _ => f
         end
 : 
@@ -98,6 +98,17 @@ forall (T:Type) (x:T) (P:forall (t:T) (_:eq T x t), Type)
         P t e
 \end{minted}
 \end{center}
+Sadly, we have to admit that because of the lack of references, time, and energy,
+the induction rule in our system is not complete.
+The inductive definition acceptable to our system must satisfy:\par
+Assume the inductive type is $\tt A_1\to A_2\to \cdots A_n$, then $\tt A_k$ must be
+any one of the following
+\begin{itemize}
+\item A ordinary term, like \mintinline{coq}|Type|, \mintinline{coq}|T|.
+\item An application, like \mintinline{coq}|P n|.
+\item An inductive type, like \mintinline{coq}|nat|, \mintinline{coq}|eq T x y|.
+\end{itemize}
+Others like product type \mintinline{coq}|U -> V| is not supported.
 
 
 \subsection{Top Loop}

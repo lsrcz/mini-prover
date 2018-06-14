@@ -1,5 +1,99 @@
-\section{Safety Check}
+\section{Termination Check}
 
-\subsection{Fixpoint Termination}
+Naturally, we prefer error alerts right after inputting rather than let the system run till crash. 
+Parser helps filter bad inputs, type check verifies the transaction between term and term, while 
+neither of them guarantees termination.\par
+In this part, we will demonstrate how to prevent non-halting definition from getting accepted into
+the system.
 
-\subsection{IndType Positivity}
+\subsection{Fixpoint}
+
+The introduction of {\it Fixpoint} gives a wide range of flexibility of the program, without which recursive
+function can not formulate. On the other hand, the risk of non-terminating appears.\par
+To avoid this, we put a strong constraint on recursive function, which is that it must descend on at least one
+argument. 
+\begin{Prop}[Termination of Fixpoint]
+If a recursive function descends on at least one argument, it will always terminate in reduction.
+\end{Prop}
+\begin{Def}[Descending]
+Recursive function $f(x_1,x_2,\cdots,x_n)$ is descending on $x_k$ if any occurrence of $f$ in function definition has the 
+form $f(y_1,y_2,\cdots,y_n)$, where $y_k$ is inferior to $x_k$.
+\end{Def}
+\begin{Def}[Inferior]
+In a function definition, $x$ is inferior to $y$ if $y\to_m y_1\to_m \cdots\to_m y_s\equiv x$.
+$a \to_m b$ means a pattern match directly from $a$ to $b$.
+\end{Def}
+Here is an example.
+\begin{center}
+\begin{minted}{coq}
+(* accepted *)                                 (* rejected *)
+Fixpoint plus (n:nat)(m:nat) : nat :=          Fixpoint plus (n:nat)(m:nat) : nat :=
+    match n as n0 in nat return (nat) with         match n as n0 in nat return (nat) with    
+    | O => m                                       | O => m
+    | S p => S (plus p m)                          | S p => S (plus m p)
+    end                                            end
+\end{minted}
+\end{center}
+
+\subsubsection*{Implementation}
+
+Check every argument of the recursive function. For a specific argument, maintain a list of terms inferior to it 
+during the process and verify every occurrence of the recursive function.
+
+\subsection{Inductive Type}
+
+The inductive type is actually a recursive definition, which is so powerful that we can create non-terminating program
+without actually defining a recursive function.
+\begin{center}
+\begin{minipage}{0.7\textwidth}
+\begin{minted}{coq}
+Inductive ill : Type :=                
+| malf : (ill -> ill) -> ill           
+                                       
+Definition extract (t:ill) : ill :=       
+    match t as t0 in ill return (ill) with 
+    | malf f => f t
+    end                                     
+
+extract (malf extract)  (* not terminating *)
+\end{minted}
+\end{minipage}
+\end{center}
+
+\begin{Prop}[Termination of Inductive Type]
+If the type of constructor of the inductive definition satisfies the positivity condition for
+the inductive type, it will always terminate in reduction.
+\end{Prop}
+
+\begin{Def}[Positivity]
+The type of constructor $\tt T$ satisfies \textit{the positivity condition} for a constant $\tt X$ if
+\begin{itemize}\normalfont
+    \item $\tt T\equiv (X\ t_1\ \cdots\ t_n)$ and $\tt X$ does not occur free in $\tt t_i$
+    \item $\tt T\equiv \forall x:U,V$ and $\tt X$ occurs only \textit{strictly positively} in $\tt U$ and
+        $\tt V$ satisfies \textit{the positivity condition} for $\tt X$
+\end{itemize}
+\end{Def}
+
+\begin{Def}[Strictly Positivity]
+The constant $\tt X$ occurs \textit{strictly positively} in $\tt T$ if
+\begin{itemize}\normalfont
+    \item $\tt X$ does not occur in $\tt T$
+    \item $\tt T\mathop{\rhd}^*\tt (X\ t_1\ \cdots\ t_n)$ and $\tt X$ does not occur in $\tt t_i$
+    \item $\tt T\mathop{\rhd}^*\tt \forall x:U,V$ and $\tt X$ does not occur in $\tt U$ but occurs
+        \textit{strictly positively} in $\tt V$
+    \item $\tt T\mathop{\rhd}^*\tt (I\ a_1\ \cdots\ a_m\ t_1\ \cdots\ t_p)$, where
+        ${\tt Ind}[m](\tt I:A:=c_1:\forall p_1:P_1,\dots\forall p_m:P_m,C_1;\cdots;c_n:\forall p_1:P_1,\dots,
+        \forall p_m:P_m,C_n)$, and $\tt X$ does not occur in $t_i$, and the types of constructor
+        $\tt C_i\{p_j/a_j\}_{j=1..m}$ satisfies \textit{the nested positivity condition} for $\tt X$
+\end{itemize}
+\end{Def}
+
+\begin{Def}[Nested Positivity]
+The type of constructor $\tt T$ satisfies \textit{the nested positivity condition} for a constant $\tt X$ if
+\begin{itemize}\normalfont
+    \item $\tt T\equiv(I\ b_1\ \cdots\ b_m\ u_1\ \cdots\ u_p)$, where $\tt I$ is an inductive definition with $m$
+        parameters and $\tt X$ does not occur in $u_i$
+    \item $\tt T\equiv\forall x:U,V$ and $\tt X$ occurs \textit{strictly positively} in $\tt U$ and $\tt V$
+        satisfies \textit{the nested positivity condition} for $\tt X$
+\end{itemize}
+\end{Def}
