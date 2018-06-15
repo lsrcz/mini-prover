@@ -62,7 +62,7 @@ eq nat (S m) (S n)
     match (S n) as n0 in nat return (eq nat n0 (S m) -> eq nat (S m) n0) with 
     | O => fun e0 : eq nat O (S m) => (* SubGoal 1*)                          
     | S n0 => fun e0 : eq nat (S n0) (S m) => (* SubGoal 2*)                  
-    end e)                                                                    
+    end e).                                                                   
 \end{minted}
 \end{minipage}
 \end{center}

@@ -31,7 +31,7 @@ Fixpoint plus (n:nat)(m:nat) : nat :=          Fixpoint plus (n:nat)(m:nat) : na
     match n as n0 in nat return (nat) with         match n as n0 in nat return (nat) with    
     | O => m                                       | O => m
     | S p => S (plus p m)                          | S p => S (plus m p)
-    end                                            end
+    end.                                           end.
 \end{minted}
 \end{center}
 
@@ -48,12 +48,12 @@ without actually defining a recursive function.
 \begin{minipage}{0.7\textwidth}
 \begin{minted}{coq}
 Inductive ill : Type :=                
-| malf : (ill -> ill) -> ill           
+| malf : (ill -> ill) -> ill.          
                                        
 Definition extract (t:ill) : ill :=       
     match t as t0 in ill return (ill) with 
     | malf f => f t
-    end                                     
+    end.                                    
 
 extract (malf extract)  (* not terminating *)
 \end{minted}
