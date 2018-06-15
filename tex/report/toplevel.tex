@@ -57,11 +57,11 @@ fun (P:nat -> Type)(f:P O)(f0:forall (n:nat), P n -> P (S n))
         match n as n0 in nat return (P n0) with
         | O => f
         | S n0 => f0 n0 (F n0)
-        end.
+        end
 :
 forall (P:nat -> Type), P O -> 
     (forall (n:nat), P n -> P (S n)) ->
-        forall (n:nat), P n.
+        forall (n:nat), P n
 \end{minted}
 \end{center}
 The intuition here is that for a proposition \mintinline{coq}|P|,
@@ -91,11 +91,11 @@ fun (T:Type) (x:T) (P:forall (t:T) (_:eq T x t), Type)
     (f:P x (eq_refl T x)) (t:T) (e:eq T x t) => 
         match e as e0 in eq _ _ a0 return (P a0 e0) with 
         | eq_refl _ _ => f
-        end.
+        end
 : 
 forall (T:Type) (x:T) (P:forall (t:T) (_:eq T x t), Type) 
     (f:P x (eq_refl T x)) (t:T) (e:eq T x t),
-        P t e.
+        P t e
 \end{minted}
 \end{center}
 Sadly, we have to admit that because of the lack of references, time, and energy,
