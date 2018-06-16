@@ -36,6 +36,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - mini-prover
+    - cmdargs
 
 tests:
   mini-prover-test:

@@ -147,6 +147,48 @@ Definition neg_false (A:Type) : iff (not A) (iff A False) :=
     | conj _ _ H0 H1 => H0
     end).
 
+Definition and_cancel_l (A:Type) (B:Type) (C:Type) (Hl:B->A) (Hr:C->A) : iff (iff (and A B) (and A C)) (iff B C) :=
+  conj (iff (and A B) (and A C) -> iff B C) (iff B C ->iff (and A B) (and A C))
+  (fun (H:iff (and A B) (and A C)) =>
+    match H as H0 in and _ _ return iff B C with
+    | conj _ _ HypL HypR =>
+        conj (B -> C) (C -> B)
+        (fun (H0:B) =>
+          let H1 : and A B -> C :=
+            fun (H1:and A B) => match HypL H1 as H2 in and _ _ return C with
+                             | conj _ _ HA HC => HC
+                             end in
+          H1 (conj A B (Hl H0) H0))
+        (fun (H0:C) =>
+          let H1 : and A C -> B :=
+            fun (H1:and A C) => match HypR H1 as H2 in and _ _ return B with
+                             | conj _ _ HA HB => HB
+                             end in
+          H1 (conj A C (Hr H0) H0))
+    end)
+  (and_iff_compat_l A B C).
+
+Definition and_cancel_r (A:Type) (B:Type) (C:Type) (Hl:B->A) (Hr:C->A) : iff (iff (and B A) (and C A)) (iff B C) := 
+  conj (iff (and B A) (and C A) -> iff B C) (iff B C ->iff (and B A) (and C A))
+  (fun (H:iff (and B A) (and C A)) =>
+    match H as H0 in and _ _ return iff B C with
+    | conj _ _ HypL HypR =>
+        conj (B -> C) (C -> B)
+        (fun (H0:B) =>
+          let H1 : and B A -> C :=
+            fun (H1:and B A) => match HypL H1 as H2 in and _ _ return C with
+                             | conj _ _ HC HA => HC
+                             end in
+          H1 (conj B A H0 (Hl H0)))
+        (fun (H0:C) =>
+          let H1 : and C A -> B :=
+            fun (H1:and C A) => match HypR H1 as H2 in and _ _ return B with
+                             | conj _ _ HB HA => HB
+                             end in
+          H1 (conj C A H0 (Hr H0)))
+    end)
+  (and_iff_compat_r A B C).
+
 Definition and_comm (A:Type) (B:Type) : iff (and A B) (and B A) :=
   conj (and A B -> and B A) (and B A -> and A B)
   (fun (H : and A B) => match H as H0 in and _ _ return and B A with
@@ -174,6 +216,56 @@ Definition and_assoc (A:Type) (B:Type) (C:Type) : iff (and (and A B) C) (and A (
         | conj _ _ H2 H3 => conj (and A B) C (conj A B H0 H2) H3
         end
     end).
+
+Definition or_cancel_l (A:Type) (B:Type) (C:Type) (Fl : B -> not A) (Fr : C -> not A) :
+  iff (iff (or A B) (or A C)) (iff B C) :=
+  conj
+  (iff (or A B) (or A C) -> iff B C)
+  (iff B C -> iff (or A B) (or A C))
+  (fun (H:iff (or A B) (or A C)) =>
+    match H as H0 in and _ _ return iff B C with
+    | conj _ _ Hl Hr =>
+        conj (B -> C) (C -> B)
+        (fun (H0:B) =>
+          let o : or A C := Hl (or_intror A B H0) in
+          match o as o0 in or _ _ return C with
+          | or_introl _ _ H1 =>
+              let n : False := Fl H0 H1 in match n as n0 in False return C with end
+          | or_intror _ _ H1 => H1
+          end)
+        (fun (H0:C) =>
+          let o : or A B := Hr (or_intror A C H0) in
+          match o as o0 in or _ _ return B with
+          | or_introl _ _ H1 =>
+              let n : False := Fr H0 H1 in match n as n0 in False return B with end
+          | or_intror _ _ H1 => H1
+          end)
+    end) (or_iff_compat_l A B C).
+
+Definition or_cancel_r (A:Type) (B:Type) (C:Type) (Fl : B -> not A) (Fr : C -> not A) :
+  iff (iff (or B A) (or C A)) (iff B C) :=
+  conj
+  (iff (or B A) (or C A) -> iff B C)
+  (iff B C -> iff (or B A) (or C A))
+  (fun (H:iff (or B A) (or C A)) =>
+    match H as H0 in and _ _ return iff B C with
+    | conj _ _ Hl Hr =>
+        conj (B -> C) (C -> B)
+        (fun (H0:B) =>
+          let o : or C A := Hl (or_introl B A H0) in
+          match o as o0 in or _ _ return C with
+          | or_introl _ _ H1 => H1
+          | or_intror _ _ H1 =>
+              let n : False := Fl H0 H1 in match n as n0 in False return C with end
+          end)
+        (fun (H0:C) =>
+          let o : or B A := Hr (or_introl C A H0) in
+          match o as o0 in or _ _ return B with
+          | or_introl _ _ H1 => H1
+          | or_intror _ _ H1 =>
+              let n : False := Fr H0 H1 in match n as n0 in False return B with end
+          end)
+    end) (or_iff_compat_r A B C).
 
 Definition or_comm (A : Type) (B : Type) : iff (or A B) (or B A) :=
   conj
@@ -426,47 +518,3 @@ Inductive ilist (T:Type) : nat -> Type :=
 | icons : forall (n:nat), T -> ilist T n -> ilist T (S n).
 
   
-
-Inductive bool : Type :=
-  | true : bool
-  | false : bool.
-
-Definition negb (b:bool) : bool :=
-  match b as b0 in bool return bool with
-  | true => false
-  | false => true
-  end.
-Definition andb (b1:bool) (b2:bool) : bool :=
-  match b1 as b0 in bool return bool with
-  | true => b2
-  | false => false
-  end.
-Definition orb (b1:bool) (b2:bool) : bool :=
-  match b1 as b0 in bool return bool with
-  | true => true
-  | false => b2
-  end.
-
-Fixpoint beq_nat (n : nat) (m : nat) : bool :=
-  match n as n0 in nat return bool with
-  | O => match m as m0 in nat return bool with
-         | O => true
-         | S m1 => false
-         end
-  | S n1 => match m as m0 in nat return bool with
-            | O => false
-            | S m1 => beq_nat n1 m1
-            end
-  end.
-
-Fixpoint evenb (n:nat) : bool :=
-  match n as n0 in nat return bool with
-  | O => true
-  | S n1 => 
-    match n1 as n2 in nat return bool with
-    | O => false
-    | S n2 => evenb n2
-    end
-  end.
-
-Definition oddb (n:nat) : bool := negb (evenb n).
