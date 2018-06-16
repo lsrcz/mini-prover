@@ -134,7 +134,7 @@ spec =
                     [ TmRel "n0" 0]
                   , TmConstr "S"
                     [ TmRel "m0" 1]]])])]
-      eqmAns =  trace (show $ getGoalList <$> handleTactic eqmgoal (Destruct (TmRel "m" 0)))      fromRight undefined $ handleTactic eqmgoal (Destruct (TmRel "m" 0))
+      eqmAns = fromRight undefined $ handleTactic eqmgoal (Destruct (TmRel "m" 0))
     it "eq m -- goal" $ 
       getGoalList eqmAns `shouldBe`
       [ Goal 2 ([("~m",VarBind (TmIndType "nat" [])), ("n",VarBind (TmIndType "nat" []))]++realPlusContext)
