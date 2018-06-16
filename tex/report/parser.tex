@@ -1,4 +1,59 @@
 \section{Lexer and Parser}
+The parser is implemented as a simple $LL(\infty)$ parser using parser combinators so it may be quite slow on large inputs, but it's sufficient
+for our purpose.
 
-Some content ...
+Our AST for terms is defined as follows, for brevity, AST for other objects are not described here.
 
+\begin{center}
+\begin{minted}{haskell}
+type Name = String
+type Index = Int
+
+data Term =
+    TmRel
+      Name       -- name of the variable, used for pretty printing
+      Index      -- 0 based DeBruijn index
+  | TmVar
+      Name       -- name of the variable
+  | TmAppl
+      [Term]     -- the first is the abstraction and the rest are the arguments
+  | TmProd
+      Name       -- name of the abstracted variable, used for pretty printing
+      Term       -- type of the abstracted variable
+      Term       -- body of the abstraction
+  | TmLambda
+      Name       -- name of the abstracted variable, used for pretty printing
+      Term       -- type of the abstracted variable
+      Term       -- body of the abstraction
+  | TmFix
+      Int        -- the index of the decreasing variable
+      Term       -- body of the fix definition
+  | TmLetIn
+      Name       -- name of the local binding variable
+      Term       -- type of the local binding
+      Term       -- body of the local binding
+      Term       -- let body, the binding will be added here
+  | TmIndType
+      Name       -- name of the inductive type constructor
+      [Term]     -- argument list
+  | TmConstr
+      Name       -- name of the term constructor
+      [Term]     -- argument list
+  | TmType
+  | TmTypeHigher
+  | TmMatch
+      Int        -- how many parameters does the inductive type need
+      Term       -- the term pattern matching on
+      Name       -- the name of the local binding of the term in the return type
+      [Name]     -- the matching name list for the return type
+      Term       -- return type
+      [Equation] -- equations, described below
+  deriving (Eq, Show)
+
+data Equation =
+    Equation
+      [Name]     -- matching name list for the term constructor
+      Term       -- body of the equation
+    deriving (Eq, Show)
+\end{minted}
+\end{center}

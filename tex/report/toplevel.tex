@@ -110,5 +110,95 @@ any one of the following
 \end{itemize}
 Others like product type \mintinline{coq}|U -> V| is not supported.
 
+\subsection{Requests to the environment}
+\subsubsection{\tt Print \sl ident}
+This command displays on the screen information about the declared or defined object referred by {\sl ident}.
+\subsubsection{\tt Check \sl term}
+This command displays the type of {\sl term}.
 
 \subsection{Top Loop}
+The main work flow of our top level loop:
+\subsubsection*{Reading raw input}
+The Mini Prover will read the user's input until a dot('.'), and any further input in the same line will be abandoned.
+\subsubsection*{Parsing}
+The raw input will be parsed without nameless representation.
+
+Here is an example, the raw input
+\begin{center}
+\begin{minipage}{0.7\textwidth}
+\begin{minted}{coq}
+(* raw input *)
+Fixpoint plus (n:nat) (m:nat) : nat :=
+match n as n0 in nat return nat with
+| O => m
+| S n0 => S (plus n0 m)
+end.
+\end{minted}
+\end{minipage}
+\end{center}
+will be parsed as the AST
+\begin{center}
+\begin{minipage}{0.9\textwidth}
+\begin{minted}{haskell}
+Fix "plus"
+  ( TmFix (-1)
+    ( TmLambda "plus"
+      ( TmProd "n" ( TmVar "nat" )
+        ( TmProd "m" ( TmVar "nat" ) ( TmVar "nat" )))
+      ( TmLambda "n" ( TmVar "nat" )
+        ( TmLambda "m" ( TmVar "nat" )
+          ( TmMatch (-1) ( TmVar "n" ) "n0" [ "nat" ]
+            ( TmVar "nat" )
+            [ Equation [ "O" ] ( TmVar "m" )
+            , Equation [ "S", "n0" ]
+              ( TmAppl
+                [ TmLambda "n" ( TmVar "nat" )
+                  ( TmAppl [ TmVar "S", TmVar "n" ])
+                , TmAppl [ TmVar "plus", TmVar "n0", TmVar "m" ]])])))))
+\end{minted}
+\end{minipage}
+\end{center}
+\subsubsection*{Duplicate global name checking}
+After parsing, we can get the name of the input command, and the name should not be the same with
+any defined or declared object in the environment.
+\subsubsection*{Name checking}
+Before building the nameless representation, there should be no unbounded name in the AST.
+\subsubsection*{Nameless representation building}
+If all names are bounded, we can build the nameless representation. The variable pointed to
+a type constructor or a term constructor will be unfolded to its functional representation.
+
+Here is an example, the nameless AST will be built for the previous AST:
+\begin{center}
+\begin{minipage}{0.9\textwidth}
+\begin{minted}{haskell}
+Fix "plus"
+( TmFix (-1)
+  ( TmLambda "plus"
+    ( TmProd "n" ( TmIndType "nat" [])
+      ( TmProd "m" ( TmIndType "nat" []) ( TmIndType "nat" [])))
+    ( TmLambda "n" ( TmIndType "nat" [])
+      ( TmLambda "m" ( TmIndType "nat" [])
+        ( TmMatch 0 ( TmRel "n" 1 ) "n0" [ "nat" ] ( TmIndType "nat" [])
+          [ Equation [ "O" ] ( TmRel "m" 0 )
+          , Equation [ "S", "n0" ]
+            ( TmAppl 
+              [ TmLambda "n" ( TmIndType "nat" [])
+                ( TmConstr "S" [ TmRel "n" 0 ])
+              , TmAppl
+                [ TmRel "plus" 3
+                , TmRel "n0" 0
+                , TmRel "m" 1 ]])])))))
+\end{minted}
+\end{minipage}
+\end{center}
+\subsubsection*{Positivity Checking(Inductive Definition Only)}
+For an inductive definition, after building it's nameless representation, the positivity
+could be checked.
+\subsubsection*{Termination Checking}
+All subterms with fixpoint definitions will be checked if they are terminating. After checking,
+annotations for the indices of decreasing variables will be added to the AST.
+\subsubsection*{Type checking}
+Before actually dealing with the command, the top level will check if it's a well-typed command.
+\subsubsection*{Processing the command}
+The definitions and declarations will be processed as described before. And an assertion will lead to the proof editing mode.
+

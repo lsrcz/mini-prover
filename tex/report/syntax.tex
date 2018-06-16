@@ -4,10 +4,12 @@
 \begin{table}[!htb]
     \centering\sl
     \begin{tabular}{lcl}
-        letter
+        firstletter
             &$\Coloneqq$&\keyword{a..z} $\mid$ \keyword{A..Z}\\
+        letter
+            &$\Coloneqq$&\keyword{a..z} $\mid$ \keyword{A..Z} $\mid$ \keyword{\_}\\
         ident
-            &$\Coloneqq$&letter \{letter\}\\
+            &$\Coloneqq$&firstletter \{letter\}\\
         term 
             &$\Coloneqq$&\fforall{} binder \{binder\}, term\\
             &$\mid$&\ffun{} \{binder\} \darrow{} term\\
@@ -15,17 +17,15 @@
             &$\mid$&\flet{} ident \{binder\} \scolon{}term \scoloneq{} term \fin{} term\\
             &$\mid$&term \sarrow{} term\\
             &$\mid$&term arg \{arg\}\\
-            &$\mid$&\fmatch{} term \fwith{}\\
+            &$\mid$&\fmatch{} term \fas{} ident \fin{} ident \{ident\} \freturn{} term \fwith{}\\
             &      &~~~~\{~$\mid$ equation\}\\
             &      &\fend{}\\
-            &$\mid$&sort\\
+            &$\mid$&\fType{}\\
             &$\mid$&(term)\\
         arg
             &$\Coloneqq$&term\\
         binder
             &$\Coloneqq$&(ident \scolon{} term)\\
-        sort
-            &$\Coloneqq$&\fProp{} $\mid$ \fSet{} $\mid$ \fType{}\\
         equation
             &$\Coloneqq$&pattern \darrow{} term\\
         pattern
@@ -49,6 +49,17 @@
             &$\Coloneqq$&\fTheorem{} ident \{binder\} \scolon{} term .\\
         proof
             &$\Coloneqq$&\fProof{} . \{tactic .\} \fQed{} .\\
+        helper
+            &$\Coloneqq$&printing\\
+            &$\mid$&proof\_handling\\
+        printing
+            &$\Coloneqq$&\fPrint{} ident .\\
+            &$\mid$&\fCheck{} term .\\
+        proof\_handling
+            &$\Coloneqq$&\fUndo{} .\\
+            &$\mid$&\fRestart{} .\\
+            &$\mid$&\fAdmitted{} .\\
+            &$\mid$&\fAbort{} .\\
     \end{tabular}
 \end{table}
 \newpage
@@ -65,8 +76,12 @@
         applying
             &$\Coloneqq$&\fexact{} term\\
             &$\mid$&\fapply{} term [\fin{} ident]\\
+            &$\mid$&\fleft{}\\
+            &$\mid$&\fright{}\\
+            &$\mid$&\fsplit{}\\
+            &$\mid$&\fexists{}\\
         context\_managing
-            &$\Coloneqq$&\fintro{} [ident]\\
+            &$\Coloneqq$&\fintro{} \{ident\}\\
             &$\mid$&\fintros{}\\
         case\_analyzing
             &$\Coloneqq$&\fdestruct{} term\\
@@ -75,20 +90,9 @@
             &$\Coloneqq$&\frewrite{} [~\larrow{} $\mid$ \sarrow{}] term [~\fin{} term]\\
         computing
             &$\Coloneqq$&\fsimpl{} [\fin{} ident]\\
+            &$\Coloneqq$&\funfold{} [\fin{} ident]\\
         equality
             &$\Coloneqq$&\freflexivity{}\\
             &$\mid$&\fsymmetry{}\\\\\\
-
-        helper
-            &$\Coloneqq$&printing\\
-            &$\mid$&proof\_handling\\
-        printing
-            &$\Coloneqq$&\fPrint{} ident .\\
-            &$\mid$&\fCheck{} term .\\
-        proof\_handling
-            &$\Coloneqq$&\fUndo{} .\\
-            &$\mid$&\fRestart{} .\\
-            &$\mid$&\fAdmitted{} .\\
-            &$\mid$&\fAbort{} .\\
     \end{tabular}
 \end{table}
