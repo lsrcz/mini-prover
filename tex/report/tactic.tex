@@ -5,9 +5,9 @@ So in this part, we introduced some tactics into the system
 to assist users in better writing the proof. With the help of
 tactics, the proof becomes more human-readable and intuitive.\par
 
-\subsection{\it Apply}
+\subsection{\it apply}
 
-\subsection{\it Destruct}
+\subsection{\it destruct}
 
 When {\it destruct} is applied on a term, this term must be inductive type. Then {\it destruct} will divide current goal
 into several classified subgoals based on the constructors of the inductive type. During this process, no induction 
@@ -58,6 +58,7 @@ eq nat (S m) (S n)
 
 (* $\Downarrow$ destruct (S n) $\Downarrow$ *)   
 
+(* The Proof Object *)
 (fun (n:nat)(m:nat)(e:eq nat (S n) (S m)) =>                                                                                
     match (S n) as n0 in nat return (eq nat n0 (S m) -> eq nat (S m) n0) with 
     | O => fun e0 : eq nat O (S m) => (* SubGoal 1*)                          
@@ -68,7 +69,7 @@ eq nat (S m) (S n)
 \end{center}
 After building the {\it return type}, we can build the branches by applying {\it type of branch}.
 
-\subsection{\it Exact}
+\subsection{\it exact}
 
 This tactic checks if the input term is actually of the goal's type. If so, the proof of the current goal is finished and the 
 constructed proof object is exactly the input term.
@@ -79,24 +80,24 @@ constructed proof object is exactly the input term.
 \end{itemize}
 
 \subsubsection*{Implementation}
-It's easy to implement.Here is an example.
+It's easy to implement. Here is an example:
 \begin{center}
-\begin{minipage}{0.7\textwidth}
+\begin{minipage}{0.8\textwidth}
 \begin{minted}{coq}
 m : nat                                                      
-(* Current Goal *)  (* exact eq_refl nat m => *)  (* No more goals *)
+(* Current Goal *)  (* exact (eq_refl nat m) => *)  (* No More Goals *)
 eq nat m m                                       
 \end{minted}
 \end{minipage}
 \end{center}
 
-\subsection{\it Exists}
+\subsection{\it exists}
 
-This tactic handles the exists qualifier. In our system, $\exists (x:T),P x$ is represented by $ex T P$.
+This tactic handles the exists qualifier. In our system, $\tt\exists (x:T),P\ x$ is represented by $\tt ex\ T\ P$.
 
-Here is the definition of $ex$.
+Here is the definition of $\tt ex$.
 \begin{center}
-\begin{minipage}{\textwidth}
+\begin{minipage}{0.6\textwidth}
 \begin{minted}{coq}
 Inductive ex (A:Type) (P:A -> Type) : Type :=
 | ex_intro : forall (x:A), P x -> ex A P.    
@@ -104,15 +105,16 @@ Inductive ex (A:Type) (P:A -> Type) : Type :=
 \end{minipage}
 \end{center}
 
-The proof of $\exists (x:T), P x$ needs the user provide a value $x$ and proof that it satisfies the predicate $P$.
+The proof of $\tt\exists (x:T), P\ x$ needs the user to provide a value $\tt x$
+and prove that it satisfies the predicate $\tt P$.
 
 \subsubsection*{Usage}
 \begin{itemize}
-\item ${\it exists}\ \tt t.$ : If the goal is $ex (x:T), P t$, $\tt t$ is a term of $T$. 
+\item ${\it exists}\ \tt t.$ : If the goal is $\tt ex\ (x:T),P\ t$, and $\tt t$ is a term of type $\tt T$. 
 \end{itemize}
 
 \subsubsection*{Implementation}
-The tactic automatic generate the subgoal $P x$.
+The tactic automatically generates the subgoal $\tt P\ x$.
 \begin{center}
 \begin{minipage}{0.7\textwidth}
 \begin{minted}{coq}
@@ -129,18 +131,19 @@ eq nat (S (S O)) (plus (S O) (S O))
 
 The proof object built is
 \begin{center}
-\begin{minipage}{0.7\textwidth}
+\begin{minipage}{0.8\textwidth}
 \begin{minted}{coq}
-ex_intro nat (fun (n:nat) => eq nat (S (S O)) (plus n n)) (S O) (* SubGoal *)
+ex_intro nat (fun (n:nat) => 
+                eq nat (S (S O)) (plus n n)) (S O) (* SubGoal *)
 \end{minted}
 \end{minipage}
 \end{center}
 
-\subsection{\it Induction}
+\subsection{\it induction}
 
 This tactic applies to any goal. 
 The argument term must be of inductive type and the tactic {\it induction} generates subgoals, 
-one for each possible form of term, i.e. one for each constructor of the inductive type.
+one for each possible form of term, i.e., one for each constructor of the inductive type.
 
 \subsubsection*{Usage}
 \begin{itemize}
@@ -149,10 +152,12 @@ one for each possible form of term, i.e. one for each constructor of the inducti
 
 \subsubsection*{Implementation}
 
-The tactic generates the predicate by the goal and automatic generates the subgoals for every constructor of the type.
+The tactic generates the predicate by the goal and automatically generates 
+the subgoals for every constructor of the inductive type.
 The equivalence relations introduced by the constructors are also handled.
 
-If the term is a hypothesis, induction will find the dependencies, and try to move them and replace the subterms to solve the dependencies.
+If the term is a hypothesis, {\it induction} will find the dependencies, 
+and try to move them and replace the subterms to solve the dependencies.
 And then erase the original hypothesis.
 
 \begin{center}
@@ -176,8 +181,9 @@ eq nat (plus (S n0) O) (S n0)
 \end{minipage}
 \end{center}
 
-After {\it induction}, all we need to prove is the property holds for $O$ and for any $n$, if $P(n)$ holds,
-then the two subgoals are generated and $n$ is replaced by the constructors.
+After {\it induction}, all we need to prove is the property holds for \mintinline{coq}|O| and 
+for any \mintinline{coq}|n|, if \mintinline{coq}|P n| holds,
+then the two subgoals are generated and \mintinline{coq}|n| is replaced by the constructors.
 
 The case above is viewed from user's perspective.
 On the other hand, in the system we also need to construct the term for back substitution.
@@ -190,7 +196,7 @@ eq nat (plus n O) n
 
 (* $\Downarrow$ induction n $\Downarrow$ *)   
 
-(* The proof object *)
+(* The Proof Object *)
 (fun (n:nat) =>   
     nat_rect (fun (n0:nat) => eq nat (plus n0 O) n0)
     (* SubGoal 1 *)
@@ -200,7 +206,7 @@ eq nat (plus n O) n
 \end{minipage}
 \end{center}
 
-\subsection{\it Intro}
+\subsection{\it intro}
 
 If the current goal is a dependent product $\tt \forall x:T,\ U$, \textit{intro} puts 
 $\tt x:T$ in the context, and the new subgoal is $\tt U$.\par
@@ -223,7 +229,18 @@ If the argument is dependent in either the conclusion or some hypotheses of the 
 the argument is replaced by the appropriate constructor form in each of the resulting subgoals
 and induction hypotheses are added to the local context.
 
-\subsection{\it Intros}
+Here is an example:
+\begin{center}
+\begin{minipage}{\textwidth}
+\begin{minted}{coq}
+                                                        P : Type
+(* Current Goal *)                (* intro P => *)      (* SubGoal *) 
+forall (x:Type) (f:False), x                            forall (f:False), P
+\end{minted}
+\end{minipage}
+\end{center}
+
+\subsection{\it intros}
 
 If the current goal is a dependent (or non-dependent) product with $m$ arguments, namely,
 $\tt \forall x_1:T_1,\ \forall x_2:T_2,\ \cdots\ \forall x_m:T_m,\ U$ where $\tt U$ is not a product type.
@@ -237,19 +254,19 @@ Then \textit{intros} will put these $m$ arguments into the context and rename au
 \subsubsection*{Implementation}
 Keep calling {\it intro} until all the goal has no arguments.
 
-\subsection{\it Left Right}
+\subsection{\it left right}
 These tactics apply to a goal that is of the disjunction type. Then we can proof one of the two sides to solve the goal.
 
 \subsubsection*{Usage}
 \begin{itemize}
-    \item ${\it left}$
-    \item ${\it right}$
+    \item ${\it left}.$
+    \item ${\it right}.$
 \end{itemize}
 
 \subsubsection*{Implementation}
 The disjunction type in our system is defined as follows:
 \begin{center}
-\begin{minipage}{\textwidth}
+\begin{minipage}{0.6\textwidth}
 \begin{minted}{coq}
 Inductive or (A:Type) (B:Type) : Type :=
 | or_introl : A -> or A B
@@ -269,14 +286,14 @@ or (eq nat O O) (eq nat (S O) (S O))
 
 (* $\Downarrow$ left $\Downarrow$ *)
 
-(* The proof object *)
+(* The Proof Object *)
 or_introl (eq nat O O) (eq nat (S O) (S O)) (* SubGoal 1 *)
 \end{minted}
 \end{minipage}
 \end{center}
 
-\subsection{\it Split}
-These tactics apply to a goal that is of the conjunction type. Then we need to proof the both sides to solve the goal.
+\subsection{\it split}
+This tactic applies to a goal that is of the conjunction type. Then we need to proof the both sides to solve the goal.
 
 \subsubsection*{Usage}
 \begin{itemize}
@@ -286,7 +303,7 @@ These tactics apply to a goal that is of the conjunction type. Then we need to p
 \subsubsection*{Implementation}
 The conjunction type in our system is defined as follows:
 \begin{center}
-\begin{minipage}{\textwidth}
+\begin{minipage}{0.6\textwidth}
 \begin{minted}{coq}
 Inductive and (A:Type) (B:Type) : Type :=
 | conj : A -> B -> and A B.   
@@ -304,19 +321,20 @@ and (eq nat O O) (eq nat (S O) (S O))
 
 (* $\Downarrow$ split $\Downarrow$ *)
 
-(* The proof object *)
+(* The Proof Object *)
 conj (eq nat O O) (eq nat (S O) (S O)) (* SubGoal 1 *) (* SubGoal 2 *)
 \end{minted}
 \end{minipage}
 \end{center}
 
 
-\subsection{\it Reflexivity}
-This tactic applies to a goal that has the form \mintinline{coq}|eq T t u|, it check that $t$ and $u$ are convertible and then solves the goal.
+\subsection{\it reflexivity}
+This tactic applies to a goal that has the form \mintinline{coq}|eq T t u|, it check that $\tt t$ and $\tt u$ 
+are convertible and then solves the goal.
 
 \subsubsection*{Usage}
 \begin{itemize}
-\item ${\it reflexivity}$
+\item ${\it reflexivity}.$
 \end{itemize}
 
 \subsubsection*{Implementation}
@@ -337,28 +355,35 @@ fun (n:nat) => eq_refl nat n
 \end{minipage}
 \end{center}
 
-\subsection{\it Rewrite}
+\subsection{\it rewrite}
 
-\subsection{\it Simpl}
-This tactic applies to any goal, it tries to reduce a term to somthing still readable instead of fully normalizing it. They perform a sort of strong noormalization with a key difference:
-it unfold a constant if and only if it leads to a $\iota-reduction$, i.e. reducing a match or unfolding a fixpoint.
+\subsection{\it simpl}
+This tactic applies to any goal, it tries to reduce a term to something still readable instead of fully normalizing it. 
+It performs a sort of strong normalization with a key difference:
+\begin{center}
+\begin{minipage}{0.7\textwidth}
+it unfold a constant if and only if it leads to a $\iota$-reduction, i.e., reducing a {\tt match} or unfolding a {\tt Fix}.
+\end{minipage}
+\end{center}
 
 
 \subsubsection*{Usage}
 \begin{itemize}
-\item ${\it simpl}$
-\item ${\it simpl}\ \rm in\ \tt H$ : $\tt H$ is a hypothesis.
+\item ${\it simpl}.$
+\item ${\it simpl\ in}\ \tt H.$ : $\tt H$ is a hypothesis.
 \end{itemize}
 
 \subsubsection*{Implementation}
 
-The tactic first applies $\beta\iota-$reduction, then it expands constants and tries to reduce further using $\beta\iota-$reduction, but, when no $\iota$ rule is applied after unfolding
-then $\iota-reductions$ are not applied. For instance trying to use $\it simpl$ on \mintinline{coq}|eq nat (plus n O) n| changes nothing.
+The tactic first applies $\beta\iota$-reduction, then it expands constants and tries to reduce 
+further using $\beta\iota$-reduction, but when no $\iota$ rule is applied after unfolding,
+$\iota$-reductions are not applied. For instance, trying to use $\it simpl$ on 
+\mintinline{coq}|eq nat (plus n O) n| changes nothing.
 \begin{center}
-\begin{minipage}{0.7\textwidth}
+\begin{minipage}{0.8\textwidth}
 \begin{minted}{coq}
-n : nat                        (* simpl => *)    e : nat
-(* Current Goal *)                               (* Current Goal *)
+n : nat                                          e : nat
+(* Current Goal *)           (* simpl => *)      (* Current Goal *)
 eq nat (plus n O) (plus O n)                     eq nat (plus n O) n
 \end{minted}
 \end{minipage}
@@ -368,8 +393,8 @@ The tactic can also be applied to the hypotheses, and the same reduction rules a
 \begin{center}
 \begin{minted}{coq}
 n : nat                                                    n : nat                
-e : eq nat (plus n O) (plus O n)    (* simpl in e => *)    e : eq nat (plus n O) n
-(* Current Goal *)                                         (* Current Goal *)      
+e : eq nat (plus n O) (plus O n)                           e : eq nat (plus n O) n
+(* Current Goal *)                 (* simpl in e => *)     (* Current Goal *)      
 eq nat (plus n O) n                                        eq nat (plus n O) n         
 \end{minted} 
 \end{center}
@@ -377,7 +402,7 @@ eq nat (plus n O) n                                        eq nat (plus n O) n
 The tactic would never change the current built proof object and won't modify the proof objects built after it.
 It is transparent in the proof tree.
 
-\subsection{\it Exact}
+\subsection{\it exact}
 
 This tactic checks if the input term is actually of the goal's type. If so, the proof of the current goal is finished and the 
 constructed proof object is exactly the input term.
@@ -388,9 +413,9 @@ constructed proof object is exactly the input term.
 \end{itemize}
 
 \subsubsection*{Implementation}
-It's easy to implement.Here is an example.
+It's easy to implement. Here is an example:
 \begin{center}
-\begin{minipage}{0.7\textwidth}
+\begin{minipage}{0.8\textwidth}
 \begin{minted}{coq}
 m : nat                                                      
 (* Current Goal *)  (* exact eq_refl nat m => *)  (* No more goals *)
@@ -400,7 +425,7 @@ eq nat m m
 \end{center}
 
 
-\subsection{\it Symmetry}
+\subsection{\it symmetry}
 This tactic applies to a goal that has the form \mintinline{coq}|eq T t u| and changes it into \mintinline{coq}|eq T u t|.
 
 \subsubsection*{Usage}
@@ -411,7 +436,7 @@ This tactic applies to a goal that has the form \mintinline{coq}|eq T t u| and c
 \subsubsection*{Implementation}
 This tactic builds the proof object use the pre-defined theorem \mintinline{coq}|eq_sym|, here is an example for the proof object building.
 \begin{center}
-\begin{minipage}{\textwidth}
+\begin{minipage}{0.6\textwidth}
 \begin{minted}{coq}
 m : nat
 n : nat
@@ -429,14 +454,14 @@ fun (m:nat) (n:nat) (e:eq nat m n) =>
 \end{center}
 
 
-\subsection{\it Unfold}
-This tactic applies to any goal, the argument should denote a defined constant(i.e. not a hypothesis or a axiom).
+\subsection{\it unfold}
+This tactic applies to any goal, the argument should denote a defined constant (i.e., not a hypothesis or a axiom).
 The tactic applies the $\delta$ rule to each occurrence of the constant in the current goal and then replaces it with its $\beta\iota$-normal form.
 
 \subsubsection*{Usage}
 \begin{itemize}
 \item ${\it unfold}\ \tt i.$ : $\tt i$ is an identifier. 
-\item ${\it unfold}\ \tt i\ \rm in\ \tt H$ : $i$ is an identifier and $H$ is a hypothesis.
+\item ${\it unfold}\ \tt i\ \it in\ \tt H.$ : $\tt i$ is an identifier and $\tt H$ is a hypothesis.
 \end{itemize}
 
 \subsubsection*{Implementation}

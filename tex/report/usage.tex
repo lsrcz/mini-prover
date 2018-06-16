@@ -1,50 +1,48 @@
 \section{Usage}
 
-\subsection{Compiling}
-
-\subsubsection{System Requirements}
+\subsection{System Requirements}
 \begin{itemize}
     \item Linux or macOS, currently not tested on Windows.
     \item The Haskell Tool Stack
 \end{itemize}
 
-\subsubsection{Compiling}
+\subsection{Compiling}
 Thanks to the haskell tool stack, the project is easy to build in one command.
 \begin{center}
-\begin{minipage}{0.7\textwidth}
+\begin{minipage}{0.6\textwidth}
 \begin{minted}{bash}
 stack build      
 \end{minted}
 \end{minipage}
 \end{center}
 
-\subsubsection{Execution}
+\subsection{Execution}
 The project can be executed without installing to the system environment:
 \begin{center}
-\begin{minipage}{0.7\textwidth}
+\begin{minipage}{0.6\textwidth}
 \begin{minted}{bash}
 stack exec mini-prover-exe
 \end{minted}
 \end{minipage}
 \end{center}
-It will read the \mintinline{bash}|./libs/Init/Prelude.v| for predefined objects.
+It will read the \mintinline{bash}|./libs/Init/Prelude.v| for pre-defined objects.
 
 For verbose output:
 \begin{center}
-\begin{minipage}{0.7\textwidth}
+\begin{minipage}{0.6\textwidth}
 \begin{minted}{bash}
 stack exec mini-prover-exe -- -v[0-3]
 \end{minted}
 \end{minipage}
 \end{center}
 
-\subsubsection{Demos}
+\subsection{Demos}
 Some demo code tested in our system can be found at \mintinline{bash}|./demo/demo.v|
 
-\subsubsection{Test Cases}
+\subsection{Test Cases}
 To run the unit tests, just run
 \begin{center}
-\begin{minipage}{0.7\textwidth}
+\begin{minipage}{0.6\textwidth}
 \begin{minted}{bash}
 stack test
 \end{minted}

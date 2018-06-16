@@ -1,9 +1,9 @@
 \section{Proof Handling}
 
-In the proof editing mode, the user can use the tactics to deal with logical resoning,
+In the proof editing mode, the user can use the tactics to deal with logical reasoning,
 and can also use some other specialized commands to deal with the proof environment.
 
-In our implementation, the proof procedure is organized into a tree. Initially, the tree
+In our implementation, the proof procedure is organized as a tree. Initially, the tree
 consists only the theorem itself as the tree root and the only leaf.
 Every time a tactic is applied, either
 the current leaf is expanded to an internal node or the proof procedure of the subtree is completed, then the next leaf of the tree will be focused. The proof procedure is completed
@@ -14,20 +14,20 @@ Initially the local context contains nothing, it is enriched by the use of certa
 
 When a proof is completed, the message {\tt No more subgoals} is displayed. One can then register this
 proof as a defined constant in the environment. Because there exists a correspondence between proofs and terms of
-$\lambda\text{-calculus}$, known as the {\it Curry-Howard isomorphism}, the mini-prover stores proofs as terms of $\it CIC$.
+$\lambda\text{-calculus}$, known as the {\it Curry-Howard isomorphism}, the MiniProver stores proofs as terms of $\it CIC$.
 Those terms are called {\it proof terms}.
 
 \subsection{\tt Theorem}
-The proof editing mode is entered by asserting a theorem:
+The proof editing mode is entered by asserting a theorem.
 
 \subsection{\tt Proof}
-Is a noop which is useful to delimit the sequence of tactic commands which start a proof, after a
+This command is a noop which is useful to delimit the sequence of tactic commands which start a proof, after a
 {\tt Theorem} command.
 
 {\tt Theorem \sl ident \{binder\} : term.}
 \subsection{\tt Qed}
 This command is available in interactive editing proof mode when the proof is completed.
-Then {\tt Qed} extracts a proof term from the proof script, switches back to the top-level and
+Then {\tt Qed} extracts a proof term from the proof script, switches back to the top level and
 attaches the extracted proof term to the declared name of the original goal.
 
 \subsection{\tt Admitted}
@@ -35,7 +35,7 @@ This command is available in interactive editing proof mode to give up the curre
 
 \subsection{\tt Abort}
 This command cancels the current proof development,
-switching back to the toplevel.
+switching back to the top level.
 
 \subsection{\tt Undo}
 This command cancels the effect of the last command. Thus, it backtracks one step.

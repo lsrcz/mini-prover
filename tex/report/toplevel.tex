@@ -5,11 +5,11 @@ adds the user input, namely, \textit{Axiom}, \textit{Definition}, \textit{Fixpoi
 into the context.\par
 It is also in this part, the inductive rule forms.
 
-\subsection{Acceptance of command}
+\subsection{Acceptance of Command}
 \subsubsection{Axiom}
 After parsing and checking, the command will be like
 $$
-\tt Ax\ \ {\it name\ term},
+\tt Ax\ \ \it name\ term,
 $$ 
 where {\it term} denotes the type of this axiom.
 Since it is an axiom, we do not have to (sometimes can not) build the corresponding term.\par
@@ -26,7 +26,7 @@ Simply bind the name, term, type together and put it into the context.
 \subsubsection{Fixpoint}
 After parsing and checking, the command will be like
 $$
-\tt Fix\ {\it name }\ \left(\lambda {\it f}:{ \it term1},\ {\it term2}\right),
+\tt Fix\ {\it name }\ \left(\lambda {\it f}:{\it term1},\ {\it term2}\right),
 $$
 where {\it term1} is the type of {\it term2} and it is a recursive function of {\it f}.\par 
 Since this recursive function has passed all the type check and safety check, we can safely use it without worrying termination
@@ -111,7 +111,7 @@ any one of the following
 \end{itemize}
 Others like product type \mintinline{coq}|U -> V| is not supported.
 
-\subsection{Requests to the environment}
+\subsection{Requests to Environment}
 \subsubsection{\tt Print \sl ident}
 This command displays on the screen information about the declared or defined object referred by {\sl ident}.
 \subsubsection{\tt Check \sl term}
@@ -120,13 +120,13 @@ This command displays the type of {\sl term}.
 \subsection{Top Loop}
 The main work flow of our top level loop:
 \subsubsection*{Reading raw input}
-The Mini Prover will read the user's input until a dot('.'), and any further input in the same line will be abandoned.
+The MiniProver will read the user's input until a dot('.'), and any further input in the same line will be abandoned.
 \subsubsection*{Parsing}
 The raw input will be parsed without nameless representation.
 
 Here is an example, the raw input
 \begin{center}
-\begin{minipage}{0.7\textwidth}
+\begin{minipage}{0.6\textwidth}
 \begin{minted}{coq}
 (* raw input *)
 Fixpoint plus (n:nat) (m:nat) : nat :=
@@ -192,7 +192,7 @@ Fix "plus"
 \end{minted}
 \end{minipage}
 \end{center}
-\subsubsection*{Positivity Checking(Inductive Definition Only)}
+\subsubsection*{Positivity Checking (Inductive Definition Only)}
 For an inductive definition, after building it's nameless representation, the positivity
 could be checked.
 \subsubsection*{Termination Checking}
