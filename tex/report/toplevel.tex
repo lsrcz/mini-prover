@@ -5,7 +5,8 @@ adds the user input, namely, \textit{Axiom}, \textit{Definition}, \textit{Fixpoi
 into the context.\par
 It is also in this part, the inductive rule forms.
 
-\subsection{Axiom}
+\subsection{Acceptance of command}
+\subsubsection{Axiom}
 After parsing and checking, the command will be like
 $$
 \tt Ax\ \ {\it name\ term},
@@ -14,7 +15,7 @@ where {\it term} denotes the type of this axiom.
 Since it is an axiom, we do not have to (sometimes can not) build the corresponding term.\par
 Just build the corresponding term as {\it Nothing} then put it into the context.
 
-\subsection{Definition}
+\subsubsection{Definition}
 After parsing and checking, the command will be like
 $$
 \tt Def\ \ {\it name\ term2\ term1},
@@ -22,7 +23,7 @@ $$
 where {\it term2} is the type of {\it term1}.\par
 Simply bind the name, term, type together and put it into the context.
 
-\subsection{Fixpoint}
+\subsubsection{Fixpoint}
 After parsing and checking, the command will be like
 $$
 \tt Fix\ {\it name }\ \left(\lambda {\it f}:{ \it term1},\ {\it term2}\right),
@@ -34,7 +35,7 @@ On the other hand, whether it is a {\it Fixpoint} definition will not influence 
 always finds the term in context according to its index.\par
 So simply remove the {\it Fixpoint} mark and put it into the context.
 
-\subsection{Inductive Definition}
+\subsubsection{Inductive Definition}
 After parsing and checking, the command will be like
 $$
 \tt Ind\ \ {\it name\ p\ term2\ term1\ constructors},
