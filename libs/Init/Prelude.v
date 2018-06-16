@@ -437,9 +437,6 @@ Inductive ilist (T:Type) : nat -> Type :=
 | inil : ilist T O
 | icons : forall (n:nat), T -> ilist T n -> ilist T (S n).
 
-<<<<<<< HEAD
-  
-
 Inductive bool : Type :=
   | true : bool
   | false : bool.
@@ -483,5 +480,3 @@ Fixpoint evenb (n:nat) : bool :=
   end.
 
 Definition oddb (n:nat) : bool := negb (evenb n).
-=======
->>>>>>> a45ad6d3995539c8e5f1474788f75b3d19e55653
