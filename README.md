@@ -6,9 +6,9 @@ Term project for TaPL. A mini coq-like proof assistant.
 
 ---
 
-##Usage 
+## Usage 
 
-###System Requirement
+### System Requirement
 
 - Linux or macOS, currently not tested on Windows.
 - The Haskell Tool Stack
