@@ -1,6 +1,81 @@
 \section*{Appendix}
 
-In this part, several interesting constructions are listed.
-We will show how to express some other types (like {\it bool}, {\it nat}, etc) from scratch,
-and how to view quatitives ($\forall,\exists$) from type theory perspective.
+In this part, several interesting constructions are listed, 
+while others are left in \textit{libs/Init/Prelude.v}.
 
+\subsection*{Boolean}
+\begin{center}
+\begin{minted}{coq}
+Inductive True : Type :=
+| I : True.
+
+Inductive False : Type :=.
+
+Inductive and (A : Type) (B : Type) : Type :=
+| conj : A -> B -> and A B.
+
+Inductive or (A : Type) (B : Type) : Type :=
+| or_introl : A -> or A B
+| or_intror : B -> or A B.
+\end{minted}
+\end{center}
+
+\subsection*{Logic}
+\begin{center}
+\begin{minted}{coq}
+Definition If_then_else (P : Type) (Q : Type) (R : Type) : Type :=
+    or (and P Q) (and (not P) Q).
+
+Definition not (A : Type) : Type :=
+    A -> False.
+
+Definition iff (A : Type) (B : Type) : Type :=
+    and (A -> B) (B -> A).
+
+Inductive ex (A : Type) (P : A -> Type) : Type :=
+| ex_intro : forall (x : A), P x -> ex A P.
+
+Inductive eq (A : Type) (x : A) : A -> Type :=
+| eq_refl : eq A x x.
+\end{minted}
+\end{center}
+
+\subsection*{Natural Number}
+\begin{center}
+\begin{minted}{coq}
+Inductive nat : Type :=
+| O : nat
+| S : nat -> nat.
+
+Fixpoint plus (n : nat) (m : nat) : nat :=
+    match n as n0 in nat return nat with
+    | O => m
+    | S n1 => S (plus n1 m)
+    end.
+
+Fixpoint multiply (n : nat) (m : nat) : nat :=
+    match n as n0 in nat return nat with
+    | O => O
+    | S n1 => plus m (multiply n1 m)
+    end.
+
+Fixpoint power (n : nat) (m : nat) : nat :=
+    match m as m0 in nat return nat with
+    | O => S O
+    | S m1 => multiply n (power n m1)
+    end.
+\end{minted}
+\end{center}
+
+\subsection*{List}
+\begin{center}
+\begin{minted}{coq}
+Inductive list (T : Type) : Type :=
+| nil : list T
+| cons : T -> list T -> list T.
+
+Inductive iliist (T : Type) : nat -> Type :=
+| inil : ilist T O
+| icons : forall (n : nat), T -> ilist T n -> ilist T (S n).
+\end{minted}
+\end{center}

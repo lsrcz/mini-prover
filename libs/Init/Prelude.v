@@ -412,10 +412,22 @@ Inductive nat : Type :=
 | S : nat -> nat.
 
 Fixpoint plus (n:nat) (m:nat) : nat :=
-match n as n0 in nat return nat with
-| O => m
-| S n1 => S (plus n1 m)
-end.
+    match n as n0 in nat return nat with
+    | O => m
+    | S n1 => S (plus n1 m)
+    end.
+
+Fixpoint multiply (n:nat) (m:nat) : nat :=
+    match n as n0 in nat return nat with
+    | O => O
+    | S n1 => plus m (multiply n1 m)
+    end.
+
+Fixpoint power (n:nat) (m:nat) : nat :=
+    match m as m0 in nat return nat with
+    | O => S O
+    | S m1 => multiply n (power n m1)
+    end.
 
 Inductive list (T:Type) : Type :=
 | nil : list T
@@ -425,6 +437,7 @@ Inductive ilist (T:Type) : nat -> Type :=
 | inil : ilist T O
 | icons : forall (n:nat), T -> ilist T n -> ilist T (S n).
 
+<<<<<<< HEAD
   
 
 Inductive bool : Type :=
@@ -470,3 +483,5 @@ Fixpoint evenb (n:nat) : bool :=
   end.
 
 Definition oddb (n:nat) : bool := negb (evenb n).
+=======
+>>>>>>> a45ad6d3995539c8e5f1474788f75b3d19e55653

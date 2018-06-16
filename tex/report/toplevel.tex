@@ -48,7 +48,7 @@ For example,
 \begin{minted}{coq}
 Inductive nat : Type := 
 | O : nat
-| S : nat -> nat
+| S : nat -> nat.
 
 (* build inductive rule*)
 
@@ -83,7 +83,7 @@ rely on the term of type \mintinline{coq}|nat|. Here is a case which do not need
 \begin{center}
 \begin{minted}{coq}
 Inductive eq (T : Type) (x : T) : T -> Type :=
-  | eq_refl : eq T x x
+| eq_refl : eq T x x.
 
 (* build inductive rule*)
 
