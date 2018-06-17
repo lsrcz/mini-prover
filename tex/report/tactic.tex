@@ -11,13 +11,13 @@ current goal.
 
 \subsection*{Usage}
 \begin{itemize}
-\item $\it apply\ \tt t.$ : $\tt t$ is a term of a type whose conclusion is the goal.
-\item $\it apply\ \tt t\ \it in\ \tt H.$ : $\tt t$ is a term of a type whose condition is $\tt H$.
+\item $\it apply\ \tt t.$ : $\tt t$ is a term of a type whose consequent is the goal.
+\item $\it apply\ \tt t\ \it in\ \tt H.$ : $\tt t$ is a term of a type whose antecedent is $\tt H$.
 \end{itemize}
 
 \subsection*{Implementation}
 The tactic {\it apply} tries to match the current goal against the 
-conclusion of the type of term. 
+final consequent of the type of term. 
 If it succeeds, it returns as many subgoals as 
 the number of non-dependent premises of the type of term.\par
 Here is an example:
@@ -42,13 +42,13 @@ eq nat m o                                      e : eq nat n m
 \end{center}
 Because \mintinline{coq}|e| has a type of \mintinline{coq}|eq nat n m -> eq nat m o -> eq nat n o| 
 and the goal is \mintinline{coq}|eq nat n o|,
-when applied with \mintinline{coq}|n|,
-the goal is convertible to the inner-most part of the type of \mintinline{coq}|e|.
-And all of the non-dependent premises of the type of term become subgoals.
+the goal is convertible to the \textbf{consequent} of the type of \mintinline{coq}|e|.
+When applied with \mintinline{coq}|e|,
+all of the non-dependent premises of the type of \mintinline{coq}|e| become subgoals.
 
 The tactic {\it apply $\tt tm$ in $\tt H$} tries to match the hypothesis $\tt H$ against the 
-condition of the type of $\tt tm$. 
-If it succeeds, the hypothesis $\tt H$ will be replaced by the conclusion of $\tt tm$
+antecedent of the type of $\tt tm$. 
+If it succeeds, the hypothesis $\tt H$ will be replaced by the consequent of $\tt tm$.
 \begin{center}
 \begin{minted}{coq}
 n : nat
@@ -60,6 +60,7 @@ e : eq nat n m -> eq nat m o -> eq nat n o
 eq nat m o -> eq nat n o                                        
 
 (* $\Downarrow$ apply e in H $\Downarrow$ *)
+
 n : nat                                                                         
 m : nat                                                                     
 o : nat  
@@ -69,11 +70,12 @@ e : eq nat n m -> eq nat m o -> eq nat n o
 eq nat m o -> eq nat n o                                      
 \end{minted}
 \end{center}
-Because \mintinline{coq}|e| has a type of \mintinline{coq}|eq nat n m -> eq nat m o -> eq nat n o| 
+Because \mintinline{coq}|e| has a type of 
+\mintinline{coq}|eq nat n m -> eq nat m o -> eq nat n o| 
 and $\tt H$ is \mintinline{coq}|eq nat n m|,
-when applied with \mintinline{coq}|e|,
-the $\tt H$ equals to the condition of the type of the term.
-And $\tt H$ was replaced by the conclusion of $\tt e$.
+$\tt H$ is convertible to the \textbf{antecedent} of the type of the term.
+When applied with \mintinline{coq}|e|,
+$\tt H$ is replaced by the consequent of $\tt e$.
 
 \subsection{\it destruct}
 
@@ -106,13 +108,23 @@ From the constructor \mintinline{coq}|eq_refl : eq T x x| and the type of \minti
 we have \mintinline{coq}|m = n|, so any occurrence of \mintinline{coq}|m| should be replaced by \mintinline{coq}|n|.\par
 If some term depends on the destructed term, we should rewrite it.
 \begin{center}
+\begin{minipage}{0.7\textwidth}
 \begin{minted}{coq}
-n, m : nat                                 n : nat              n : nat                  
-e : eq nat n m                             e0 : eq nat n O      e0 : eq nat n (S m0) 
-f : eq nat m m      (* destruct m => *)    f0 : eq nat O O      f0 : eq nat (S m0) (S m0) 
-(* Current Goal *)                         (* SubGoal 1 *)      (* SubGoal 2 *)
-eq nat m n                                 eq nat O n           eq nat (S m0) n     
+n, m : nat                               
+e : eq nat n m                           
+f : eq nat m m     
+(* Current Goal *)                       
+eq nat m n                               
+
+(* $\Downarrow$ destruct m $\Downarrow$ *)  
+
+n : nat                    n : nat                  
+e0 : eq nat n O            e0 : eq nat n (S m0) 
+f0 : eq nat O O            f0 : eq nat (S m0) (S m0) 
+(* SubGoal 1 *)            (* SubGoal 2 *)
+eq nat O n                 eq nat (S m0) n     
 \end{minted}
+\end{minipage}
 \end{center}
 The two cases above are viewed from user's perspective.
 On the other hand, in the system we also need to construct the term for back substitution.
@@ -266,7 +278,8 @@ eq nat (plus n O) n
 
 (* The Proof Object *)
 (fun (n:nat) =>   
-    nat_rect (fun (n0:nat) => eq nat (plus n0 O) n0)
+    nat_rect 
+    (fun (n0:nat) => eq nat (plus n0 O) n0)
     (* SubGoal 1 *)
     (fun (n0:nat) (e:eq nat (plus n0 O) n0) => (* SubGoal 2 *))
     n)                                                      
@@ -293,7 +306,7 @@ try to rename them into $a_1,a_2,\cdots,a_n$.
 Since the context automatically preserves the index, we
 can safely move the arguments out into the context without worrying about the index.
 
-If the argument is dependent in either the conclusion or some hypotheses of the goal,
+If the argument is dependent in either the consequent or some hypotheses of the goal,
 the argument is replaced by the appropriate constructor form in each of the resulting subgoals
 and induction hypotheses are added to the local context.
 
@@ -320,7 +333,18 @@ Then \textit{intros} will put these $m$ arguments into the context and rename au
 \end{itemize}
 
 \subsubsection*{Implementation}
-Keep calling {\it intro} until all the goal has no arguments.
+Keep calling {\it intro} until all the goal has no arguments.\par
+Here is an example:
+\begin{center}
+\begin{minipage}{\textwidth}
+\begin{minted}{coq}
+                                                       x : Type
+                                                       f : False 
+(* Current Goal *)                (* intros => *)      (* SubGoal *) 
+forall (x:Type) (f:False), x                           x
+\end{minted}
+\end{minipage}
+\end{center}
 
 \subsection{\it left right}
 These tactics apply to a goal that is of the disjunction type. Then we can proof one of the two sides to solve the goal.
