@@ -3,11 +3,11 @@
 \subsection{Term}
 
 \begin{enumerate}
-    \item $\tt Set,Prop$ are terms.
+    \item $\tt Type$ is a term.
     \item Variables $\tt x,y$, etc., are terms.
     \item Constants $\tt c,d$, etc., are terms.
-    \item If $\tt x$ is a variable and $\tt T,U$ are terms, then $\forall\tt x:T,U$ is a term.
-    \item If $\tt x$ is a variable and $\tt T,u$ are terms, then $\lambda\tt x:T.\ u$ is a term.
+    \item If $\tt x$ is a variable and $\tt T,U$ are terms, then $\tt\forall x:T,U$ is a term.
+    \item If $\tt x$ is a variable and $\tt T,u$ are terms, then $\tt\lambda x:T.\ u$ is a term.
     \item If $\tt x$ and $\tt u$ are terms, then $\tt (t\ u)$ is a term.
     \item If $\tt x$ is a variable and $\tt t,T,u$ are terms, then $\tt let\ \ x:=t:T\ \ in\ \ u$ is a term.
 \end{enumerate}
@@ -16,11 +16,9 @@
 
 \subsubsection{Notation}
 \begin{itemize}
-\item $\mathcal S$ : $\{\tt Prop,Set\}$.
-\item $E$ : global environment.
 \item $\Gamma$ : local context.
 \item $\tt u\{x/t\}$ : substitute free occurrence of variable $\tt x$ to term $\tt t$ in term $\tt u$.
-\item $\mathcal{WF}(E)[\Gamma]$ : $E$ is well-formed and $\Gamma$ is valid in $E$.
+\item $\mathcal{WF}(\Gamma)$ : $\Gamma$ is well-formed.
 \end{itemize}
 
 \subsubsection{Typing Rules}
@@ -29,60 +27,60 @@
     \tag{\sc T-Empty}
 \end{equation*}
 \begin{equation*}
-\frac{E[\Gamma]\vdash {\tt T:s\qquad s\in\mathcal{S}\qquad x}\notin\Gamma}
-    {\mathcal{WF}(E)[\Gamma ::(\tt x:T)]} 
-    \tag{\sc T-Local-Ax}
+\frac{\Gamma\vdash {\tt T:Type\qquad \qquad x}\notin\Gamma}
+    {\mathcal{WF}(\Gamma ::(\tt x:T))} 
+    \tag{\sc T-Ax}
 \end{equation*}
 \begin{equation*}
-\frac{E[]\vdash {\tt t:T\qquad c}\notin E}
-    {\mathcal{WF}(E:\tt c:=t:T)} 
-    \tag{\sc T-Local-Def}
+\frac{\Gamma\vdash {\tt t:T\qquad c}\notin \Gamma}
+    {\mathcal{WF}(\Gamma:\tt c:=t:T)} 
+    \tag{\sc T-Def}
 \end{equation*}
 \begin{equation*}
-\frac{\mathcal{WF}(E)[\Gamma]\qquad ({\tt x:T})\in\Gamma}
-    {E[\Gamma]\vdash\tt x:T} 
+\frac{\mathcal{WF}(\Gamma)\qquad ({\tt x:T})\in\Gamma}
+    {\Gamma\vdash\tt x:T} 
     \tag{\sc T-Var1}
 \end{equation*}
 \begin{equation*}
-\frac{\mathcal{WF}(E)[\Gamma]\qquad ({\tt x:=t:T})\in\Gamma}
-    {E[\Gamma]\vdash\tt x:T} 
+\frac{\mathcal{WF}(\Gamma)\qquad ({\tt x:=t:T})\in\Gamma}
+    {\Gamma\vdash\tt x:T} 
     \tag{\sc T-Var2}
 \end{equation*}
 \begin{equation*}
-\frac{\mathcal{WF}(E)[\Gamma]\qquad ({\tt c:T})\in E}
-    {E[\Gamma]\vdash\tt c:T} 
+\frac{\mathcal{WF}(\Gamma)\qquad ({\tt c:T})\in \Gamma}
+    {\Gamma\vdash\tt c:T} 
     \tag{\sc T-Const1}
 \end{equation*}
 \begin{equation*}
-\frac{\mathcal{WF}(E)[\Gamma]\qquad ({\tt c:=t:T})\in E}
-    {E[\Gamma]\vdash\tt c:T} 
+\frac{\mathcal{WF}(\Gamma)\qquad ({\tt c:=t:T})\in \Gamma}
+    {\Gamma\vdash\tt c:T} 
     \tag{\sc T-Const2}
 \end{equation*}
 
 \begin{equation*}
-\frac{E[\Gamma]\vdash{\tt T:s\qquad s\in\mathcal{S}}\qquad E[\Gamma::({\tt x:T})]\vdash\tt U:Prop}
-    {E[\Gamma]\vdash\tt\forall x:T,U:Prop} 
-    \tag{\sc T-Prod-Prop}
+\frac{\Gamma\vdash{\tt T:Type}\qquad \Gamma::({\tt x:T})\vdash\tt U:Type}
+    {\Gamma\vdash\tt\forall x:T,U:Type} 
+    \tag{\sc T-Prod}
 \end{equation*}
 \begin{equation*}
-\frac{E[\Gamma]\vdash{\tt T:s\qquad s\in\mathcal{S}}\qquad E[\Gamma::({\tt x:T})]\vdash\tt U:Set}
-    {E[\Gamma]\vdash\tt\forall x:T,U:Set} 
-    \tag{\sc T-Prod-Set}
-\end{equation*}
-\begin{equation*}
-\frac{E[\Gamma]\vdash\forall{\tt x:T,U:s}\qquad E[\Gamma::({\tt x:T})]\vdash{\tt t:U}}
-    {E[\Gamma]\vdash\lambda{\tt x:T.\ t:\forall x:T,U}} 
+\frac{\Gamma\vdash\forall{\tt x:T,U:Type}\qquad \Gamma::({\tt x:T})\vdash{\tt t:U}}
+    {\Gamma\vdash\lambda{\tt x:T.\ t:\forall x:T,U}} 
     \tag{\sc T-Abs}
 \end{equation*}
 \begin{equation*}
-\frac{E[\Gamma]\vdash\forall{\tt x:U,T}\qquad E[\Gamma]\vdash{\tt u:U}}
-    {E[\Gamma]\vdash{\tt (t\ u):T\{x/u\}}} 
+\frac{\Gamma\vdash\forall{\tt x:U,T}\qquad \Gamma\vdash{\tt u:U}}
+    {\Gamma\vdash{\tt (t\ u):T\{x/u\}}} 
     \tag{\sc T-App}
 \end{equation*}
 \begin{equation*}
-\frac{E[\Gamma]\vdash{\tt t:T}\qquad E[\Gamma::({\tt x:=t:T})]\vdash{\tt u:U}}
-    {E[\Gamma]\vdash{\tt let\ \ x:=t:T\ \ in\ \ u:U\{x/t\}}} 
+\frac{\Gamma\vdash{\tt t:T}\qquad \Gamma::({\tt x:=t:T})\vdash{\tt u:U}}
+    {\Gamma\vdash{\tt let\ \ x:=t:T\ \ in\ \ u:U\{x/t\}}} 
     \tag{\sc T-Let}
+\end{equation*}
+\begin{equation*}
+\frac{(\Gamma\vdash {\tt A_i:s_i)_{i=1..n}}\qquad (\Gamma,\tt f_1:A_1,\cdots,f_n:A_n\vdash t_i:A_i)_{i=1..n}}
+    {\Gamma\vdash\tt Fix\ f_i\{f_1:A_1:=t_1\cdots f_n:A_n:=t_n\}:A_i}
+    \tag{\sc T-Fix}
 \end{equation*}
 
 \subsection{Inductive Definition}
@@ -96,120 +94,105 @@
     \item $\Gamma_P$ : the context of parameters.
 \end{itemize}
 
+\subsubsection*{Example}
+Here is an example:
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{minted}{coq}
+Inductive list (T : Type) : Type :=
+| nil : list T
+| cons : T -> list T -> list T.
+\end{minted}
+\end{minipage}
+\end{center}
+$$
+\tt Ind\ [1]\left([list:Type\to Type]:=
+\begin{bmatrix}
+\tt nil:\forall T:Type,\ list\ T\\
+\tt cons:\forall T:Type,\ T\to list\ T\to list\ T
+\end{bmatrix}\right)
+$$
+Sadly, due to our limited time and energy, our system only supports inductive definition with $|\Gamma_I|=1$,
+which means inhibiting mutual inductive type like the following case:
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{minted}{coq}
+Inductive tree : Type :=
+    node : forest -> tree
+with forest : Type :=
+    | emptyf : forest
+    | consf : tree -> forest -> forest.
+\end{minted}
+\end{minipage}
+\end{center}
+$$
+\tt Ind\ []\left(
+\begin{bmatrix}\tt tree:Type\\\tt forest:Type\end{bmatrix}
+:=
+\begin{bmatrix}
+\tt node:forest\to tree\\
+\tt emptyf:forest\\
+\tt consf:tree\to forest\to forest
+\end{bmatrix}\right)
+$$
+
 \subsubsection{Typing Rule}
 \begin{equation*}
-\frac{\mathcal{WF}(E)[\Gamma]\qquad {\tt Ind}[p](\Gamma_I:=\Gamma_C)\in E\qquad {\tt(a:A)}\in\Gamma_i}
-    {E[\Gamma]\vdash\tt a:A}
+\frac{\mathcal{WF}(\Gamma)\qquad {\tt Ind}[p](\Gamma_I:=\Gamma_C)\in \Gamma\qquad {\tt(a:A)}\in\Gamma_i}
+    {\Gamma\vdash\tt a:A}
     \tag{\sc T-Ind}
 \end{equation*}
 \begin{equation*}
-\frac{\mathcal{WF}(E)[\Gamma]\qquad {\tt Ind}[p](\Gamma_I:=\Gamma_C)\in E\qquad {\tt (c:C)}\in\Gamma_C}
-    {E[\Gamma]\vdash\tt c:C}
+\frac{\mathcal{WF}(\Gamma)\qquad {\tt Ind}[p](\Gamma_I:=\Gamma_C)\in \Gamma\qquad {\tt (c:C)}\in\Gamma_C}
+    {\Gamma\vdash\tt c:C}
     \tag{\sc T-Constr}
 \end{equation*}
 \begin{equation*}
-\frac{(E[\Gamma_P]\vdash{\tt A_j:s_j'})_{j=1..k}\qquad (E[\Gamma_i;\Gamma_P]\vdash{\tt C_i:s_{q_i}})_{i=1..n}}
-    {\mathcal{WF}(E;{\tt Ind}[p](\Gamma_I:=\Gamma_C))[\Gamma]}
+\frac{(\Gamma_P\vdash{\tt A_j:s_j'})_{j=1..k}\qquad (\Gamma_i;\Gamma_P\vdash{\tt C_i:s_{q_i}})_{i=1..n}}
+    {\mathcal{WF}(\Gamma;{\tt Ind}[p](\Gamma_I:=\Gamma_C))}
     \tag{\sc T-Wf-Ind}
 \end{equation*}
 
-\subsubsection{Well-formed Requirement}
-
-To maintain the consistency of the system, we must restrict the inductive definitions to a syntactic criterion of 
-\textbf{positivity}, which guarantees the \textit{soundness and safety} of the system.
-
-\begin{Def}[Constructor] 
-$\tt T$ is a \textit{type of constructor of }$\tt I$ if
-    \begin{itemize}\normalfont
-        \item $\tt T\equiv(\tt I\ t_1\ \cdots\ t_n)$
-        \item $\tt T\equiv\forall x:U,T'$, where $T'$ is a type of constructor of $\tt I$ 
-    \end{itemize}
-\end{Def}
-
-\begin{Def}[Positivity]
-The type of constructor $\tt T$ satisfies \textit{the positivity condition} for a constant $\tt X$ if
-    \begin{itemize}\normalfont
-        \item $\tt T\equiv (X\ t_1\ \cdots\ t_n)$ and $\tt X$ does not occur free in $\tt t_i$
-        \item $\tt T\equiv \forall x:U,V$ and $\tt X$ occurs only \textit{strictly positively} in $\tt U$ and 
-            $\tt V$ satisfies \textit{the positivity condition} for $\tt X$
-    \end{itemize}
-\end{Def}
-
-\begin{Def}[Strictly Positivity]
-The constant $\tt X$ occurs \textit{strictly positively} in $\tt T$ if 
-    \begin{itemize}\normalfont
-        \item $\tt X$ does not occur in $\tt T$
-        \item $\tt T\mathop{\rhd}^*\tt (X\ t_1\ \cdots\ t_n)$ and $\tt X$ does not occur in $\tt t_i$
-        \item $\tt T\mathop{\rhd}^*\tt \forall x:U,V$ and $\tt X$ does not occur in $\tt U$ but occurs
-            \textit{strictly positively} in $\tt V$
-        \item $\tt T\mathop{\rhd}^*\tt (I\ a_1\ \cdots\ a_m\ t_1\ \cdots\ t_p)$, where 
-            ${\tt Ind}[m](\tt I:A:=c_1:\forall p_1:P_1,\dots\forall p_m:P_m,C_1;\cdots;c_n:\forall p_1:P_1,\dots,
-            \forall p_m:P_m,C_n)$, and $\tt X$ does not occur in $t_i$, and the types of constructor 
-            $\tt C_i\{p_j/a_j\}_{j=1..m}$ satisfies \textit{the nested positivity condition} for $\tt X$ 
-    \end{itemize}
-\end{Def}
-
-\begin{Def}[Nested Positivity]
-The type of constructor $\tt T$ satisfies \textit{the nested positivity condition} for a constant $\tt X$ if
-    \begin{itemize}\normalfont
-        \item $\tt T\equiv(I\ b_1\ \cdots\ b_m\ u_1\ \cdots\ u_p)$, where $\tt I$ is an inductive definition with $m$
-            parameters and $\tt X$ does not occur in $u_i$
-        \item $\tt T\equiv\forall x:U,V$ and $\tt X$ occurs \textit{strictly positively} in $\tt U$ and $\tt V$
-            satisfies \textit{the nested positivity condition} for $\tt X$
-    \end{itemize}
-\end{Def}
 
 \subsection{Match}
-\begin{Def}[Desugar of \tt match]
-    \begin{equation*}
-    \frac{\tt match\ m\ with\ (c_1\ x_{11}\ \cdots\ x_{1p_1})\Rightarrow f_1\ |\ \cdots\ |\ (c_n\ x_{n1}\ \cdots\ x_{np_n})
-        \Rightarrow f_n\ end}
-        {\tt case(m,\lambda x_{11}\cdots x_{1p_1}.\ f_1\ |\ \cdots\ |\lambda x_{n1}\cdots x_{np_n}.\ f_n)}
-        \tag{\sc D-Match}
-    \end{equation*}
-\end{Def}
 
-\begin{equation}
-\frac{E[\Gamma]\vdash{\tt case(c,\lambda x_{11}\cdots x_{1p_1}.\ f_1|\cdots|\lambda x_{n1}\cdots x_{np_n}.\ f_n)}\qquad 
-    E[\Gamma]\vdash{\tt \lambda x_{i1}\cdots x_{ip_i}.\ f_i:S_{i1}\to\cdots\to S_{ip_i}\to S}}
-    {\tt case(c,\lambda x_{11}\cdots x_{1p_1}.\ f_1|\cdots|\lambda x_{n1}\cdots x_{np_n}.\ f_n):S}
+\subsubsection{Notation}
+The basic idea of this operator is that we have an object $\tt m$ in an inductive type $\tt I$ and we want
+to prove a property which possibly depends on $\tt m$. For this, it is enough to prove the property for
+$\tt m=(c_i\ u_1\ \cdots\ u_{p_i})$ for each constructor of $\tt I$.
+The term for this proof will be written:
+$$
+\tt match\ m\ in\ I\ \_\ a\ return\ P\ with\ (c_1\ x_{11}\ \cdots\ x_{1p_1})\Rightarrow f_1\ |\ \cdots\ |\ (c_n\ x_{n1}\ \cdots\ x_{np_n})\Rightarrow
+f_n\ end
+$$\par
+Note that the arguments of $\tt I$ corresponding to parameters must be $\tt\_$, because the result type is not 
+generalized to all possible values of the parameters. The other arguments of $\tt I$ (sometimes called \textit{indices}
+in the literature) have to be variables ($\tt a$ above) and these variables can occur in $\tt P$. The expression after 
+$\tt in$ must be seen as an inductive type pattern. Notice that expansion of implicit arguments and notations apply 
+to this pattern. For the purpose of presenting the inference rules, we use a more compact notation:
+$$
+\tt case(m,(\forall ax.\ P),\lambda x_{11}\cdots x_{1p_1}.\ f_1\ |\ \cdots\ |\ \lambda x_{n1}\cdots x_{np_n}.\ f_n)
+$$
+
+\subsubsection{Type of Branch}
+Before coming to the typing rule of {\tt match}, we have to deal with the type of every branch case of {\tt match}.\par
+Let $\tt c$ be a term of type $\tt C$, assume $\tt C$ is a type of constructor for an inductive type $\tt I$. Let
+$\tt P$ be a term that represents the property to be proved. Assume $\tt r$ is the number of parameters and 
+$p$ is the number of arguments.\par
+Define a new type $\tt \{c:C\}^P$ which represents the type of the branch corresponding to the $\tt c:C$ constructor.
+\begin{center}
+\begin{tabular}{lcl}
+$\tt \{c:(I\ p_1\ \cdots\ p_r\ t_1\ \cdots\ t_p)\}^P$ & $\equiv$ & $\tt (P\ t_1\ \cdots\ t_p\ c)$\\
+$\tt \{c:\forall x:T,\ C\}^P$ & $\equiv$ & $\tt \forall x:T, \{(c\ x):C\}^P$
+\end{tabular}
+\end{center}
+We write $\tt\{c\}^P$ for $\tt\{c:C\}^P$ with $\tt C$, the type of $\tt c$.
+
+\subsubsection{Typing Rule}
+\begin{equation*}
+\frac{\Gamma\vdash{\tt c:(I\ q_1\ \cdots\ q_r\ t_1\ \cdots\ t_s)}\qquad 
+        ???\qquad
+    (\Gamma\vdash{\tt f_i:\{(c_{p_i}\ q_1\ \cdots\ q_r)\}^P})_{i=1..l}}
+    {\Gamma\vdash{\tt case(c,P,f_1\ |\ \cdots\ |\ f_l):(P\ t_1\ \cdots\ t_s\ c)}}
     \tag{\sc T-Match}
-\end{equation}
-
-\begin{equation*}
-\frac{\tt case((c_p\ q_1\ \cdots\ q_r\ a_1\ \cdots\ a_m),f_1|\cdots|f_n)}
-    {f_i\ a_1\ \cdots\ a_m}
-    \tag{\sc $\iota$-Conv-Match}
 \end{equation*}
-
-\subsection{Fixpoint}
-\begin{Def}[Desugar of \tt fix]
-    \begin{equation*}
-    \frac{\tt fix\ f_1(\Gamma_1):A_1:=t_1\ with\cdots with\ f_n(\Gamma_n):A_n:=t_n\qquad 
-        t'_i=\lambda\Gamma_i.\ t_i\qquad A'_i=\forall\Gamma_i,A_i}
-        {\tt Fix\ f_i\{f_1:A'_1:=t'_1\cdots f_n:A'_n:=t'_n\}}
-        \tag{\sc D-Fix}
-    \end{equation*}
-\end{Def}
-
-\begin{equation*}
-\frac{(E[\Gamma]\vdash {\tt A_i:s_i)_{i=1..n}}\qquad (E[\Gamma,\tt f_1:A_1,\cdots,f_n:A_n]\vdash t_i:A_i)_{i=1..n}}
-    {E[\Gamma]\vdash\tt Fix\ f_i\{f_1:A_1:=t_1\cdots f_n:A_n:=t_n\}:A_i}
-    \tag{\sc T-Fix}
-\end{equation*}
-
-\begin{equation*}
-\frac{\tt Fix\ f_i\{F\}\ a_1\ \cdots\ a_{k_i}}
-    {\tt t_i\{(f_k/Fix\ f_k\{F\})_{k=1..n}\}\ a_1\ \cdots\ a_{k_i}}
-    \tag{\sc $\iota$-Conv-Fix}
-\end{equation*}
-
-\subsection{Let}
-
-\begin{Def}[Desugar of \tt let]
-\begin{equation*}
-\frac{E[\Gamma]\vdash \tt let\ \ x:=u\ \ in\ \ t}
-    {\tt t\{x/u\}}
-    \tag{\sc $\zeta$-Conv-Let}
-\end{equation*}
-\end{Def}
