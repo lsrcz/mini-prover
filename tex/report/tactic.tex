@@ -594,3 +594,31 @@ The tactic applies the $\delta$ rule to each occurrence of the constant in the c
 
 \subsubsection*{Implementation}
 It finds the occurrences of the constant and applies the $\delta$ rule, the nameless index is automatically preserved.
+
+
+\begin{center}
+\begin{minipage}{0.8\textwidth}
+\begin{minted}{coq}
+Definition addTwo (n:nat) : nat := S (S n).
+
+n : nat
+m : nat
+e : eq nat m n
+(* Current Goal *)
+eq nat (addTwo n) (S (S m))
+
+(* $\Downarrow$ unfold addTwo $\Downarrow$ *)
+
+n : nat
+m : nat
+e : eq nat m n
+(* SubGoal *)
+eq nat (S (S n)) (S (S m))
+
+(* $\Downarrow$ symmetry $\Downarrow$ *)   
+
+(* The proof object *)
+(fun (n:nat) (m:nat) (e:eq nat m n) => (* SubGoal *))                                            
+\end{minted}
+\end{minipage}
+\end{center}
