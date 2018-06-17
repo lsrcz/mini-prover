@@ -12,6 +12,7 @@ current goal.
 \subsection*{Usage}
 \begin{itemize}
 \item $\it apply\ \tt t.$ : $\tt t$ is a term of a type whose conclusion is the goal.
+\item $\it apply\ \tt t\ \it in\ \tt H.$ : $\tt t$ is a term of a type whose condition is $\tt H$.
 \end{itemize}
 
 \subsection*{Implementation}
@@ -40,9 +41,38 @@ eq nat m o                                      e : eq nat n m
 \end{center}
 Because \mintinline{coq}|e| has a type of \mintinline{coq}|eq nat n m -> eq nat m o -> eq nat n o| 
 and the goal is \mintinline{coq}|eq nat n o|,
-when applied with \mintinline{coq}|n|,
+when applied with \mintinline{coq}|e|,
 the goal equals to the conclusion (inner-most term) of the type of the term.
 And all of the non-dependent premises of the type of term become subgoals.
+
+The tactic {\it apply $\tt tm$ in $\tt H$} tries to match the hypothesis $\tt H$ against the 
+condition of the type of $\tt tm$. 
+If it succeeds, the hypothesis $\tt H$ will be replaced by the conclusion of $\tt tm$
+\begin{center}
+\begin{minted}{coq}
+n : nat
+m : nat
+o : nat
+H : eq nat n m 
+e : eq nat n m -> eq nat m o -> eq nat n o                  
+(* Current Goal *)      
+eq nat m o -> eq nat n o                                        
+
+(* $\Downarrow$ apply e in H $\Downarrow$ *)
+n : nat                                                                         
+m : nat                                                                     
+o : nat  
+H : eq nat m o -> eq nat n o
+e : eq nat n m -> eq nat m o -> eq nat n o
+(* SubGoal 1*)                                            
+eq nat m o -> eq nat n o                                      
+\end{minted}
+\end{center}
+Because \mintinline{coq}|e| has a type of \mintinline{coq}|eq nat n m -> eq nat m o -> eq nat n o| 
+and $\tt H$ is \mintinline{coq}|eq nat n m|,
+when applied with \mintinline{coq}|e|,
+the $\tt H$ equals to the condition of the type of the term.
+And $\tt H$ was replaced by the conclusion of $\tt e$.
 
 \subsection{\it destruct}
 
