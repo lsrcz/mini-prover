@@ -599,7 +599,7 @@ It finds the occurrences of the constant and applies the $\delta$ rule, the name
 \begin{center}
 \begin{minipage}{0.8\textwidth}
 \begin{minted}{coq}
-Definition addTwo (n:nat) : nat := S (S n).
+Definition addTwo (n : nat) : nat := S (S n).
 
 n : nat
 m : nat
@@ -618,7 +618,7 @@ eq nat (S (S n)) (S (S m))
 (* $\Downarrow$ symmetry $\Downarrow$ *)   
 
 (* The proof object *)
-(fun (n:nat) (m:nat) (e:eq nat m n) => (* SubGoal *))                                            
+(fun (n:nat) (m:nat) (e:eq nat m n) => (* SubGoal *))                         
 \end{minted}
 \end{minipage}
 \end{center}
