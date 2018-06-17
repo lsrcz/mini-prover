@@ -31,6 +31,21 @@
     \tag{\sc $\eta$-Exp}
 \end{equation*}
 
+Here's an example for $\iota$-reduction:
+\begin{center}
+\begin{minipage}{0.7\textwidth}
+\begin{minted}{coq}
+match (S m) as s0 in nat return nat with
+| S n => n
+| O => O
+end
+
+(* $\iota$-reduction *)
+(fun (n:nat) => n) m.
+\end{minted}
+\end{minipage}
+\end{center}
+
 \begin{Def}[Convertibility]
 $\tt t_1$ and $\tt t_2$ are convertible iff there exists $\tt u_1$ and $\tt u_2$ such that 
 $\Gamma\vdash \tt t_1\mathop{\rhd}\limits^* u_1$ and $\Gamma\vdash \tt t_2\mathop{\rhd}\limits^* u_2$ 
