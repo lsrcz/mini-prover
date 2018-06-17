@@ -30,18 +30,19 @@ e : eq nat n m -> eq nat m o -> eq nat n o
 eq nat n o                        
 
 (* $\Downarrow$ apply n $\Downarrow$ *)   
+
 n : nat                                         n : nat                                       
 m : nat                                         m : nat                                   
 o : nat                                         o : nat                                   
 e : eq nat n m -> eq nat m o -> eq nat n o      e : eq nat n m -> eq nat m o -> eq nat n o       
-(* SubGoal 1*)                                  (* SubGoal 2*)          
+(* SubGoal 1 *)                                 (* SubGoal 2 *)          
 eq nat m o                                      e : eq nat n m
 \end{minted}
 \end{center}
 Because \mintinline{coq}|e| has a type of \mintinline{coq}|eq nat n m -> eq nat m o -> eq nat n o| 
 and the goal is \mintinline{coq}|eq nat n o|,
 when applied with \mintinline{coq}|n|,
-the goal equals to the conclusion (inner-most term) of the type of the term.
+the goal is convertible to the inner-most part of the type of \mintinline{coq}|e|.
 And all of the non-dependent premises of the type of term become subgoals.
 
 \subsection{\it destruct}
@@ -366,7 +367,7 @@ conj (eq nat O O) (eq nat (S O) (S O)) (* SubGoal 1 *) (* SubGoal 2 *)
 
 
 \subsection{\it reflexivity}
-This tactic applies to a goal that has the form \mintinline{coq}|eq T t u|, it check that $\tt t$ and $\tt u$ 
+This tactic applies to a goal that has the form $\tt eq\ T\ t\ u$, it check that $\tt t$ and $\tt u$ 
 are convertible and then solves the goal.
 
 \subsubsection*{Usage}
@@ -394,14 +395,18 @@ fun (n:nat) => eq_refl nat n
 
 \subsection{\it rewrite}
 This tactic applies to any goal.
-The type of term must have the form \mintinline{coq}|eq T t u|.
-Then the subterms \mintinline{coq}|t| in the goal will be rewrited by \mintinline{coq}|u|.
+The type of term must have the form $\tt eq\ T\ t\ u$.
+Then the subterms $\tt t$ in the goal will be rewritten by $\tt u$.
 
 \subsubsection*{Usage}
 \begin{itemize}
-\item ${\it rewrite \tt H}.$ : $\tt H$ should have the form \mintinline{coq}|eq T t u|, all the subterms \mintinline{coq}|t| in the goal will be replaced by \mintinline{coq}|u|.
-\item ${\it rewrite <- \tt H}.$ : $\tt H$ should have the form \mintinline{coq}|eq T t u|, all the subterms \mintinline{coq}|u| in the goal will be replaced by \mintinline{coq}|t|.
-\item ${\it rewrite [<-/->] H in H1}$ : $\tt H$ should have the form \mintinline{coq}|eq T t u|, for the $->$ case, all the subterms \mintinline{coq}|t| in \mintinline{coq}|H1| will be replaced by \mintinline{coq}|u|.
+\item ${\it rewrite\ \tt H}.$ : $\tt H$ should have the form $\tt eq\ T\ t\ u$, 
+all the subterms $\tt t$ in the goal will be replaced by $\tt u$.
+\item ${\it rewrite\ \texttt{<-}\ \tt H}.$ : $\tt H$ should have the form $\tt eq\ T\ t\ u$, 
+    all the subterms $\tt u$ in the goal will be replaced by $\tt t$.
+\item ${\it rewrite\ [\texttt{<-}/\texttt{->}]\ \tt H\ \it in\ \tt H1}.$ : 
+    $\tt H$ should have the form $\tt eq\ T\ t\ u$, for the {\tt ->} case, all the 
+    subterms $\tt t$ in $\tt H1$ will be replaced by $\tt u$.
 \end{itemize}
 
 \subsubsection*{Implementation}
@@ -410,11 +415,11 @@ This tactic builds the proof object with \mintinline{coq}|eq_rect| or \mintinlin
 \begin{center}
 \begin{minipage}{0.7\textwidth}
 \begin{minted}{coq}
-a : nat                                  a : nat        
-b : nat                                  b : nat        
-e : eq nat a b                           e : eq nat a b
-(* Current Goal *)  (* rewrite e => *)   (* SubGoal *)
-eq nat b a                               eq nat b b
+a : nat                                        a : nat        
+b : nat                                        b : nat        
+e : eq nat a b                                 e : eq nat a b
+(* Current Goal *)     (* rewrite e => *)      (* SubGoal *)
+eq nat b a                                     eq nat b b
 
 (* Proof Object *)
 fun (a:nat) (b:nat) (e:eq nat a b) =>
@@ -494,7 +499,8 @@ eq nat m m
 
 
 \subsection{\it symmetry}
-This tactic applies to a goal that has the form \mintinline{coq}|eq T t u| and changes it into \mintinline{coq}|eq T u t|.
+This tactic applies to a goal that has the form $\tt eq\ T\ t\ u$ 
+and changes it into $\tt eq\ T\ u\ t$.
 
 \subsubsection*{Usage}
 \begin{itemize}
