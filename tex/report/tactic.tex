@@ -42,13 +42,8 @@ eq nat m o                                      e : eq nat n m
 \end{center}
 Because \mintinline{coq}|e| has a type of \mintinline{coq}|eq nat n m -> eq nat m o -> eq nat n o| 
 and the goal is \mintinline{coq}|eq nat n o|,
-<<<<<<< HEAD
-when applied with \mintinline{coq}|e|,
-the goal equals to the conclusion (inner-most term) of the type of the term.
-=======
 when applied with \mintinline{coq}|n|,
 the goal is convertible to the inner-most part of the type of \mintinline{coq}|e|.
->>>>>>> 8f8ff3f60ce84e8c747ee454d6ccc529ab657bd9
 And all of the non-dependent premises of the type of term become subgoals.
 
 The tactic {\it apply $\tt tm$ in $\tt H$} tries to match the hypothesis $\tt H$ against the 
