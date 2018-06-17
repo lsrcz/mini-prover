@@ -6,6 +6,38 @@ to assist users in better writing the proof. With the help of
 tactics, the proof becomes more human-readable and intuitive.\par
 
 \subsection{\it apply}
+This tactic applies to any goal. The purpose of this tactic is to extract premises of
+current goal.
+
+\subsection*{Usage}
+\begin{itemize}
+\item $\it apply\ \tt t.$ : $\tt t$ is a term of a type whose conclusion is the goal.
+\end{itemize}
+
+\subsection*{Implementation}
+The tactic {\it apply} tries to match the current goal against the 
+conclusion of the type of term. 
+If it succeeds, it returns as many subgoals as 
+the number of non-dependent premises of the type of term.\par
+Here is an example:
+\begin{center}
+\begin{minted}{coq}
+n : bool -> Type -> nat                   
+(* Current Goal *)      
+nat                                       
+
+(* $\Downarrow$ apply n $\Downarrow$ *)   
+
+ n : bool -> Type -> nat       n : bool -> Type -> nat
+ (* SubGoal 1*)                (* SubGoal 2*)          
+ bool                          Type
+\end{minted}
+\end{center}
+Because \mintinline{coq}|n| has a type of \mintinline{coq}|bool -> Type -> nat| 
+and the goal is \mintinline{coq}|nat|,
+when applied with \mintinline{coq}|n|,
+the goal equals to the conclusion (inner-most term) of the type of the term.
+And all of the non-dependent premises of the type of term become subgoals.
 
 \subsection{\it destruct}
 
@@ -356,6 +388,7 @@ fun (n:nat) => eq_refl nat n
 \end{center}
 
 \subsection{\it rewrite}
+
 
 \subsection{\it simpl}
 This tactic applies to any goal, it tries to reduce a term to something still readable instead of fully normalizing it. 
